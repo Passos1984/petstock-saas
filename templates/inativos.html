@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>PetStock - Produtos Inativos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0f172a; --accent: #4f46e5; --success: #10b981; --bg-body: #f8fafc; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: #334155; }
+        aside { width: 230px; background: var(--primary); color: white; padding: 25px; display: flex; flex-direction: column; }
+        .menu-link { color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 10px; margin-bottom: 5px; display: block; font-weight: 600; }
+        .menu-link.active, .menu-link:hover { background: var(--accent); color: white; }
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 700; color: white; text-decoration: none; background: #64748b;}
+        .btn-restore { background: var(--success); font-size: 13px; padding: 8px 15px;}
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        th { background: #f1f5f9; padding: 15px; text-align: left; font-size: 12px; text-transform: uppercase; color: #64748b; }
+        td { padding: 15px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; opacity: 0.7;}
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; background: #d1fae5; color: #065f46;}
+    </style>
+</head>
+<body>
+    <aside>
+        <h2>🐾 PetStock</h2>
+        <a href="/" class="menu-link active">📦 Estoque</a>
+        <a href="/clientes" class="menu-link">👥 Clientes</a>
+        <a href="/pdv" class="menu-link">🛒 PDV</a>
+        {% if cargo == 'Gerente' %}
+        <a href="/radar" class="menu-link">📡 Radar</a>
+        <a href="/representantes" class="menu-link">🚚 Representantes</a>
+        <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        {% endif %}
+        <a href="/logout" class="menu-link" style="margin-top: auto; color: #fca5a5;">Sair</a>
+    </aside>
+
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; color: #64748b;">♻️ Produtos Inativos (Lixeira)</h1>
+            <a href="/" class="btn">⬅️ Voltar ao Estoque</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for category, message in messages %}
+            <div class="alert">{{ message }}</div>
+        {% endfor %}{% endif %}{% endwith %}
+
+        {% if produtos %}
+        <table>
+            <thead><tr><th>SKU</th><th>Produto Inativo</th><th>Estoque Congelado</th><th>Ação</th></tr></thead>
+            <tbody>
+                {% for p in produtos %}
+                <tr>
+                    <td><b>{{ p.codigo_sku }}</b></td>
+                    <td><strong style="text-decoration: line-through;">{{ p.nome }}</strong></td>
+                    <td>{{ p.estoque|round(2) }}</td>
+                    <td>
+                        <a href="/restaurar_produto/{{ p.id }}" class="btn btn-restore">✅ Restaurar Produto</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="background: white; padding: 50px; text-align: center; border-radius: 15px; border: 1px dashed #cbd5e1;">
+            <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+            <h3 style="color: #64748b; margin: 0;">Sua lixeira está limpa!</h3>
+            <p style="color: #94a3b8;">Nenhum produto inativo no momento.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

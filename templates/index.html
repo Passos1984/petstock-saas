@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - Gestão de Estoque</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #222533;
+            --accent: #5c4dff;
+            --accent-hover: #4a3ecc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f4f6f9;
+            --text-main: #333333;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-card: #ffffff;
+            --input-border: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
+
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+
+        {% set metricas = namespace(valor_total=0, criticos=0) %}
+        {% for p in produtos %}
+            {% set metricas.valor_total = metricas.valor_total + (p.preco_custo * p.estoque) %}
+            {% if p.estoque < 5 %}{% set metricas.criticos = metricas.criticos + 1 %}{% endif %}
+        {% endfor %}
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 35px; }
+        .dash-card { background: var(--bg-card); padding: 25px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; transition: all 0.3s; border-bottom: 4px solid; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);}
+        .dash-card h4 { margin: 0; color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+        .dash-card .value { font-size: 24px; font-weight: 800; margin-top: 8px; color: var(--text-main); }
+
+        .panel { background: var(--bg-card); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;}
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: #f8fafc; color: var(--text-main); border: 1px solid var(--border-color); }
+
+        .input-control { width: 100%; padding: 14px 16px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; font-family: inherit; box-sizing: border-box;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background: #f8fafc; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 18px 20px; text-align: left; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px;}
+        td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 14px; font-weight: 500;}
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .dot-green { background-color: var(--success); box-shadow: 0 0 8px var(--success); }
+        .dot-red { background-color: var(--danger); box-shadow: 0 0 8px var(--danger); }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto;}
+        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #94a3b8; font-weight: bold; background: none; border: none; transition: 0.2s;}
+        .close-btn:hover { color: var(--danger); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;}
+        .lucro-tag { background: #d1fae5; color: #047857; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; display: block; margin-top: 10px; border: 1px solid #a7f3d0; text-align: center;}
+
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto;}
+            .mobile-header { display: flex; }
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            main { padding: 20px 15px; }
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .header-bar > div { display: flex; flex-wrap: wrap; width: 100%; gap: 10px; }
+            .header-bar .btn { flex: 1; justify-content: center; min-width: 140px;}
+            .dashboard-grid { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .table-responsive { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
+            table { min-width: 700px; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <h2 class="logo">🐾 PetStock</h2>
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/" class="menu-link active"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            {% endif %}
+        </div>
+        <div class="menu-container" style="margin-top: 15px;">
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center;">🚪 Sair</a>
+        </div>
+    </aside>
+
+    <main>
+        <div style="margin-bottom: 20px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 10px; margin-bottom: 15px; font-weight: 700; font-size: 14px; text-align: center;
+                        {% if category == 'warning' %} background: #fef3c7; color: #92400e; border: 1px solid #fbbf24;
+                        {% elif category == 'danger' %} background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
+                        {% else %} background: #d1fae5; color: #065f46; border: 1px solid #34d399; {% endif %}">
+                        {{ message | safe }}
+                    </div>
+                {% endfor %}{% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="header-bar">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <h2 class="page-title">📦 Gestão de Estoque</h2>
+                <button class="btn" style="background: #eef2ff; color: var(--accent); border: 1px solid #c7d2fe; padding: 8px 15px; font-size: 13px;" onclick="abrirModal('modalAjuda')">❓ Manual / Ajuda</button>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-outline" onclick="abrirModal('modalImportar')"><i class="fas fa-file-excel" style="color: var(--success);"></i> Importar</button>
+                <button class="btn btn-success" onclick="abrirModal('modalFracionar')">⚖️ Fracionar</button>
+                <button class="btn btn-primary" onclick="abrirModal('modalCadastro')">➕ Novo Produto</button>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dash-card" style="border-bottom-color: var(--accent);">
+                <h4>Total de Produtos</h4>
+                <div class="value">{{ produtos|length }}</div>
+            </div>
+            <div class="dash-card" style="border-bottom-color: var(--success);">
+                <h4>Capital Imobilizado (Custo)</h4>
+                <div class="value" style="color: var(--success);">R$ {{ "%.2f"|format(metricas.valor_total)|replace('.', ',') }}</div>
+            </div>
+            <div class="dash-card" style="border-bottom-color: var(--danger); background: {% if metricas.criticos > 0 %}#fef2f2{% else %}#ffffff{% endif %};">
+                <h4 style="color: {% if metricas.criticos > 0 %}var(--danger){% else %}var(--text-muted){% endif %};">Estoque Crítico (Abaixo de 5)</h4>
+                <div class="value" style="color: var(--danger);">{{ metricas.criticos }} itens</div>
+            </div>
+        </div>
+
+        <div class="panel" style="padding: 0; overflow: hidden; border: none;">
+            <div style="padding: 20px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; color: var(--text-main);">Catálogo Ativo</h3>
+                <a href="/inativos" style="color: var(--danger); font-weight: 700; text-decoration: none; font-size: 13px;"><i class="fas fa-trash"></i> Ver Lixeira</a>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 30px;">Produto</th>
+                            <th>Categoria</th>
+                            <th style="text-align: center;">Custo</th>
+                            <th style="text-align: center;">Venda</th>
+                            <th style="text-align: center;">Estoque</th>
+                            <th style="text-align: right; padding-right: 30px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in produtos %}
+                        <tr>
+                            <td style="padding-left: 30px;">
+                                <strong style="color: var(--text-main); font-size: 15px;">{{ p.nome }}</strong><br>
+                                <span style="font-size: 11px; color: var(--text-muted); font-family: monospace;">Cód: {{ p.codigo_sku }}</span>
+                            </td>
+                            <td><span style="background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-color);">{{ p.categoria }}</span></td>
+                            <td style="text-align: center; color: var(--text-muted);">R$ {{ "%.2f"|format(p.preco_custo)|replace('.', ',') }}</td>
+                            <td style="text-align: center; color: var(--success); font-weight: 800;">R$ {{ "%.2f"|format(p.preco_venda)|replace('.', ',') }}</td>
+                            <td style="text-align: center; font-weight: 800;">
+                                <span class="status-dot {% if p.estoque < 5 %}dot-red{% else %}dot-green{% endif %}"></span>
+                                {{ p.estoque }}
+                            </td>
+                            <td style="text-align: right; padding-right: 30px;">
+                                <button class="btn" style="background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 10px; margin-right: 5px;" onclick="abrirModalBaixa('{{ p.id }}', '{{ p.nome }}')" title="Baixa / Brinde">🔻 Baixa</button>
+                                <a href="/editar_produto/{{ p.id }}" style="text-decoration: none; display: inline-block; padding: 6px 10px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; margin-right: 5px; transition: 0.2s;" title="Editar">✏️</a>
+                                <a href="/inativar_produto/{{ p.id }}" style="text-decoration: none; display: inline-block; padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; transition: 0.2s;" title="Excluir" onclick="return confirm('Mover para lixeira?')">🗑️</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">
+                                Nenhum produto cadastrado. O seu estoque está vazio.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalCadastro" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModal('modalCadastro')">&times;</button>
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">📦 Cadastrar Produto</h3>
+            <form action="/cadastrar_produto" method="POST">
+                <div class="form-grid" style="margin-top: 0;">
+
+                    <div style="grid-column: span 2;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">CÓDIGO (SKU / BARRAS / EAN)</label>
+                        <input type="text" name="sku" class="input-control" placeholder="Bipe, digite ou deixe vazio p/ automático" style="background: #f8fafc;">
+                    </div>
+
+                    <div style="grid-column: span 2;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">NOME DO PRODUTO</label>
+                        <input type="text" name="nome" class="input-control" required placeholder="Ex: Ração Golden">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">TIPO DO PRODUTO</label>
+                        <select name="tipo_produto" class="input-control" required style="background: white;">
+                            <option value="">Selecione o tipo...</option>
+                            <option value="Saco Fechado">📦 Saco Fechado</option>
+                            <option value="Granel (KG)">⚖️ A Granel (KG)</option>
+                            <option value="Avulso">🏷️ Unidade / Avulso</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">CATEGORIA</label>
+                        <input type="text" name="categoria" class="input-control" placeholder="Selecione ou digite..." list="catList" required>
+                        <datalist id="catList">
+                            <option value="Rações">
+                            <option value="Acessórios">
+                            <option value="Farmácia">
+                            <option value="Higiene">
+                            <option value="Petiscos">
+                            <option value="Diversos">
+                        </datalist>
+                    </div>
+
+                    <div style="grid-column: span 2;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">QUANTIDADE OU QUILOS EM ESTOQUE</label>
+                        <input type="text" name="quantidade" class="input-control" placeholder="Ex: 10 sacos ou 15.500 kg" value="0" required>
+                    </div>
+
+                    <div>
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">PREÇO DE CUSTO (CADA)</label>
+                        <input type="text" name="preco_custo" id="cadCusto" class="input-control" placeholder="0.00" required onkeyup="calcularMargem()">
+                    </div>
+
+                    <div>
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">PREÇO DE VENDA (CADA)</label>
+                        <input type="text" name="preco" id="cadVenda" class="input-control" placeholder="0.00" required onkeyup="calcularMargem()">
+                        <small id="sugestaoPreco" style="color: var(--accent); font-weight: 800; display: block; margin-top: 6px;"></small>
+                    </div>
+                </div>
+                <div id="lucroPreview" class="lucro-tag" style="display: none;">Lucro: R$ 0,00 (0%)</div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 16px; font-size: 16px;">Salvar no Estoque</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalFracionar" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <button class="close-btn" onclick="fecharModal('modalFracionar')">&times;</button>
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">⚖️ Fracionar Ração (Saco -> Granel)</h3>
+            <form action="/desmembrar" method="POST">
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--danger);">1. SACO FECHADO (ORIGEM)</label>
+                    <select name="origem_id" id="selOrigem" class="input-control" required style="border-color: var(--danger);" onchange="mostrarEstoqueOrigem()">
+                        <option value="">-- Selecione o Saco Fechado --</option>
+                        {% for p in produtos %}
+                            <option value="{{ p.id }}" data-estoque="{{ p.estoque }}">{{ p.nome }} (Estoque: {{ p.estoque }})</option>
+                        {% endfor %}
+                    </select>
+                    <small id="hintOrigem" style="color: var(--text-muted); font-weight: 600; display: block; margin-top: 5px;"></small>
+                </div>
+
+                <div style="margin-bottom: 25px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--danger);">QUANTOS SACOS VAI ABRIR?</label>
+                    <input type="text" name="qtd_origem" class="input-control" value="1" required style="background: #fef2f2;">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--success);">2. RAÇÃO GRANEL (DESTINO)</label>
+                    <select name="destino_id" class="input-control" required style="border-color: var(--success);">
+                        <option value="">-- Selecione o produto Granel --</option>
+                        {% for p in produtos %}
+                            <option value="{{ p.id }}">{{ p.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--success);">QUANTOS QUILOS (KG) VAI GERAR?</label>
+                    <input type="text" name="qtd_destino" class="input-control" placeholder="Ex: 15" required style="background: #ecfdf5;">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width: 100%; padding: 16px; font-size: 16px;">Confirmar Fracionamento</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalBaixa" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <button class="close-btn" onclick="fecharModal('modalBaixa')">&times;</button>
+            <h3 style="margin-top: 0; color: var(--danger);">🔻 Dar Baixa / Brinde</h3>
+            <p id="nomeProdutoBaixa" style="font-weight: 800; color: var(--text-main); margin-bottom: 20px;"></p>
+
+            <form action="/dar_baixa" method="POST">
+                <input type="hidden" name="produto_id" id="idProdutoBaixa">
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">MOTIVO DA SAÍDA</label>
+                    <select name="motivo" class="input-control" required>
+                        <option value="Brinde">🎁 Brinde para Cliente</option>
+                        <option value="Vencimento">⏰ Produto Vencido</option>
+                        <option value="Avaria">❌ Danificado / Avariado</option>
+                        <option value="Uso Interno">🏠 Uso na Loja / Banho e Tosa</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">QUANTIDADE OU KG PARA REMOVER</label>
+                    <input type="text" name="quantidade" class="input-control" placeholder="Ex: 1 ou 0.500" required>
+                </div>
+
+                <button type="submit" class="btn" style="background: var(--danger); color: white; width: 100%; padding: 15px;">Confirmar Retirada</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalImportar" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="close-btn" onclick="fecharModal('modalImportar')">&times;</button>
+            <i class="fas fa-file-excel" style="font-size: 48px; color: var(--success); margin-bottom: 15px;"></i>
+            <h3 style="margin-top: 0; color: var(--text-main);">Importar Planilha</h3>
+            <p style="color: var(--text-muted); font-size: 13px;">Sua planilha precisa estar no formato CSV com as colunas na ordem exata.</p>
+            <form action="/importar_produtos" method="POST" enctype="multipart/form-data">
+                <input type="file" name="arquivo" accept=".csv" required style="margin-bottom: 20px; width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px;">
+                <button type="submit" class="btn btn-success" style="width: 100%;">Carregar Planilha</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalAjuda" class="modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <button class="close-btn" onclick="fecharModal('modalAjuda')">&times;</button>
+            <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">📚 Manual Operacional PetStock</h2>
+
+            <div style="margin-bottom: 25px; margin-top: 20px;">
+                <h4 style="color: var(--accent); margin: 0 0 8px 0; font-size: 16px;">⚖️ Como Vender a Granel sem Etiqueta de Balança?</h4>
+                <p style="color: var(--text-muted); margin: 0 0 10px 0; font-size: 14px; line-height: 1.6;">O sistema PetStock não exige equipamentos caros. Veja como é fácil:</p>
+                <ol style="color: var(--text-muted); font-size: 13px; line-height: 1.7; margin: 0; padding-left: 20px;">
+                    <li><b>Cadastro:</b> Selecione o tipo "A Granel". O sistema avisará o operador no momento da venda.</li>
+                    <li><b>No Caixa (PDV):</b> Quando o cliente trouxer o saquinho pesado (Ex: 400g), o operador não precisa de código de barras. Ele pesquisa pela palavra <b>"Golden"</b>.</li>
+                    <li><b>Lançando o Peso:</b> O operador clica no produto Granel e, na coluna Qtd do carrinho, ele digita <b>0.400</b>. O sistema calcula os centavos automaticamente!</li>
+                </ol>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: var(--success); margin: 0 0 8px 0; font-size: 16px;">📦 Como funciona a ferramenta "Fracionar"?</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.6;">Quando acabar a ração granel da caixa expositora, você vai abrir um Saco Fechado de 15KG, certo? Use o botão "Fracionar". Ele vai <b>retirar 1 saco</b> do seu estoque fechado e <b>adicionar 15 KG</b> no estoque de Granel, garantindo que o seu financeiro bata exato no fim do mês!</p>
+            </div>
+
+            <button type="button" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 10px; height: 48px; font-size: 16px;" onclick="fecharModal('modalAjuda')">Entendi, vamos ao trabalho!</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function abrirModalBaixa(id, nome) {
+            document.getElementById('idProdutoBaixa').value = id;
+            document.getElementById('nomeProdutoBaixa').innerText = "Produto: " + nome;
+            abrirModal('modalBaixa');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) { event.target.style.display = "none"; }
+        }
+
+       function calcularMargem() {
+            let custoStr = document.getElementById('cadCusto').value.replace(',', '.');
+            let vendaInput = document.getElementById('cadVenda');
+            let vendaStr = vendaInput.value.replace(',', '.');
+
+            let custo = parseFloat(custoStr) || 0;
+            let venda = parseFloat(vendaStr) || 0;
+            let preview = document.getElementById('lucroPreview');
+
+            // SE ELE DIGITOU O CUSTO, MAS AINDA NÃO DIGITOU A VENDA: AUTO-PREENCHE COM 100% DE MARGEM!
+            if (custo > 0 && venda === 0) {
+                let valorSugerido = custo * 2; // Dobra o valor (100% de lucro)
+                vendaInput.value = valorSugerido.toFixed(2).replace('.', ',');
+                venda = valorSugerido; // Atualiza a variável para a caixa de lucro ficar verde
+            }
+
+            // Lógica do Lucro Real na caixinha verde/vermelha
+            if(custo > 0 && venda > 0) {
+                let lucro = venda - custo;
+                let pct = (lucro / custo) * 100;
+                preview.style.display = 'block';
+                if(lucro > 0) {
+                    preview.style.background = '#d1fae5'; preview.style.color = '#047857'; preview.style.borderColor = '#a7f3d0';
+                    preview.innerText = `📈 Lucro Real Unitário: R$ ${lucro.toFixed(2).replace('.',',')} (${pct.toFixed(1)}%)`;
+                } else {
+                    preview.style.background = '#fee2e2'; preview.style.color = '#b91c1c'; preview.style.borderColor = '#fecaca';
+                    preview.innerText = `🚨 Atenção: Prejuízo de R$ ${Math.abs(lucro).toFixed(2).replace('.',',')}`;
+                }
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function mostrarEstoqueOrigem() {
+            let select = document.getElementById('selOrigem');
+            let hint = document.getElementById('hintOrigem');
+            if(select.selectedIndex > 0) {
+                let estoque = select.options[select.selectedIndex].getAttribute('data-estoque');
+                hint.innerText = `💡 Você tem ${estoque} saco(s) desse produto no estoque atual.`;
+            } else {
+                hint.innerText = '';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Cliente - PetStock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0f172a; --accent: #10b981; --bg-body: #f8fafc; --border-color: #e2e8f0; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; width: 100%; max-width: 550px; padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); }
+        h2 { margin-top: 0; color: var(--primary); font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        .input-control { padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s; }
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
+        .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; font-size: 16px; transition: 0.2s; text-decoration: none; text-align: center; display: block; box-sizing: border-box; }
+        .btn-save { background: var(--accent); color: white; margin-bottom: 12px; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(16,185,129,0.3); }
+        .btn-cancel { background: #f1f5f9; color: #64748b; }
+        .section-title { font-size: 14px; font-weight: 800; color: var(--primary); margin: 25px 0 15px 0; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>👥 Editar Ficha do Cliente</h2>
+        <form method="POST">
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" value="{{ c.nome }}" class="input-control" required>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Telefone / WhatsApp</label>
+                    <input type="text" name="telefone" value="{{ c.telefone }}" class="input-control" required>
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>🐾 Nome do Pet</label>
+                    <input type="text" name="nome_pet" value="{{ c.nome_pet }}" class="input-control">
+                </div>
+            </div>
+
+            <div class="section-title">📍 Endereço de Entrega</div>
+            <div class="input-group">
+                <label>Rua / Avenida</label>
+                <input type="text" name="rua" value="{{ c.rua }}" class="input-control">
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Número</label>
+                    <input type="text" name="numero" value="{{ c.numero }}" class="input-control">
+                </div>
+                <div class="input-group" style="flex: 2;">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" value="{{ c.bairro }}" class="input-control">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-save">💾 Atualizar Cadastro</button>
+            <a href="/clientes" class="btn btn-cancel">Cancelar e Voltar</a>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troca de Senha Obrigatória - PetStock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #222533; 
+            --accent: #5c4dff; 
+            --accent-hover: #4a3ecc;
+            --bg-body: #f4f6f9; 
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-color: #eeeeee;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: var(--bg-body); 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+        }
+        
+        .login-wrapper {
+            width: 100%; 
+            max-width: 420px;
+        }
+        
+        .logo-header {
+            text-align: center; 
+            margin-bottom: 25px;
+        }
+        
+        .logo-header h1 {
+            margin: 0; 
+            font-size: 32px; 
+            font-weight: 800; 
+            color: var(--primary); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+            text-align: center; 
+            border: 1px solid var(--border-color);
+            border-top: 5px solid var(--accent);
+        }
+        
+        .login-box h2 { 
+            color: var(--text-main); 
+            margin-top: 0; 
+            font-size: 24px; 
+            font-weight: 800; 
+            margin-bottom: 10px;
+        }
+        
+        .login-box p { 
+            color: var(--text-muted); 
+            font-size: 14px; 
+            margin-bottom: 30px; 
+            font-weight: 500; 
+            line-height: 1.5; 
+        }
+        
+        .input-group { 
+            text-align: left; 
+            margin-bottom: 20px; 
+        }
+        
+        .input-group label { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            display: block; 
+            margin-bottom: 8px; 
+            letter-spacing: 0.5px;
+        }
+        
+        .input-control { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 1.5px solid #cbd5e1; 
+            border-radius: 10px; 
+            font-size: 15px; 
+            outline: none; 
+            transition: 0.2s; 
+            background: #f8fafc; 
+            font-family: inherit;
+        }
+        
+        .input-control:focus { 
+            border-color: var(--accent); 
+            background: white; 
+            box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); 
+        }
+        
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 10px; 
+            background: var(--accent); 
+            color: white; 
+            font-weight: 700; 
+            font-size: 16px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            font-family: inherit;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .btn:hover { 
+            background: var(--accent-hover); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 15px rgba(92, 77, 255, 0.2); 
+        }
+        
+        .alert { 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+            font-weight: 700; 
+            font-size: 14px; 
+            background: #fef2f2; 
+            color: #b91c1c; 
+            border: 1px solid #fecaca;
+        }
+        
+        /* 📱 Mobile */
+        @media (max-width: 480px) {
+            .login-box { padding: 30px 20px; }
+            .logo-header h1 { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="logo-header">
+            <h1>🐾 PetStock</h1>
+        </div>
+        
+        <div class="login-box">
+            <h2>🔒 Nova Senha</h2>
+            <p>Sua senha foi redefinida pelo administrador. Por segurança, crie uma senha definitiva agora.</p>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert">⚠️ {{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="input-group">
+                    <label>Sua Nova Senha</label>
+                    <input type="password" name="nova_senha" placeholder="Digite a nova senha" class="input-control" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Confirme a Senha</label>
+                    <input type="password" name="confirma_senha" placeholder="Repita a nova senha" class="input-control" required>
+                </div>
+                
+                <button type="submit" class="btn">Salvar e Entrar <i class="fas fa-arrow-right"></i></button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

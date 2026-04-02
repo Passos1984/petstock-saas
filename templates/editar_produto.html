@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>PetStock - Editar Produto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #0f172a; --accent: #4f46e5; --success: #10b981; --bg-body: #f8fafc; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: #334155; }
+        aside { width: 230px; background: var(--primary); color: white; padding: 25px; display: flex; flex-direction: column; }
+        .menu-link { color: #94a3b8; text-decoration: none; padding: 12px; border-radius: 10px; margin-bottom: 5px; display: block; font-weight: 600; }
+        .menu-link.active, .menu-link:hover { background: var(--accent); color: white; }
+        
+        main { flex: 1; padding: 40px; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start;}
+        .form-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); width: 100%; max-width: 600px; margin-top: 20px;}
+        
+        .input-control { width: 100%; padding: 14px 16px; margin-top: 6px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 14px; outline: none; }
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        
+        .btn-submit { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; color: white; background: var(--success); font-size: 16px; transition: 0.2s;}
+        .btn-submit:hover { background: #059669; }
+        .btn-voltar { display: block; text-align: center; margin-top: 20px; color: #64748b; text-decoration: none; font-weight: 600; font-size: 14px;}
+        
+        label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+    </style>
+</head>
+<body>
+    <aside>
+        <h2>🐾 PetStock</h2>
+        <a href="/" class="menu-link active">📦 Estoque</a>
+        <a href="/clientes" class="menu-link">👥 Clientes</a>
+        <a href="/pdv" class="menu-link">🛒 PDV</a>
+        {% if cargo == 'Gerente' %}
+        <a href="/radar" class="menu-link">📡 Radar</a>
+        <a href="/representantes" class="menu-link">🚚 Representantes</a>
+        <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        {% endif %}
+        <a href="/logout" class="menu-link" style="margin-top: auto; color: #fca5a5;">Sair</a>
+    </aside>
+
+    <main>
+        <div class="form-container">
+            <h2 style="margin-top: 0; color: #0f172a; margin-bottom: 25px;">✏️ Editar Produto</h2>
+            
+            <form method="POST">
+                <label>Código SKU / Barras</label>
+                <input type="text" name="sku" class="input-control" value="{{ p.codigo_sku }}" required>
+                
+                <label>Nome do Produto</label>
+                <input type="text" name="nome" class="input-control" value="{{ p.nome }}" required>
+                
+                <div class="row">
+                    <div class="col">
+                        <label>Categoria</label>
+                        <input type="text" name="categoria" class="input-control" value="{{ p.categoria }}" list="catList" required placeholder="Selecione ou digite...">
+                        <datalist id="catList">
+                            <option value="Rações">
+                            <option value="Acessórios">
+                            <option value="Farmácia">
+                            <option value="Higiene">
+                            <option value="Petiscos">
+                            <option value="Diversos">
+                        </datalist>
+                    </div>
+                    <div class="col">
+                        <label>Quantidade ou Quilos (Estoque)</label>
+                        <input type="text" name="quantidade" class="input-control" value="{{ "%.2f"|format(p.estoque)|replace('.', ',') }}" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Preço de Custo (Unidade ou KG)</label>
+                        <input type="text" name="preco_custo" class="input-control" value="{{ "%.2f"|format(p.preco_custo)|replace('.', ',') }}" required>
+                    </div>
+                    <div class="col">
+                        <label>Preço de Venda (Unidade ou KG)</label>
+                        <input type="text" name="preco" class="input-control" value="{{ "%.2f"|format(p.preco_venda)|replace('.', ',') }}" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">💾 Salvar Alterações</button>
+                <a href="/" class="btn-voltar">← Cancelar e Voltar ao Estoque</a>
+            </form>
+        </div>
+    </main>
+</body>
+</html>

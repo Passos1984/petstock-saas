@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - PDV Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --text-main: #333333; --text-muted: #777777; --border-color: #e2e8f0;
+        }
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 13px; overflow: hidden;}
+        
+        /* Menu Lateral */
+        aside { width: 250px; background: var(--primary); color: white; padding: 25px 20px; display: flex; flex-direction: column; z-index: 1001; flex-shrink: 0;}
+        .logo { font-size: 18px; font-weight: 800; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;}
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .menu-link.active { background: var(--accent); color: white; }
+
+        main { flex: 1; display: flex; flex-direction: column; padding: 20px; height: 100vh; overflow: hidden; }
+        .pdv-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; flex: 1; overflow: hidden; }
+        
+        /* ESQUERDA */
+        .pdv-left { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+        .search-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); position: relative; }
+        .search-box input { width: 100%; padding: 12px 15px; border: 2px solid var(--accent); border-radius: 10px; font-size: 15px; font-weight: 600; outline: none; }
+        
+        #resultadosBusca { position: absolute; top: 100%; left: 15px; right: 15px; background: white; border: 1px solid var(--border-color); border-radius: 10px; z-index: 100; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .item-busca { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; }
+
+        .cart-panel { background: white; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .cart-header { padding: 12px 15px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: 800; display: flex; justify-content: space-between; }
+        .cart-scroll { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; padding: 8px; border-bottom: 1px solid var(--border-color); }
+        td { padding: 8px; border-bottom: 1px dashed var(--border-color); }
+        
+        .pdv-input-table { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: 600; }
+
+        /* BOTÕES */
+        .btn { padding: 14px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit;}
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: #4a3ecc; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(92, 77, 255, 0.3); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #0ea5e9; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .btn-outline { background: #f8fafc; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-outline:hover { background: #e2e8f0; }
+
+        /* DIREITA */
+        .pdv-right { background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; }
+        .label-mini { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .pdv-select, .pdv-field { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-family: inherit; }
+
+        .profit-card { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 15px; border-radius: 10px; text-align: center; transition: 0.3s; }
+        .profit-card.loss { background: #fef2f2; border-color: #fecaca; }
+        
+        .total-box { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: right; margin-top: auto; }
+        .total-val { font-size: 32px; font-weight: 800; color: var(--success); display: block; margin-top: 5px;}
+
+        /* MODAIS */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; }
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold;}
+        .close-modal:hover { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="logo">🐾 PetStock</div>
+        <nav style="flex:1">
+            <a href="/" class="menu-link">📦 Estoque</a>
+            <a href="/clientes" class="menu-link">👥 Clientes</a>
+            <a href="/pdv" class="menu-link active">🛒 PDV</a>
+            <a href="/radar" class="menu-link">📡 Radar</a>
+            <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        </nav>
+        <a href="/logout" class="menu-link" style="color:#fca5a5">🚪 Sair</a>
+    </aside>
+
+    <main>
+        <div class="pdv-grid">
+            
+            <div class="pdv-left">
+                <div class="search-box">
+                    <input type="text" id="buscaProduto" placeholder="Digite o nome ou bipe o código [F2]..." autocomplete="off" autofocus onkeyup="buscar(event)">
+                    <div id="resultadosBusca"></div>
+                </div>
+
+                <div class="cart-panel">
+                    <div class="cart-header">
+                        <span>🛒 ITENS NO CARRINHO</span>
+                        <button onclick="limpar()" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">🗑️ LIMPAR (F4)</button>
+                    </div>
+                    <div class="cart-scroll">
+                        <table id="tabelaPDV">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">PRODUTO</th>
+                                    <th style="text-align: center;">QTD/KG</th>
+                                    <th style="text-align: center;">DESC (R$)</th>
+                                    <th style="text-align: center;">DIAS (RADAR)</th>
+                                    <th style="text-align: right;">TOTAL</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div style="padding: 15px; border-top: 1px solid var(--border-color); background: #f8fafc;">
+                        <button class="btn btn-primary" style="width: 100%; height: 50px; font-size: 15px;" onclick="irParaPagamento()">➡️ IR PARA PAGAMENTO (F3)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pdv-right">
+                <div>
+                    <label class="label-mini">Vendedor / Caixa</label>
+                    <select id="vendedor" class="pdv-select">
+                        {% for f in equipe %}<option value="{{ f.nome }}">{{ f.nome }}</option>{% endfor %}
+                        <option>Dono/Gerente</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-mini">Cliente (Opcional)</label>
+                    <select id="cliente" class="pdv-select">
+                        <option value="">Cliente Avulso (Padrão)</option>
+                        {% for c in clientes %}<option value="{{ c.nome }}">{{ c.nome }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="label-mini">Forma de Pagamento</label>
+                    <select id="pagamento" class="pdv-select" style="border-color: var(--accent);">
+                        <option>Dinheiro</option>
+                        <option>Pix</option>
+                        <option>Cartão de Crédito</option>
+                        <option>Cartão de Débito</option>
+                        <option>Crediário / Fiado</option>
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label class="label-mini">Desconto Global</label>
+                        <input type="number" id="descGeral" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()">
+                    </div>
+                    <div>
+                        <label class="label-mini">Valor Recebido</label>
+                        <input type="number" id="recebido" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()">
+                    </div>
+                </div>
+
+                <div id="cardLucro" class="profit-card">
+                    <label class="label-mini" id="lblLucro" style="color:inherit">📈 Lucro Estimado</label>
+                    <div id="valLucro" style="font-size: 20px; font-weight: 800;">R$ 0,00</div>
+                </div>
+
+                <div class="total-box">
+                    <span class="label-mini" style="color:#a0a5ba; margin-bottom: 5px;">Subtotal: R$ <span id="subTotalTxt">0,00</span></span>
+                    <span class="label-mini" style="color:#f59e0b; margin-bottom: 15px;">Troco a Devolver: R$ <span id="trocoTxt">0,00</span></span>
+                    <span style="font-size: 11px; font-weight: 800; text-transform: uppercase;">Total a Pagar</span>
+                    <span class="total-val" id="totalFinal">R$ 0,00</span>
+                </div>
+
+                <button class="btn btn-success" style="height: 60px;" onclick="finalizar()">💰 CONCLUIR VENDA (F8)</button>
+            </div>
+        </div>
+    </main>
+
+    <div id="modalRecibo" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 style="color: var(--success); margin-top: 0; font-size: 24px;">✅ Venda Concluída!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 14px;">O que deseja fazer com o comprovante?</p>
+            
+            <button class="btn" style="background: var(--text-main); color: white; width: 100%; margin-bottom: 12px; height: 50px;" onclick="imprimirRecibo()">
+                🖨️ Imprimir Cupom
+            </button>
+            
+            <button class="btn" style="background: #25D366; color: white; width: 100%; margin-bottom: 20px; height: 50px;" onclick="whatsRecibo()">
+                📱 Enviar no WhatsApp
+            </button>
+            
+            <button class="btn btn-outline" style="width: 100%; height: 50px;" onclick="fecharRecibo()">
+                ⏭️ Não precisa (Nova Venda)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let catalogo = [];
+        let carrinho = [];
+        let ultimaVendaSalva = {}; // Armazena os dados da venda para o cupom
+
+        window.onload = () => {
+            carregarEstoque();
+        };
+
+        function carregarEstoque() {
+            fetch('/api/produtos').then(r => r.json()).then(d => catalogo = d);
+        }
+
+        function buscar(e) {
+            let t = e.target.value.toLowerCase();
+            let res = document.getElementById('resultadosBusca');
+            if (e.key === 'Enter') {
+                let p = catalogo.find(x => x.sku.toLowerCase() === t);
+                if(p) add(p); e.target.value = ''; res.style.display = 'none'; return;
+            }
+            if (t.length > 1) {
+                let html = '';
+                catalogo.filter(x => x.nome.toLowerCase().includes(t) || x.sku.includes(t)).slice(0,6).forEach(p => {
+                    html += `<div class="item-busca" onclick='add(${JSON.stringify(p)})'>
+                        <span><b>${p.nome}</b><br><small>${p.sku}</small></span>
+                        <b style="color:var(--success)">R$ ${p.preco.toFixed(2).replace('.', ',')}</b>
+                    </div>`;
+                });
+                res.innerHTML = html; res.style.display = 'block';
+            } else { res.style.display = 'none'; }
+        }
+
+        function add(p) {
+            let item = carrinho.find(i => i.id === p.id);
+            if (item) { item.qtd++; } 
+            else { 
+                carrinho.push({...p, qtd: 1, desc_un: 0, dias: (p.nome.toLowerCase().includes('ração') ? 30 : 0)}); 
+            }
+            render();
+            document.getElementById('buscaProduto').value = '';
+            document.getElementById('resultadosBusca').style.display = 'none';
+            document.getElementById('buscaProduto').focus();
+        }
+
+        function render() {
+            let tbody = document.querySelector('#tabelaPDV tbody');
+            tbody.innerHTML = '';
+            carrinho.forEach((item, idx) => {
+                let totalItem = (item.preco - item.desc_un) * item.qtd;
+                tbody.innerHTML += `<tr>
+                    <td><b>${item.nome}</b><br><small>Unit: R$ ${item.preco.toFixed(2).replace('.', ',')}</small></td>
+                    <td><input type="number" class="pdv-input-table" value="${item.qtd}" oninput="update(${idx}, 'qtd', this.value)"></td>
+                    <td><input type="number" class="pdv-input-table" value="${item.desc_un}" oninput="update(${idx}, 'desc_un', this.value)"></td>
+                    <td><input type="number" class="pdv-input-table" value="${item.dias}" oninput="update(${idx}, 'dias', this.value)"></td>
+                    <td style="text-align:right; font-weight:800; color: var(--accent);">R$ ${totalItem.toFixed(2).replace('.', ',')}</td>
+                    <td><button onclick="remove(${idx})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:18px;">&times;</button></td>
+                </tr>`;
+            });
+            calcular();
+        }
+
+        function update(idx, field, val) {
+            carrinho[idx][field] = parseFloat(val) || 0;
+            render();
+        }
+
+        function remove(idx) { carrinho.splice(idx, 1); render(); }
+        
+        function limpar() { 
+            carrinho = []; 
+            document.getElementById('descGeral').value = 0; 
+            document.getElementById('recebido').value = 0; 
+            render(); 
+            document.getElementById('buscaProduto').focus();
+        }
+
+        function calcular() {
+            let sub = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
+            let custoTotal = carrinho.reduce((a, b) => a + (b.custo * b.qtd), 0);
+            let descG = parseFloat(document.getElementById('descGeral').value) || 0;
+            let total = sub - descG;
+            if (total < 0) total = 0;
+
+            let lucro = total - custoTotal;
+            let rec = parseFloat(document.getElementById('recebido').value) || 0;
+            let troco = rec - total;
+            if (troco < 0) troco = 0;
+
+            document.getElementById('subTotalTxt').innerText = sub.toFixed(2).replace('.', ',');
+            document.getElementById('totalFinal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
+            document.getElementById('trocoTxt').innerText = (troco > 0 ? troco.toFixed(2).replace('.', ',') : '0,00');
+            
+            let cLucro = document.getElementById('cardLucro');
+            let vLucro = document.getElementById('valLucro');
+            
+            if (carrinho.length === 0) {
+                vLucro.innerText = 'R$ 0,00';
+                cLucro.className = 'profit-card';
+                document.getElementById('lblLucro').innerText = '📈 Lucro Estimado';
+                document.getElementById('lblLucro').style.color = 'var(--text-muted)';
+                vLucro.style.color = 'var(--text-muted)';
+            } else {
+                vLucro.innerText = 'R$ ' + lucro.toFixed(2).replace('.', ',');
+                if(lucro < 0) { 
+                    cLucro.className = 'profit-card loss'; 
+                    document.getElementById('lblLucro').innerText = '🚨 Prejuízo na Venda'; 
+                    document.getElementById('lblLucro').style.color = '#991b1b';
+                    vLucro.style.color = '#b91c1c';
+                } else { 
+                    cLucro.className = 'profit-card'; 
+                    document.getElementById('lblLucro').innerText = '📈 Lucro da Venda'; 
+                    document.getElementById('lblLucro').style.color = '#065f46';
+                    vLucro.style.color = '#047857';
+                }
+            }
+        }
+
+        function irParaPagamento() {
+            if(carrinho.length === 0) {
+                alert("O carrinho está vazio!");
+                document.getElementById('buscaProduto').focus();
+                return;
+            }
+            document.getElementById('recebido').focus();
+            document.getElementById('recebido').select();
+        }
+
+        function finalizar() {
+            if(carrinho.length === 0) return alert("O carrinho está vazio!");
+            if(document.getElementById('pagamento').value === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
+                return alert("⚠️ Selecione um cliente para vender no Fiado!");
+
+            let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
+            let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
+
+            // 1. Salvar os dados para o Cupom ANTES de limpar a tela
+            ultimaVendaSalva = {
+                itens: JSON.parse(JSON.stringify(carrinho)), // Cria uma cópia exata do carrinho
+                total: document.getElementById('totalFinal').innerText,
+                troco: document.getElementById('trocoTxt').innerText,
+                cliente: document.getElementById('cliente').value || 'Consumidor Final',
+                pagamento: document.getElementById('pagamento').value,
+                data: new Date().toLocaleString('pt-BR')
+            };
+
+            let dados = {
+                cliente_nome: ultimaVendaSalva.cliente,
+                vendedor_nome: document.getElementById('vendedor').value,
+                forma_pagamento: ultimaVendaSalva.pagamento,
+                itens: carrinho.map(i => {
+                    let subtotal_item = (i.preco - i.desc_un) * i.qtd;
+                    let proporcao = subtotal_venda > 0 ? (subtotal_item / subtotal_venda) : 0;
+                    let desconto_item = descGeral * proporcao;
+
+                    return {
+                        id: i.id, 
+                        qtd: i.qtd, 
+                        subtotal_final: subtotal_item - desconto_item,
+                        dias_duracao: i.dias
+                    };
+                })
+            };
+
+            fetch('/api/finalizar_venda', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(dados)
+            }).then(r => r.json()).then(res => {
+                if(res.sucesso) { 
+                    // Em vez de limpar direto, abre a tela do cupom
+                    document.getElementById('modalRecibo').style.display = 'flex';
+                } else {
+                    alert("❌ Erro: " + res.erro);
+                }
+            });
+        }
+
+        // FUNÇÕES DO CUPOM
+        function imprimirRecibo() {
+            let htmlRecibo = `
+                <div style="width: 300px; font-family: monospace; font-size: 12px; margin: 0 auto; color: #000;">
+                    <h2 style="text-align: center; margin: 0;">PETSTOCK</h2>
+                    <p style="text-align: center; margin: 5px 0;">Comprovante de Venda</p>
+                    <hr style="border: 1px dashed #000;">
+                    <p style="margin: 5px 0;">Data: ${ultimaVendaSalva.data}<br>Cliente: ${ultimaVendaSalva.cliente}<br>Pgto: ${ultimaVendaSalva.pagamento}</p>
+                    <hr style="border: 1px dashed #000;">
+                    <table style="width: 100%; font-size: 12px; text-align: left;">
+                        <tr><th>Qtd</th><th>Item</th><th style="text-align: right;">Total</th></tr>
+            `;
+            
+            ultimaVendaSalva.itens.forEach(i => {
+                let totalItem = (i.preco - i.desc_un) * i.qtd;
+                htmlRecibo += `<tr><td>${i.qtd}</td><td>${i.nome}</td><td style="text-align: right;">R$ ${totalItem.toFixed(2).replace('.', ',')}</td></tr>`;
+            });
+
+            htmlRecibo += `
+                    </table>
+                    <hr style="border: 1px dashed #000;">
+                    <h3 style="text-align: right; margin: 5px 0; font-size: 16px;">TOTAL: ${ultimaVendaSalva.total}</h3>
+                    <p style="text-align: right; margin: 0;">Troco: R$ ${ultimaVendaSalva.troco}</p>
+                    <br>
+                    <p style="text-align: center; font-size: 11px;">Obrigado pela preferência!</p>
+                    <p style="text-align: center; font-size: 10px; margin-top: 10px;"><i>Sistema PetStock</i></p>
+                </div>
+            `;
+
+            let janelaDeImpressao = window.open('', '', 'width=400,height=600');
+            janelaDeImpressao.document.write(htmlRecibo);
+            janelaDeImpressao.document.close();
+            janelaDeImpressao.print();
+            
+            // Depois de mandar imprimir, fecha e limpa para o próximo cliente
+            fecharRecibo();
+        }
+
+        function whatsRecibo() {
+            let textoWhats = `🐾 *PETSTOCK - COMPROVANTE* 🐾\n\n`;
+            textoWhats += `📅 *Data:* ${ultimaVendaSalva.data}\n`;
+            textoWhats += `👤 *Cliente:* ${ultimaVendaSalva.cliente}\n\n`;
+            textoWhats += `*ITENS DA COMPRA:*\n`;
+            
+            ultimaVendaSalva.itens.forEach(i => {
+                let totalItem = (i.preco - i.desc_un) * i.qtd;
+                textoWhats += `▪️ ${i.qtd}x ${i.nome} - R$ ${totalItem.toFixed(2).replace('.', ',')}\n`;
+            });
+
+            textoWhats += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n`;
+            textoWhats += `💳 Pagamento: ${ultimaVendaSalva.pagamento}\n\n`;
+            textoWhats += `Agradecemos a preferência! 🐶🐱`;
+            
+            let link = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWhats)}`;
+            window.open(link, '_blank');
+            
+            fecharRecibo();
+        }
+
+        function fecharRecibo() {
+            document.getElementById('modalRecibo').style.display = 'none';
+            limpar();
+            carregarEstoque(); // Atualiza o estoque oculto para a próxima venda
+        }
+
+        // Atalhos Blindados
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'F2') {
+                event.preventDefault(); 
+                document.getElementById('buscaProduto').focus();
+            } else if (event.key === 'F3') {
+                event.preventDefault(); 
+                irParaPagamento();
+            } else if (event.key === 'F4') {
+                event.preventDefault();
+                limpar();
+            } else if (event.key === 'F8') {
+                event.preventDefault();
+                // Só finaliza pelo F8 se a janela do recibo não estiver aberta
+                if(document.getElementById('modalRecibo').style.display !== 'flex') {
+                    finalizar();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

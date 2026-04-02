@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - Relatórios Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #222533; 
+            --accent: #5c4dff; 
+            --accent-hover: #4a3ecc;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bg-body: #f4f6f9; 
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-color: #eeeeee;
+            --bg-card: #ffffff;
+            --input-border: #cbd5e1;
+        }
+
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
+        
+        /* --- MENU LATERAL PREMIUM PADRONIZADO --- */
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
+        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative; }
+        .page-title { margin: 0 0 30px 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 35px; }
+        .dash-card { background: var(--bg-card); padding: 25px 20px; border-radius: 16px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; transition: all 0.3s; border-bottom: 4px solid; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);}
+        .dash-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);}
+        .dash-card h4 { margin: 0; color: var(--text-muted); font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;}
+        .dash-card .value { font-size: 22px; font-weight: 800; margin-top: 8px; color: var(--text-main); }
+
+        .panel { background: var(--bg-card); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); }
+        .input-control { width: 100%; padding: 14px 16px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; font-family: inherit; transition: 0.2s;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-help { background: #eef2ff; color: var(--accent); border: 1px solid #c7d2fe; padding: 10px 16px; box-shadow: none;}
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 18px 20px; text-align: left; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px; white-space: nowrap;}
+        td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); font-size: 14px; vertical-align: middle; white-space: nowrap;}
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; border: 1px solid; display: inline-block; text-transform: uppercase;}
+
+        /* --- MODAL PADRONIZADO --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; max-height: 90vh; overflow-y: auto;}
+        .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; font-weight: bold; background: none; border: none; transition: 0.2s;}
+        .close-btn:hover { color: var(--danger); }
+        
+        .help-topic { margin-top: 20px; }
+        .help-topic h4 { color: var(--accent); margin: 0 0 8px 0; font-size: 16px;}
+        .help-topic p { color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.6; font-size: 14px;}
+
+        /* --- RESPONSIVO MOBILE --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; display: block;}
+            .mobile-header { display: flex; }
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            main { padding: 20px 15px; }
+            .header-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+            .header-bar > div { flex-wrap: wrap; width: 100%; }
+            .header-bar button, .header-bar a { flex: 1; text-align: center; justify-content: center; min-width: 140px; }
+            .filter-form { flex-direction: column !important; align-items: stretch !important; gap: 15px !important; }
+            .filter-form button, .filter-form a { width: 100%; height: auto !important; padding: 14px; }
+            .content-wrapper { flex-direction: column !important; }
+            .table-panel { min-width: 100% !important; flex: none !important; padding: 15px !important; }
+            .chart-panel { min-width: 100% !important; flex: none !important; margin-top: 20px;}
+            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--border-color);}
+            table { min-width: 600px; border: none; } 
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="mobile-header">
+        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <h2 class="logo">🐾 PetStock</h2>
+        
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link active"><span>📊</span> Financeiro</a>
+            {% endif %}
+        </div>
+        
+        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com o Financeiro do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
+    </aside>
+
+    <main>
+        <div style="margin-bottom: 20px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 10px; margin-bottom: 15px; font-weight: 700; font-size: 14px; text-align: center;
+                        {% if category == 'warning' %} background: #fef3c7; color: #92400e; border: 1px solid #fbbf24;
+                        {% else %} background: #d1fae5; color: #065f46; border: 1px solid #34d399; {% endif %}">
+                        {{ message | safe }}
+                    </div>
+                {% endfor %}{% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="header-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <h2 class="page-title">
+                    <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px;">📊</span>
+                    Desempenho Financeiro
+                </h2>
+                <button onclick="document.getElementById('modalAjuda').style.display='flex'" class="btn btn-help"><span>❓</span> Ajuda</button>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="fecharCaixaWhats()" class="btn" style="background-color: #25D366; color: white;"><i class="fab fa-whatsapp" style="font-size: 18px;"></i> Fechar Caixa no Whats</button>
+                <a href="/exportar_relatorio?data_inicio={{ data_inicio or '' }}&data_fim={{ data_fim or '' }}&vendedor={{ vendedor_filtro or '' }}" class="btn btn-success"><i class="fas fa-download"></i> Exportar Excel</a>
+            </div>
+        </div>
+
+        <div class="panel" style="padding: 20px 30px; margin-bottom: 25px;">
+            <form method="GET" action="/relatorios" class="filter-form" style="display: flex; align-items: flex-end; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Período Inicial</label>
+                    <input type="date" name="data_inicio" value="{{ data_inicio or '' }}" class="input-control">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Período Final</label>
+                    <input type="date" name="data_fim" value="{{ data_fim or '' }}" class="input-control">
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1.5;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Atendente / Vendedor</label>
+                    <select name="vendedor" class="input-control" style="background: white;">
+                        <option value="">-- Todos os Atendentes --</option>
+                        {% for v in vendedores %}
+                            <option value="{{ v }}" {% if v == vendedor_filtro %}selected{% endif %}>{{ v }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="height: 48px;"><i class="fas fa-search"></i> Filtrar</button>
+                    <a href="/relatorios" class="btn btn-help" style="height: 48px; background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border-color);"><i class="fas fa-times"></i> Limpar</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="dash-card" style="border-bottom-color: var(--success); background-color: var(--success);">
+                <h4 style="color: rgba(255,255,255,0.8);">Faturamento Total</h4>
+                <div class="value" style="color: white;">R$ {{ total }}</div>
+            </div>
+            
+            <div class="dash-card" style="border-bottom-color: #8b5cf6;">
+                <h4>💰 Lucro Real (Sobra)</h4>
+                <div class="value" style="color: #8b5cf6;">R$ {{ lucro_total_formatado }}</div>
+            </div>
+
+            <div class="dash-card" style="border-bottom-color: var(--danger); background-color: #fef2f2;">
+                <h4 style="color: #b91c1c;">📝 Fiado (A Receber)</h4>
+                <div class="value" style="color: var(--danger);">R$ {{ fiado }}</div>
+            </div>
+
+            <div class="dash-card" style="border-bottom-color: #3b82f6;">
+                <h4>📱 Pix</h4>
+                <div class="value">R$ {{ pix }}</div>
+            </div>
+            <div class="dash-card" style="border-bottom-color: #f59e0b;">
+                <h4>💳 Crédito</h4>
+                <div class="value">R$ {{ credito }}</div>
+            </div>
+            <div class="dash-card" style="border-bottom-color: #8b5cf6;">
+                <h4>💳 Débito</h4>
+                <div class="value">R$ {{ debito }}</div>
+            </div>
+            <div class="dash-card" style="border-bottom-color: #10b981;">
+                <h4>💵 Dinheiro Físico</h4>
+                <div class="value">R$ {{ dinheiro }}</div>
+            </div>
+        </div>
+
+        <div class="content-wrapper" style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
+            
+            <div class="panel table-panel" style="flex: 2; padding: 0; overflow: hidden; min-width: 500px;">
+                <div style="padding: 25px 30px; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+                    <h3 class="panel-title" style="margin: 0; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🧾 Histórico Detalhado</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="padding-left: 30px;">Data</th>
+                                <th>Vendedor</th>
+                                <th>Produto</th>
+                                <th style="text-align: center;">Qtd</th>
+                                <th>Pagamento</th>
+                                <th style="text-align: right; padding-right: 30px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in vendas %}
+                            <tr>
+                                <td style="padding-left: 30px; color: var(--text-muted); font-size: 12px; font-weight: 600;">{{ v.data_venda.strftime('%d/%m %H:%M') }}</td>
+                                <td><strong style="color: var(--accent);">{{ v.vendedor }}</strong></td>
+                                <td><strong style="color: var(--text-main);">{{ v.produto.nome }}</strong></td>
+                                <td style="text-align: center; color: var(--text-muted); font-weight: 600;">{{ v.quantidade }}</td>
+                                <td>
+                                    <span class="badge" style="background-color: {% if v.forma_pagamento_1 == 'Crediário / Fiado' %}#fee2e2; color: #b91c1c; border-color: #fecaca;{% else %}#f8fafc; color: var(--text-muted); border-color: var(--border-color);{% endif %}">
+                                        {{ v.forma_pagamento_1 }}
+                                    </span>
+                                </td>
+                                <td style="text-align: right; padding-right: 30px; font-weight: 800; color: var(--success); font-size: 15px;">
+                                    R$ {{ "%.2f"|format(v.valor_total or 0)|replace('.', ',') }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px; font-style: italic;">Nenhuma venda encontrada para este período ou vendedor.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel chart-panel" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; align-items: center;">
+                <h3 class="panel-title" style="font-size: 16px; color: var(--text-main); font-weight: 700; margin-bottom: 20px;">Divisão de Receita</h3>
+                <div style="position: relative; height:250px; width:100%">
+                    <canvas id="graficoVendas"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal" id="modalAjuda" onclick="if(event.target == this) this.style.display='none'">
+        <div class="modal-content">
+            <button class="close-btn" onclick="document.getElementById('modalAjuda').style.display='none'">&times;</button>
+            <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; font-size: 20px;">📊 Guia Financeiro</h2>
+            
+            <div class="help-topic">
+                <h4>💰 Lucro Real</h4>
+                <p>Este valor é calculado subtraindo o <b>Preço de Custo</b> (o que você pagou) do <b>Preço de Venda Praticado no PDV</b>. Se o valor estiver baixo, verifique se os descontos concedidos no caixa não estão muito altos.</p>
+            </div>
+            <div class="help-topic">
+                <h4><span style="color: var(--danger);">📝 O que é o Fiado?</span></h4>
+                <p>Compras feitas na opção "Crediário / Caderninho" entram no Faturamento Total, mas são destacadas em vermelho para você saber que esse dinheiro <b>ainda não está na gaveta</b>.</p>
+            </div>
+            <button onclick="document.getElementById('modalAjuda').style.display='none'" class="btn btn-primary" style="width: 100%; font-size: 16px; padding: 15px; margin-top: 10px;">Entendi, fechar!</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Gráfico de Pizza (Protegido contra valores zerados)
+        const ctx = document.getElementById('graficoVendas').getContext('2d');
+        const valPix = {{ pix_raw or 0 }};
+        const valCredito = {{ credito_raw or 0 }};
+        const valDebito = {{ debito_raw or 0 }};
+        const valDinheiro = {{ dinheiro_raw or 0 }};
+        const valFiado = {{ fiado_raw or 0 }};
+        const totalRaw = valPix + valCredito + valDebito + valDinheiro + valFiado;
+
+        if (totalRaw > 0) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pix', 'Crédito', 'Débito', 'Dinheiro', 'Fiado'],
+                    datasets: [{
+                        data: [valPix, valCredito, valDebito, valDinheiro, valFiado],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+        } else {
+            // Desenha um gráfico cinza vazio para não ficar em branco caso não tenha vendas
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sem vendas'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: ['#f1f5f9'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { tooltip: { enabled: false }, legend: { display: false } } }
+            });
+        }
+
+        // FUNÇÃO DE FECHAMENTO NO WHATSAPP COM SEPARAÇÃO DE GAVETA X FIADO
+        function fecharCaixaWhats() {
+            const dataInicio = "{{ data_inicio }}".split('-').reverse().join('/');
+            const dataFim = "{{ data_fim }}".split('-').reverse().join('/');
+            let periodoTexto = dataInicio === dataFim ? dataInicio : `${dataInicio} até ${dataFim}`;
+
+            const total = "{{ total }}";
+            const pix = "{{ pix }}";
+            const credito = "{{ credito }}";
+            const debito = "{{ debito }}";
+            const dinheiro = "{{ dinheiro }}";
+            const fiado = "{{ fiado }}";
+            const qtdVendas = "{{ vendas|length }}";
+            const operador = "{{ vendedor_filtro or 'Todos os Atendentes' }}";
+
+            // Mensagem separando o dinheiro físico do dinheiro na rua
+            const texto = `🐾 *FECHAMENTO DE CAIXA - PETSTOCK* 🐾\n\n` +
+                          `📅 *Período:* ${periodoTexto}\n` +
+                          `👤 *Vendedor:* ${operador}\n\n` +
+                          `💰 *FATURAMENTO TOTAL:* R$ ${total}\n` +
+                          `🛒 *Vendas Realizadas:* ${qtdVendas}\n\n` +
+                          `*🟢 ENTROU NA GAVETA / CONTA:*\n` +
+                          `📱 Pix: R$ ${pix}\n` +
+                          `💳 Crédito: R$ ${credito}\n` +
+                          `💳 Débito: R$ ${debito}\n` +
+                          `💵 Dinheiro Vivo: R$ ${dinheiro}\n\n` +
+                          `*🔴 DINHEIRO NA RUA (A RECEBER):*\n` +
+                          `📝 Fiado: R$ ${fiado}\n\n` +
+                          `✅ _Relatório gerado pelo PetStock._`;
+
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - Clientes Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #222533; 
+            --accent: #5c4dff; 
+            --accent-hover: #4a3ecc;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bg-body: #f4f6f9; 
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-color: #eeeeee;
+        }
+        
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px;}
+        
+        /* --- MENU LATERAL PREMIUM --- */
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
+        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+        
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        /* --- CORPO PRINCIPAL --- */
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; }
+        
+        .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 30px; border: 1px solid var(--border-color); }
+        .card-title { margin-top: 0; margin-bottom: 25px; font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+        .input-control { width: 100%; padding: 12px 16px; margin-top: 6px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-family: inherit; outline: none; transition: 0.2s; font-size: 14px; }
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; background: var(--accent); transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; text-decoration: none; font-family: inherit;}
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .btn-success { background: var(--success); width: 100%; height: 50px; font-size: 16px; margin-top: 10px; }
+
+        .table-responsive { width: 100%; overflow-x: auto; background: white; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 700px;}
+        th { background: #ffffff; padding: 18px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px; white-space: nowrap;}
+        td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        
+        .pet-badge { background: #eef2ff; color: var(--accent); padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; border: 1px solid #c7d2fe; display: inline-block; margin: 2px; }
+
+        /* --- MODAIS --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; width: 100%; max-width: 650px; border-radius: 20px; padding: 35px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; max-height: 90vh; overflow-y: auto; box-sizing: border-box;}
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold; transition: 0.2s;}
+        .close-modal:hover { color: var(--danger); }
+        
+        .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: 700; font-size: 14px; border: 1px solid transparent; display: flex; align-items: center; gap: 10px;}
+        .alert-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+        .alert-warning { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .alert-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        
+        .empty-state { background: white; border: 1px dashed var(--border-color); border-radius: 16px; padding: 50px; text-align: center; color: var(--text-muted); font-weight: 500; margin-bottom: 30px;}
+
+        /* --- ESTRUTURA MOBILE (CELULAR) --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; display: block;}
+            .mobile-header { display: flex; }
+            
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            
+            main { padding: 20px 15px; }
+            
+            .header-clientes { flex-direction: column; align-items: flex-start !important; gap: 15px; }
+            .header-clientes h1 { font-size: 24px; }
+            .header-clientes button { width: 100%; justify-content: center; }
+            
+            .form-row { grid-template-columns: 1fr !important; gap: 0 !important; margin-bottom: 0 !important;}
+            .form-pets { grid-template-columns: 1fr !important; gap: 10px !important; }
+            .form-pets > div:first-child { margin-bottom: 10px !important; }
+            .card { padding: 20px; }
+
+            .import-box { flex-direction: column !important; align-items: stretch !important; gap: 15px; text-align: center; }
+            .import-box form { flex-direction: column !important; width: 100%; }
+            .import-box input, .import-box button { width: 100%; box-sizing: border-box; }
+            
+            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; margin-bottom: 20px;}
+            table { min-width: 650px; border: none; }
+            
+            .modal-content { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
+        <button class="btn-mobile-menu" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <h2 class="logo">🐾 PetStock</h2>
+        
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Base de Clientes:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link active"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            {% endif %}
+        </div>
+        
+        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda na Gestão de Clientes do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; justify-content: center; background: rgba(239, 68, 68, 0.1); font-weight: 700; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
+    </aside>
+
+    <main>
+        <div class="header-clientes" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+            <h1 style="margin-top: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0;">Gestão de Clientes</h1>
+            <button type="button" class="btn" style="background: #eef2ff; color: var(--accent); border: 1px solid #c7d2fe; padding: 8px 15px; font-size: 13px;" onclick="document.getElementById('modalAjudaCli').style.display='flex'">❓ Ajuda e Manuais</button>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ '✅' if category == 'success' else '⚠️' if category == 'warning' else '🚨' }} {{ message | safe }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h3 class="card-title">➕ Novo Cadastro</h3>
+            <form action="/clientes" method="POST">
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 10px;">
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">NOME COMPLETO</label><input type="text" name="nome" class="input-control" required></div>
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">WHATSAPP / CELULAR</label><input type="text" name="telefone" class="input-control" required placeholder="(00) 00000-0000"></div>
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">CPF (OPCIONAL)</label><input type="text" name="cpf" class="input-control"></div>
+                </div>
+
+                <div class="form-pets" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                    <div style="grid-column: 1 / -1; font-weight: 800; font-size: 12px; color: var(--accent); margin-bottom: -10px;">🐾 MEUS PETS (ATÉ 3)</div>
+                    <div><label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">PET 01</label><input type="text" name="nome_pet" class="input-control" placeholder="Nome do primeiro pet"></div>
+                    <div><label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">PET 02</label><input type="text" name="nome_pet_2" class="input-control" placeholder="Segundo pet"></div>
+                    <div><label style="font-size: 11px; font-weight: 600; color: var(--text-muted);">PET 03</label><input type="text" name="nome_pet_3" class="input-control" placeholder="Terceiro pet"></div>
+                </div>
+
+                <div class="form-row" style="display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 20px;">
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">ENDEREÇO</label><input type="text" name="rua" class="input-control" placeholder="Rua / Avenida"></div>
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">Nº</label><input type="text" name="numero" class="input-control"></div>
+                    <div><label style="font-size: 12px; font-weight: 700; color: var(--text-muted);">BAIRRO</label><input type="text" name="bairro" class="input-control"></div>
+                </div>
+                <button type="submit" class="btn btn-success">💾 Salvar Cliente no Banco</button>
+            </form>
+        </div>
+
+        <div class="import-box" style="background: white; padding: 20px; border-radius: 12px; border: 1.5px dashed var(--accent); margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(92, 77, 255, 0.05);">
+            <div>
+                <h4 style="margin: 0 0 5px 0; color: var(--accent); font-size: 16px;">📥 Importar Base de Clientes</h4>
+                <p style="margin: 0; font-size: 12px; color: var(--text-muted);">Migrando de outro sistema? Suba sua planilha CSV e cadastre todos os clientes em segundos!</p>
+            </div>
+            <form action="/importar_clientes" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+                <input type="file" name="arquivo" accept=".csv" required style="font-size: 13px; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; background: #f8fafc; color: var(--text-main);">
+                <button type="submit" class="btn" style="padding: 10px 15px; font-size: 13px;">🚀 Subir Clientes</button>
+            </form>
+        </div>
+        
+        {% if clientes %}
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>Cliente / Contato</th><th>Pets da Família</th><th>Localização</th><th style="text-align: right;">Ações</th></tr></thead>
+                <tbody>
+                    {% for c in clientes %}
+                    <tr>
+                        <td style="white-space: nowrap;"><strong style="font-size: 16px; color: var(--text-main);">{{ c.nome }}</strong><br><small style="color: var(--text-muted); font-weight: 600;">📱 {{ c.telefone }}</small></td>
+                        <td>
+                            {% if c.nome_pet %}
+                                {% for pet in c.nome_pet.split(' / ') %}
+                                    <span class="pet-badge">🐾 {{ pet }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span style="color: #cbd5e1; font-style: italic;">Nenhum pet</span>
+                            {% endif %}
+                        </td>
+                        <td style="white-space: nowrap;"><small style="font-weight: 500; color: var(--text-muted);">{{ c.rua or 'Endereço não cadastrado' }}, {{ c.numero }}<br>{{ c.bairro }}</small></td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <button onclick="verHistorico('{{ c.id }}', '{{ c.nome }}', '{{ c.telefone }}')" class="btn" style="background: #f8fafc; color: var(--accent); border: 1px solid #c7d2fe; padding: 8px 12px; margin-right: 10px;" title="Ver Ficha e Compras">📜 Ficha Completa</button>
+                            <a href="/editar_cliente/{{ c.id }}" style="text-decoration: none; font-size: 18px; display: inline-block; margin-right: 10px;" title="Editar">✏️</a>
+                            <a href="/excluir_cliente/{{ c.id }}" style="text-decoration: none; font-size: 18px; display: inline-block;" title="Excluir" onclick="return confirm('Apagar este cliente permanentemente?')">🗑️</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div style="font-size: 40px; margin-bottom: 15px;">👥</div>
+            <h3 style="margin: 0 0 10px 0; color: var(--text-main);">Nenhum cliente cadastrado</h3>
+            <p style="margin: 0;">Preencha o formulário acima ou importe sua planilha para começar a montar o seu banco de dados!</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <div id="modalHistorico" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="fecharModal()">&times;</button>
+            <div id="headerFichaCliente"></div>
+            <div id="corpoHistorico" style="max-height: 350px; overflow-y: auto; margin-top: 20px;">
+            </div>
+        </div>
+    </div>
+
+    <div id="modalAjudaCli" class="modal" onclick="if(event.target == this) this.style.display='none'">
+        <div class="modal-content">
+            <button class="close-modal" onclick="document.getElementById('modalAjudaCli').style.display='none'">&times;</button>
+            <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">❓ Manual de Clientes</h2>
+            
+            <div style="margin-bottom: 20px; margin-top: 20px;">
+                <h4 style="color: var(--accent); margin: 0 0 5px 0;">📱 WhatsApp e Radar</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Mantenha o telefone dos clientes sempre atualizado. A ferramenta <b>Radar</b> do PetStock utiliza esse número para te avisar quando a ração do cliente estiver acabando, gerando uma mensagem de recompra automática direto para o WhatsApp dele.</p>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <h4 style="color: var(--success); margin: 0 0 5px 0;">🧾 Ficha Completa e Histórico</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Use o botão <b>📜 Ficha Completa</b> na tabela para acessar o perfil do cliente. Lá você encontra um botão verde gigante para chamá-lo no WhatsApp com 1 clique, além da lista de tudo o que ele já comprou (perfeito para quando o cliente diz: "Quero aquela mesma ração da última vez").</p>
+            </div>
+            
+            <button type="button" onclick="document.getElementById('modalAjudaCli').style.display='none'" class="btn" style="background: var(--primary); width: 100%; justify-content: center; color: white;">Entendi, vamos voltar ao trabalho!</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function fecharModal() { document.getElementById('modalHistorico').style.display = 'none'; }
+
+        // Lógica atualizada para a Ficha do Cliente
+        async function verHistorico(id, nome, telefone) {
+            // Limpa o telefone para o link do WhatsApp (deixa só os números)
+            let phoneNum = telefone ? telefone.replace(/\D/g, '') : '';
+            // Adiciona o DDI do Brasil (55) se o número não tiver
+            if (phoneNum && !phoneNum.startsWith('55')) { phoneNum = '55' + phoneNum; }
+
+            // Constrói o cabeçalho do Modal dinamicamente (O "Perfil do Cliente" lindão)
+            document.getElementById('headerFichaCliente').innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 15px;">
+                    <h2 style="margin: 0; color: var(--text-main); font-size: 24px; font-weight: 800;">👤 ${nome}</h2>
+                    ${telefone ? `<a href="https://api.whatsapp.com/send?phone=${phoneNum}" target="_blank" class="btn" style="background: #25D366; color: white; height: auto; padding: 10px 20px; font-size: 16px; margin: 0; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);"><i class="fab fa-whatsapp" style="font-size: 20px;"></i> ${telefone}</a>` : ''}
+                </div>
+                <p style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Acompanhe o histórico completo de compras deste cliente na sua loja.</p>
+            `;
+
+            document.getElementById('corpoHistorico').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Buscando histórico de compras...</div>';
+            document.getElementById('modalHistorico').style.display = 'flex';
+
+            try {
+                const response = await fetch('/historico_cliente/' + id);
+                const dados = await response.json();
+                
+                if (dados.length === 0) {
+                    document.getElementById('corpoHistorico').innerHTML = '<div style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><p style="font-weight: 700; color: #94a3b8; margin: 0;">Este cliente ainda não realizou nenhuma compra registrada no PDV.</p></div>';
+                    return;
+                }
+
+                let html = '<div class="table-responsive" style="box-shadow: none; border: 1px solid var(--border-color);"><table style="min-width: 400px;"><thead><tr><th>Data</th><th>Produto</th><th>Qtd</th><th style="text-align: right;">Total</th></tr></thead><tbody>';
+                dados.forEach(v => {
+                    html += `<tr>
+                        <td style="color: var(--text-muted);"><small>${v.data}</small></td>
+                        <td><strong style="color: var(--text-main);">${v.produto}</strong></td>
+                        <td style="text-align: center;">${v.qtd}</td>
+                        <td style="color: var(--success); font-weight: 800; text-align: right;">R$ ${v.valor.toFixed(2).replace('.',',')}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+                document.getElementById('corpoHistorico').innerHTML = html;
+
+            } catch (error) {
+                document.getElementById('corpoHistorico').innerHTML = '<p style="color: var(--danger); text-align: center; font-weight: bold;">Erro ao carregar o histórico. Verifique a conexão com o banco de dados.</p>';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PetStock - Configurações</title>
+</head>
+
+<body
+    style="display: flex; height: 100vh; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6;">
+
+    <aside
+        style="width: 200px; background-color: #2c3e50; color: white; padding: 20px; display: flex; flex-direction: column;">
+        <h2 style="margin-top: 0; border-bottom: 1px solid #34495e; padding-bottom: 10px; font-size: 18px;">🐾 PetStock
+        </h2>
+
+        {% if loja_logada %}
+        <div
+            style="background-color: #34495e; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
+            <span style="font-size: 11px; color: #bdc3c7; text-transform: uppercase;">Licenciado para:</span><br>
+            <strong style="font-size: 14px; color: #f1c40f;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <a href="/" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📦 Estoque
+            Atual</a>
+        <a href="/clientes" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">👥
+            Clientes</a>
+        <a href="/pdv" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">🛒 Ponto de
+            Venda</a>
+        <a href="/radar" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📡 Radar de
+            Vendas</a>
+        <a href="/relatorios" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📊
+            Relatórios</a>
+        <a href="/configuracoes"
+            style="color: white; text-decoration: none; padding: 10px 0; font-size: 14px; font-weight: bold;">⚙️
+            Configurações</a>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá%20Guilherme!%20Preciso%20de%20ajuda%20com%20o%20sistema%20PetStock."
+            target="_blank"
+            style="background-color: #27ae60; color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-top: 15px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3); transition: 0.3s;">
+            🎧 Falar com Suporte
+        </a>
+
+        <a href="/logout"
+            style="color: #e74c3c; text-decoration: none; padding: 10px 0; margin-top: auto; font-size: 14px; font-weight: bold;">🚪
+            Sair</a>
+    </aside>
+
+    <main style="flex: 1; padding: 25px; overflow-y: auto;">
+        <h2 style="margin-top: 0; color: #2c3e50; margin-bottom: 15px; font-size: 22px;">⚙️ Configurações da Loja</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div
+            style="background-color: {{ '#27ae60' if category == 'success' else '#e74c3c' }}; color: white; padding: 10px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 13px; font-weight: bold;">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div
+            style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 500px;">
+            <h3 style="margin-top: 0; color: #2c3e50; font-size: 16px; margin-bottom: 15px;">Informações de Pagamento
+                (PDV)</h3>
+            <p style="color: #7f8c8d; font-size: 13px; margin-bottom: 20px;">
+                Defina sua chave PIX abaixo. Ela será exibida automaticamente na tela do Caixa quando o cliente for
+                pagar com PIX.
+            </p>
+
+            <form action="/configuracoes" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-weight: bold; font-size: 12px; color: #34495e; text-transform: uppercase;">Sua
+                        Chave PIX</label>
+                    <input type="text" name="chave_pix" value="{{ loja_logada.chave_pix or '' }}"
+                        placeholder="Ex: CNPJ, E-mail, Celular..."
+                        style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 14px;">
+                </div>
+
+                <button type="submit"
+                    style="background: #3498db; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">
+                    💾 Salvar Configurações
+                </button>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>
