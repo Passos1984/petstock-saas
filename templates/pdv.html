@@ -28,9 +28,6 @@
         .pdv-left { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
         .search-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); position: relative; }
         .search-box input { width: 100%; padding: 12px 15px; border: 2px solid var(--accent); border-radius: 10px; font-size: 15px; font-weight: 600; outline: none; }
-        
-        #resultadosBusca { position: absolute; top: 100%; left: 15px; right: 15px; background: white; border: 1px solid var(--border-color); border-radius: 10px; z-index: 100; max-height: 250px; overflow-y: auto; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .item-busca { padding: 12px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; }
 
         .cart-panel { background: white; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .cart-header { padding: 12px 15px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: 800; display: flex; justify-content: space-between; }
@@ -38,9 +35,10 @@
         
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; padding: 8px; border-bottom: 1px solid var(--border-color); }
-        td { padding: 8px; border-bottom: 1px dashed var(--border-color); }
+        td { padding: 12px 8px; border-bottom: 1px dashed var(--border-color); vertical-align: top;}
         
-        .pdv-input-table { width: 100%; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-weight: 600; }
+        .pdv-input-table { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-weight: 600; outline: none; }
+        .pdv-input-table:focus { border-color: var(--accent); }
 
         /* BOTÕES */
         .btn { padding: 14px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit;}
@@ -52,33 +50,57 @@
         .btn-outline:hover { background: #e2e8f0; }
 
         /* DIREITA */
-        .pdv-right { background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; }
+        .pdv-right { background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; }
         .label-mini { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
         .pdv-select, .pdv-field { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-family: inherit; }
 
-        .profit-card { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 15px; border-radius: 10px; text-align: center; transition: 0.3s; }
+        .profit-card { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px; border-radius: 8px; text-align: center; transition: 0.3s; margin-top: auto; }
         .profit-card.loss { background: #fef2f2; border-color: #fecaca; }
         
-        .total-box { background: var(--primary); color: white; padding: 20px; border-radius: 12px; text-align: right; margin-top: auto; }
-        .total-val { font-size: 32px; font-weight: 800; color: var(--success); display: block; margin-top: 5px;}
+        .total-box { background: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; text-align: right; }
+        .total-val { font-size: 36px; font-weight: 800; color: var(--success); display: block; margin-top: 2px;}
+
+        .troco-box { background: #fffbeb; border: 2px dashed #f59e0b; color: #d97706; padding: 15px; border-radius: 10px; text-align: center; }
+        .troco-box .label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .troco-box .value { font-size: 32px; font-weight: 800; margin-top: 5px; }
 
         /* MODAIS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; }
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold;}
         .close-modal:hover { color: var(--danger); }
+        
+        .mobile-header-pdv { display: none; background-color: var(--primary); color: white; padding: 10px 15px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        @media (max-width: 768px) {
+            .mobile-header-pdv { display: flex; }
+            aside { display: none; }
+            .pdv-grid { grid-template-columns: 1fr; overflow-y: auto;}
+            main { height: auto; overflow: visible; padding: 10px;}
+            body { overflow: auto; }
+            .pdv-left { overflow: visible; }
+            .cart-panel { min-height: 400px; }
+        }
     </style>
 </head>
 <body>
 
+    <div class="mobile-header-pdv">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
+        <a href="/" style="color: white; text-decoration: none; font-weight: bold;">Voltar ao Menu</a>
+    </div>
+
     <aside>
-        <div class="logo">🐾 PetStock</div>
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
+
         <nav style="flex:1">
             <a href="/" class="menu-link">📦 Estoque</a>
             <a href="/clientes" class="menu-link">👥 Clientes</a>
             <a href="/pdv" class="menu-link active">🛒 PDV</a>
             <a href="/radar" class="menu-link">📡 Radar</a>
             <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+            <a href="/configuracoes" class="menu-link">⚙️ Configurações</a>
         </nav>
         <a href="/logout" class="menu-link" style="color:#fca5a5">🚪 Sair</a>
     </aside>
@@ -88,8 +110,20 @@
             
             <div class="pdv-left">
                 <div class="search-box">
-                    <input type="text" id="buscaProduto" placeholder="Digite o nome ou bipe o código [F2]..." autocomplete="off" autofocus onkeyup="buscar(event)">
-                    <div id="resultadosBusca"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
+                        <div>
+                            <label class="label-mini" style="color: var(--accent);">👤 Cliente (Nome ou Telefone)</label>
+                            <input type="text" id="cliente" placeholder="Consumidor Final" list="listaClientes" style="border-color: var(--accent);">
+                            <datalist id="listaClientes">
+                                {% for c in clientes %}<option value="{{ c.nome }}">{{ c.telefone }}</option>{% endfor %}
+                            </datalist>
+                        </div>
+                        <div>
+                            <label class="label-mini">📦 Buscar Produto (F2)</label>
+                            <input type="text" id="buscaProduto" placeholder="Bipe, digite ou selecione na seta..." autocomplete="off" list="listaProdutos" oninput="verificarSelecao(this.value)" onkeyup="buscar(event)">
+                            <datalist id="listaProdutos"></datalist>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="cart-panel">
@@ -101,10 +135,9 @@
                         <table id="tabelaPDV">
                             <thead>
                                 <tr>
-                                    <th style="width: 35%;">PRODUTO</th>
-                                    <th style="text-align: center;">QTD/KG</th>
-                                    <th style="text-align: center;">DESC (R$)</th>
-                                    <th style="text-align: center;">DIAS (RADAR)</th>
+                                    <th style="width: 45%;">PRODUTO</th>
+                                    <th style="text-align: center; width: 15%;">QTD/KG</th>
+                                    <th style="text-align: center; width: 15%;">DESC (R$)</th>
                                     <th style="text-align: right;">TOTAL</th>
                                     <th></th>
                                 </tr>
@@ -119,57 +152,56 @@
             </div>
 
             <div class="pdv-right">
-                <div>
-                    <label class="label-mini">Vendedor / Caixa</label>
-                    <select id="vendedor" class="pdv-select">
-                        {% for f in equipe %}<option value="{{ f.nome }}">{{ f.nome }}</option>{% endfor %}
-                        <option>Dono/Gerente</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="label-mini">Cliente (Opcional)</label>
-                    <select id="cliente" class="pdv-select">
-                        <option value="">Cliente Avulso (Padrão)</option>
-                        {% for c in clientes %}<option value="{{ c.nome }}">{{ c.nome }}</option>{% endfor %}
-                    </select>
-                </div>
-
-                <div>
-                    <label class="label-mini">Forma de Pagamento</label>
-                    <select id="pagamento" class="pdv-select" style="border-color: var(--accent);">
-                        <option>Dinheiro</option>
-                        <option>Pix</option>
-                        <option>Cartão de Crédito</option>
-                        <option>Cartão de Débito</option>
-                        <option>Crediário / Fiado</option>
-                    </select>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label class="label-mini">Vendedor / Caixa</label>
+                        <select id="vendedor" class="pdv-select">
+                            {% for f in equipe %}<option value="{{ f.nome }}">{{ f.nome }}</option>{% endfor %}
+                            <option>Dono/Gerente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="label-mini">Forma de Pagamento</label>
+                        <select id="pagamento" class="pdv-select" style="border-color: var(--accent);">
+                            <option>Dinheiro</option>
+                            <option>Pix</option>
+                            <option>Cartão de Crédito</option>
+                            <option>Cartão de Débito</option>
+                            <option>Crediário / Fiado</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
                         <label class="label-mini">Desconto Global</label>
-                        <input type="number" id="descGeral" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()">
+                        <input type="number" id="descGeral" class="pdv-field" value="0" step="any" oninput="calcular()" onfocus="this.select()">
                     </div>
                     <div>
                         <label class="label-mini">Valor Recebido</label>
-                        <input type="number" id="recebido" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()">
+                        <input type="number" id="recebido" class="pdv-field" value="0" step="any" oninput="calcular()" onfocus="this.select()" style="font-size: 18px; font-weight: 800; color: var(--success); border-color: var(--success);">
                     </div>
                 </div>
 
-                <div id="cardLucro" class="profit-card">
-                    <label class="label-mini" id="lblLucro" style="color:inherit">📈 Lucro Estimado</label>
-                    <div id="valLucro" style="font-size: 20px; font-weight: 800;">R$ 0,00</div>
-                </div>
-
                 <div class="total-box">
-                    <span class="label-mini" style="color:#a0a5ba; margin-bottom: 5px;">Subtotal: R$ <span id="subTotalTxt">0,00</span></span>
-                    <span class="label-mini" style="color:#f59e0b; margin-bottom: 15px;">Troco a Devolver: R$ <span id="trocoTxt">0,00</span></span>
-                    <span style="font-size: 11px; font-weight: 800; text-transform: uppercase;">Total a Pagar</span>
+                    <span class="label-mini" style="color:#a0a5ba; margin-bottom: 5px;">Subtotal da Venda: R$ <span id="subTotalTxt">0,00</span></span>
+                    <span style="font-size: 13px; font-weight: 800; text-transform: uppercase; margin-top: 10px; display: block;">Total a Pagar</span>
                     <span class="total-val" id="totalFinal">R$ 0,00</span>
                 </div>
 
-                <button class="btn btn-success" style="height: 60px;" onclick="finalizar()">💰 CONCLUIR VENDA (F8)</button>
+                <div class="troco-box">
+                    <div class="label">⚠️ Troco a Devolver</div>
+                    <div class="value" id="trocoTxt">R$ 0,00</div>
+                </div>
+
+                <button class="btn btn-success" style="height: 60px; font-size: 16px;" onclick="finalizar()">💰 CONCLUIR VENDA (F8)</button>
+
+                <div id="cardLucro" class="profit-card">
+                    <label class="label-mini" id="lblLucro" style="color:inherit">📈 Lucro Estimado</label>
+                    <div id="valLucro" style="font-size: 16px; font-weight: 800;">R$ 0,00</div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -196,33 +228,42 @@
     <script>
         let catalogo = [];
         let carrinho = [];
-        let ultimaVendaSalva = {}; // Armazena os dados da venda para o cupom
+        let ultimaVendaSalva = {}; 
 
         window.onload = () => {
             carregarEstoque();
         };
 
         function carregarEstoque() {
-            fetch('/api/produtos').then(r => r.json()).then(d => catalogo = d);
+            fetch('/api/produtos').then(r => r.json()).then(d => {
+                catalogo = d;
+                let dl = document.getElementById('listaProdutos');
+                dl.innerHTML = '';
+                catalogo.forEach(p => {
+                    dl.innerHTML += `<option value="${p.sku}">${p.nome} - R$ ${p.preco.toFixed(2).replace('.', ',')}</option>`;
+                });
+            });
+        }
+
+        function verificarSelecao(val) {
+            let p = catalogo.find(x => x.sku === val);
+            if (p) {
+                add(p);
+                document.getElementById('buscaProduto').value = '';
+            }
         }
 
         function buscar(e) {
             let t = e.target.value.toLowerCase();
-            let res = document.getElementById('resultadosBusca');
-            if (e.key === 'Enter') {
-                let p = catalogo.find(x => x.sku.toLowerCase() === t);
-                if(p) add(p); e.target.value = ''; res.style.display = 'none'; return;
+            if (e.key === 'Enter' && t.trim() !== '') {
+                let p = catalogo.find(x => x.sku.toLowerCase() === t || x.nome.toLowerCase() === t);
+                if(p) { 
+                    add(p); 
+                    e.target.value = ''; 
+                } else {
+                    alert("Produto não encontrado no estoque!");
+                }
             }
-            if (t.length > 1) {
-                let html = '';
-                catalogo.filter(x => x.nome.toLowerCase().includes(t) || x.sku.includes(t)).slice(0,6).forEach(p => {
-                    html += `<div class="item-busca" onclick='add(${JSON.stringify(p)})'>
-                        <span><b>${p.nome}</b><br><small>${p.sku}</small></span>
-                        <b style="color:var(--success)">R$ ${p.preco.toFixed(2).replace('.', ',')}</b>
-                    </div>`;
-                });
-                res.innerHTML = html; res.style.display = 'block';
-            } else { res.style.display = 'none'; }
         }
 
         function add(p) {
@@ -233,7 +274,6 @@
             }
             render();
             document.getElementById('buscaProduto').value = '';
-            document.getElementById('resultadosBusca').style.display = 'none';
             document.getElementById('buscaProduto').focus();
         }
 
@@ -243,20 +283,32 @@
             carrinho.forEach((item, idx) => {
                 let totalItem = (item.preco - item.desc_un) * item.qtd;
                 tbody.innerHTML += `<tr>
-                    <td><b>${item.nome}</b><br><small>Unit: R$ ${item.preco.toFixed(2).replace('.', ',')}</small></td>
-                    <td><input type="number" class="pdv-input-table" value="${item.qtd}" oninput="update(${idx}, 'qtd', this.value)"></td>
-                    <td><input type="number" class="pdv-input-table" value="${item.desc_un}" oninput="update(${idx}, 'desc_un', this.value)"></td>
-                    <td><input type="number" class="pdv-input-table" value="${item.dias}" oninput="update(${idx}, 'dias', this.value)"></td>
-                    <td style="text-align:right; font-weight:800; color: var(--accent);">R$ ${totalItem.toFixed(2).replace('.', ',')}</td>
-                    <td><button onclick="remove(${idx})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:18px;">&times;</button></td>
+                    <td>
+                        <b style="font-size: 14px;">${item.nome}</b><br>
+                        <small>Unit: R$ ${item.preco.toFixed(2).replace('.', ',')}</small>
+                        <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; background: #fffbeb; padding: 8px 12px; border-radius: 8px; border: 2px dashed #f59e0b; width: max-content;">
+                            <span style="font-size: 12px; color: #d97706; font-weight: 800;">📡 RADAR (DIAS):</span>
+                            <input type="text" inputmode="numeric" style="width: 50px; font-size: 14px; font-weight: 900; text-align: center; border: 2px solid #f59e0b; border-radius: 6px; outline: none; background: white; color: #b45309; padding: 4px;" value="${item.dias}" oninput="update(${idx}, 'dias', this)">
+                        </div>
+                    </td>
+                    <td><input type="text" inputmode="decimal" class="pdv-input-table" value="${item.qtd}" oninput="update(${idx}, 'qtd', this)"></td>
+                    <td><input type="text" inputmode="decimal" class="pdv-input-table" value="${item.desc_un}" oninput="update(${idx}, 'desc_un', this)"></td>
+                    <td id="total-linha-${idx}" style="text-align:right; font-weight:800; color: var(--accent); font-size: 14px;">R$ ${totalItem.toFixed(2).replace('.', ',')}</td>
+                    <td><button onclick="remove(${idx})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:20px; font-weight:bold;">&times;</button></td>
                 </tr>`;
             });
             calcular();
         }
 
-        function update(idx, field, val) {
-            carrinho[idx][field] = parseFloat(val) || 0;
-            render();
+        function update(idx, field, el) {
+            let val = el.value.replace(',', '.');
+            let num = parseFloat(val);
+            carrinho[idx][field] = isNaN(num) ? 0 : num;
+            
+            let totalItem = (carrinho[idx].preco - carrinho[idx].desc_un) * carrinho[idx].qtd;
+            document.getElementById(`total-linha-${idx}`).innerText = 'R$ ' + totalItem.toFixed(2).replace('.', ',');
+            
+            calcular(); 
         }
 
         function remove(idx) { carrinho.splice(idx, 1); render(); }
@@ -265,6 +317,7 @@
             carrinho = []; 
             document.getElementById('descGeral').value = 0; 
             document.getElementById('recebido').value = 0; 
+            document.getElementById('cliente').value = ''; 
             render(); 
             document.getElementById('buscaProduto').focus();
         }
@@ -283,7 +336,8 @@
 
             document.getElementById('subTotalTxt').innerText = sub.toFixed(2).replace('.', ',');
             document.getElementById('totalFinal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-            document.getElementById('trocoTxt').innerText = (troco > 0 ? troco.toFixed(2).replace('.', ',') : '0,00');
+            
+            document.getElementById('trocoTxt').innerText = 'R$ ' + (troco > 0 ? troco.toFixed(2).replace('.', ',') : '0,00');
             
             let cLucro = document.getElementById('cardLucro');
             let vLucro = document.getElementById('valLucro');
@@ -328,9 +382,8 @@
             let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
             let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
 
-            // 1. Salvar os dados para o Cupom ANTES de limpar a tela
             ultimaVendaSalva = {
-                itens: JSON.parse(JSON.stringify(carrinho)), // Cria uma cópia exata do carrinho
+                itens: JSON.parse(JSON.stringify(carrinho)),
                 total: document.getElementById('totalFinal').innerText,
                 troco: document.getElementById('trocoTxt').innerText,
                 cliente: document.getElementById('cliente').value || 'Consumidor Final',
@@ -362,7 +415,6 @@
                 body: JSON.stringify(dados)
             }).then(r => r.json()).then(res => {
                 if(res.sucesso) { 
-                    // Em vez de limpar direto, abre a tela do cupom
                     document.getElementById('modalRecibo').style.display = 'flex';
                 } else {
                     alert("❌ Erro: " + res.erro);
@@ -370,7 +422,6 @@
             });
         }
 
-        // FUNÇÕES DO CUPOM
         function imprimirRecibo() {
             let htmlRecibo = `
                 <div style="width: 300px; font-family: monospace; font-size: 12px; margin: 0 auto; color: #000;">
@@ -392,7 +443,7 @@
                     </table>
                     <hr style="border: 1px dashed #000;">
                     <h3 style="text-align: right; margin: 5px 0; font-size: 16px;">TOTAL: ${ultimaVendaSalva.total}</h3>
-                    <p style="text-align: right; margin: 0;">Troco: R$ ${ultimaVendaSalva.troco}</p>
+                    <p style="text-align: right; margin: 0;">Troco: ${ultimaVendaSalva.troco}</p>
                     <br>
                     <p style="text-align: center; font-size: 11px;">Obrigado pela preferência!</p>
                     <p style="text-align: center; font-size: 10px; margin-top: 10px;"><i>Sistema PetStock</i></p>
@@ -404,7 +455,6 @@
             janelaDeImpressao.document.close();
             janelaDeImpressao.print();
             
-            // Depois de mandar imprimir, fecha e limpa para o próximo cliente
             fecharRecibo();
         }
 
@@ -432,10 +482,9 @@
         function fecharRecibo() {
             document.getElementById('modalRecibo').style.display = 'none';
             limpar();
-            carregarEstoque(); // Atualiza o estoque oculto para a próxima venda
+            carregarEstoque(); 
         }
 
-        // Atalhos Blindados
         document.addEventListener('keydown', function(event) {
             if (event.key === 'F2') {
                 event.preventDefault(); 
@@ -448,7 +497,6 @@
                 limpar();
             } else if (event.key === 'F8') {
                 event.preventDefault();
-                // Só finaliza pelo F8 se a janela do recibo não estiver aberta
                 if(document.getElementById('modalRecibo').style.display !== 'flex') {
                     finalizar();
                 }

@@ -25,7 +25,6 @@ db = SQLAlchemy(app)
 # --- 🕰️ FUSO HORÁRIO BRASIL (UTC-3) ---
 # ==========================================
 def hora_brasil():
-    # Diminui 3 horas do relógio do servidor (Inglaterra) para cravar a hora de Brasília
     return datetime.utcnow() - timedelta(hours=3)
 
 def data_brasil():
@@ -90,7 +89,7 @@ class Venda(db.Model):
     quantidade = db.Column(db.Float)
     valor_total = db.Column(db.Float)
     forma_pagamento_1 = db.Column(db.String(50))
-    data_venda = db.Column(db.DateTime, default=hora_brasil) # <-- Usando a hora BR aqui
+    data_venda = db.Column(db.DateTime, default=hora_brasil) 
     data_previsao_fim = db.Column(db.DateTime)
     vendedor = db.Column(db.String(50), default='Dono/Gerente')
     produto = db.relationship('Produto', backref='vendas_list')
@@ -305,7 +304,7 @@ def inativos():
     prods = Produto.query.filter_by(loja_id=session['loja_id'], ativo=False).all()
     return render_template('inativos.html', produtos=prods)
 
-@app.route('/baixa_estoque', methods=['POST'])
+@app.route('/dar_baixa', methods=['POST'])
 def baixa_estoque():
     if 'loja_id' not in session: return redirect(url_for('login'))
 
@@ -457,7 +456,7 @@ def radar():
 
 
 # ==========================================
-# --- 👥 ROTAS DE CLIENTES ---
+# --- 👥 ROTAS DE CLIENTES E FIADO ---
 # ==========================================
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
@@ -486,14 +485,78 @@ def excluir_cliente(id):
         flash('🗑️ Cliente excluído com sucesso.', 'warning')
     return redirect(url_for('clientes'))
 
+@app.route('/editar_cliente/<int:id>', methods=['GET', 'POST'])
+def editar_cliente(id):
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    
+    cliente = Cliente.query.get_or_404(id)
+    
+    if cliente.loja_id != session['loja_id']:
+        return redirect(url_for('clientes'))
+
+    if request.method == 'POST':
+        cliente.nome = request.form.get('nome')
+        cliente.telefone = request.form.get('telefone')
+        cliente.rua = request.form.get('rua')
+        cliente.numero = request.form.get('numero')
+        cliente.bairro = request.form.get('bairro')
+        cliente.nome_pet = request.form.get('nome_pet')
+
+        db.session.commit()
+        flash('✅ Cadastro atualizado com sucesso!', 'success')
+        return redirect(url_for('clientes'))
+
+    return render_template('editar_cliente.html', c=cliente)
+
+
 @app.route('/historico_cliente/<int:id>')
 def historico_cliente(id):
     if 'loja_id' not in session: return jsonify({'erro': 'Não autorizado'}), 401
     vendas = Venda.query.filter_by(cliente_id=id, loja_id=session['loja_id']).order_by(Venda.data_venda.desc()).all()
     historico = []
     for v in vendas:
-        historico.append({'data': v.data_venda.strftime('%d/%m/%Y %H:%M'), 'produto': v.produto.nome if v.produto else 'Produto Excluído', 'qtd': v.quantidade, 'valor': v.valor_total})
+        nome_prod = v.produto.nome if v.produto else ('💰 Pagamento de Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else 'Produto Excluído')
+        historico.append({'data': v.data_venda.strftime('%d/%m/%Y %H:%M'), 'produto': nome_prod, 'qtd': v.quantidade, 'valor': v.valor_total})
     return jsonify(historico)
+
+# --- 🚨 ROTAS DO FIADO ---
+@app.route('/api/divida_cliente/<int:id>', methods=['GET'])
+def api_divida_cliente(id):
+    if 'loja_id' not in session: return jsonify({'erro': 'Não autorizado'}), 401
+    vendas_fiado = Venda.query.filter_by(cliente_id=id, loja_id=session['loja_id'], forma_pagamento_1='Crediário / Fiado').all()
+    total_divida = sum(v.valor_total for v in vendas_fiado if v.valor_total)
+    return jsonify({'divida': total_divida})
+
+@app.route('/api/pagar_divida/<int:id>', methods=['POST'])
+def api_pagar_divida(id):
+    if 'loja_id' not in session: return jsonify({'erro': 'Não autorizado'}), 401
+    
+    dados = request.get_json() or {}
+    forma_pagto = dados.get('forma_pagamento', 'Dinheiro')
+    
+    vendas_fiado = Venda.query.filter_by(cliente_id=id, loja_id=session['loja_id'], forma_pagamento_1='Crediário / Fiado').all()
+    total_divida = sum(v.valor_total for v in vendas_fiado if v.valor_total)
+    
+    if total_divida <= 0:
+        return jsonify({'sucesso': False, 'erro': 'Cliente não possui dívida ativa.'})
+        
+    for v in vendas_fiado:
+        v.forma_pagamento_1 = 'Fiado (Pago)'
+        
+    pagamento = Venda(
+        produto_id=None,
+        cliente_id=id,
+        loja_id=session['loja_id'],
+        quantidade=0,
+        valor_total=total_divida,
+        forma_pagamento_1=f"{forma_pagto} (Pgto Fiado)", 
+        data_venda=hora_brasil(),
+        vendedor=session.get('vendedor_atual', 'Dono/Gerente')
+    )
+    db.session.add(pagamento)
+    db.session.commit()
+    
+    return jsonify({'sucesso': True})
 
 @app.route('/importar_clientes', methods=['POST'])
 def importar_clientes():
@@ -568,7 +631,6 @@ def api_finalizar_venda():
                 prod.estoque -= qtd
 
                 dias = int(item.get('dias_duracao') or 0)
-                # Aqui o sistema calcula a data de previsão do radar com o horário do Brasil
                 previsao = hora_brasil() + timedelta(days=dias) if dias > 0 else None
 
                 venda = Venda(produto_id=prod.id, cliente_id=cliente_id, loja_id=loja_id, quantidade=qtd, valor_total=float(item.get('subtotal_final', item.get('subtotal', 0))), forma_pagamento_1=forma_pagto, data_previsao_fim=previsao, vendedor=vendedor_nome)
@@ -594,7 +656,6 @@ def relatorios():
     data_fim = request.args.get('data_fim')
     vendedor_filtro = request.args.get('vendedor')
 
-    # Usando data_brasil() para garantir que não vai pular para o dia seguinte antes da meia-noite no BR
     hoje_str = data_brasil().strftime('%Y-%m-%d')
     if not data_inicio: data_inicio = hoje_str
     if not data_fim: data_fim = hoje_str
@@ -652,12 +713,28 @@ def exportar_relatorio():
     writer.writerow(['DATA DA VENDA', 'VENDEDOR', 'PRODUTO', 'QUANTIDADE', 'FORMA DE PAGAMENTO', 'VALOR TOTAL (R$)'])
 
     for v in vendas:
-        writer.writerow([v.data_venda.strftime('%d/%m/%Y %H:%M'), v.vendedor, v.produto.nome if v.produto else 'Produto Excluído', v.quantidade, v.forma_pagamento_1, "%.2f" % v.valor_total])
+        nome_prod = v.produto.nome if v.produto else ('Pagamento Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else 'Produto Excluído')
+        writer.writerow([v.data_venda.strftime('%d/%m/%Y %H:%M'), v.vendedor, nome_prod, v.quantidade, v.forma_pagamento_1, "%.2f" % v.valor_total])
 
     response = Response(output.getvalue().encode('utf-8-sig'), mimetype='text/csv')
     response.headers["Content-Disposition"] = f"attachment; filename=relatorio_petstock_{data_brasil()}.csv"
     return response
 
+# --- ROTAS DE CONFIGURAÇÃO DA LOJA ---
+@app.route('/configuracoes', methods=['GET', 'POST'])
+def configuracoes():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    
+    loja = Loja.query.get(session['loja_id'])
+    
+    if request.method == 'POST':
+        nova_chave = request.form.get('chave_pix')
+        loja.chave_pix = nova_chave
+        db.session.commit()
+        flash('Configurações salvas com sucesso!', 'success')
+        return redirect(url_for('configuracoes'))
+        
+    return render_template('configuracoes.html')
 
 # ==========================================
 # --- 🛑 ROTAS SECRETAS DO CEO ---

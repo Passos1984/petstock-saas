@@ -25,7 +25,6 @@
         
         /* --- MENU LATERAL PREMIUM --- */
         aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
-        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
         
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
@@ -102,7 +101,7 @@
 <body>
 
     <div class="mobile-header">
-        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
         <button class="btn-mobile-menu" onclick="toggleMenu()">
             <i class="fas fa-bars"></i>
         </button>
@@ -111,7 +110,9 @@
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <aside id="sidebar">
-        <h2 class="logo">🐾 PetStock</h2>
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
         
         {% if loja_logada %}
         <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
@@ -231,8 +232,30 @@
         <div class="modal-content">
             <button class="close-modal" onclick="fecharModal()">&times;</button>
             <div id="headerFichaCliente"></div>
-            <div id="corpoHistorico" style="max-height: 350px; overflow-y: auto; margin-top: 20px;">
+            <div id="dividaContainer"></div>
+            <div id="corpoHistorico" style="max-height: 350px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <div id="modalPagamentoFiado" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <button class="close-modal" onclick="fecharModalPagamento()">&times;</button>
+            <h3 style="margin-top: 0; color: var(--success); font-size: 22px;">💰 Receber Pagamento</h3>
+            <p style="color: var(--text-muted); font-size: 14px;">Como a dívida de <b>R$ <span id="valorPagamentoModal"></span></b> será paga?</p>
+            
+            <div style="text-align: left; margin-bottom: 25px; margin-top: 20px;">
+                <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 5px;">FORMA DE PAGAMENTO</label>
+                <select id="formaPagamentoFiado" class="input-control" style="border-color: var(--success); font-weight: bold; background: #f0fdf4;">
+                    <option value="Dinheiro">💵 Dinheiro</option>
+                    <option value="Pix">📱 Pix</option>
+                    <option value="Cartão de Crédito">💳 Cartão de Crédito</option>
+                    <option value="Cartão de Débito">💳 Cartão de Débito</option>
+                </select>
             </div>
+
+            <input type="hidden" id="idClientePagamento">
+
+            <button onclick="confirmarPagamentoFiado()" class="btn btn-success" style="width: 100%; height: 50px;">✅ Confirmar Pagamento</button>
         </div>
     </div>
 
@@ -242,13 +265,18 @@
             <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">❓ Manual de Clientes</h2>
             
             <div style="margin-bottom: 20px; margin-top: 20px;">
-                <h4 style="color: var(--accent); margin: 0 0 5px 0;">📱 WhatsApp e Radar</h4>
-                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Mantenha o telefone dos clientes sempre atualizado. A ferramenta <b>Radar</b> do PetStock utiliza esse número para te avisar quando a ração do cliente estiver acabando, gerando uma mensagem de recompra automática direto para o WhatsApp dele.</p>
+                <h4 style="color: var(--accent); margin: 0 0 5px 0;">➕ Como Cadastrar e Usar o Radar</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">O cadastro é simples, mas o <b>Telefone/WhatsApp</b> é a chave de ouro! É através dele que o <b>Radar de Inteligência</b> vai avisar seu cliente automaticamente que a ração está acabando. Nunca deixe em branco!</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4 style="color: var(--danger); margin: 0 0 5px 0;">💰 Controlando o "Fiado" (Crediário)</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Se o cliente comprar fiado lá no caixa (PDV), o valor vem para cá. Clique em <b>📜 Ficha Completa</b> na tabela ao lado. Se ele estiver devendo, vai aparecer um aviso vermelho gigante e um botão verde <b>"Receber Pagamento"</b>. O sistema dá baixa automática na dívida e lança no seu financeiro!</p>
             </div>
             
             <div style="margin-bottom: 25px;">
-                <h4 style="color: var(--success); margin: 0 0 5px 0;">🧾 Ficha Completa e Histórico</h4>
-                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Use o botão <b>📜 Ficha Completa</b> na tabela para acessar o perfil do cliente. Lá você encontra um botão verde gigante para chamá-lo no WhatsApp com 1 clique, além da lista de tudo o que ele já comprou (perfeito para quando o cliente diz: "Quero aquela mesma ração da última vez").</p>
+                <h4 style="color: var(--success); margin: 0 0 5px 0;">🧾 Histórico e Zap Automático</h4>
+                <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Na mesma <b>Ficha Completa</b>, você vê todas as compras do cliente (ótimo para saber qual ração ele costuma levar). Além disso, tem um botão do WhatsApp lá dentro que já abre a conversa direto no seu celular ou PC com um clique.</p>
             </div>
             
             <button type="button" onclick="document.getElementById('modalAjudaCli').style.display='none'" class="btn" style="background: var(--primary); width: 100%; justify-content: center; color: white;">Entendi, vamos voltar ao trabalho!</button>
@@ -262,27 +290,60 @@
         }
 
         function fecharModal() { document.getElementById('modalHistorico').style.display = 'none'; }
+        
+        function fecharModalPagamento() { document.getElementById('modalPagamentoFiado').style.display = 'none'; }
 
         // Lógica atualizada para a Ficha do Cliente
         async function verHistorico(id, nome, telefone) {
-            // Limpa o telefone para o link do WhatsApp (deixa só os números)
             let phoneNum = telefone ? telefone.replace(/\D/g, '') : '';
-            // Adiciona o DDI do Brasil (55) se o número não tiver
             if (phoneNum && !phoneNum.startsWith('55')) { phoneNum = '55' + phoneNum; }
 
-            // Constrói o cabeçalho do Modal dinamicamente (O "Perfil do Cliente" lindão)
             document.getElementById('headerFichaCliente').innerHTML = `
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; flex-wrap: wrap; gap: 15px;">
                     <h2 style="margin: 0; color: var(--text-main); font-size: 24px; font-weight: 800;">👤 ${nome}</h2>
                     ${telefone ? `<a href="https://api.whatsapp.com/send?phone=${phoneNum}" target="_blank" class="btn" style="background: #25D366; color: white; height: auto; padding: 10px 20px; font-size: 16px; margin: 0; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);"><i class="fab fa-whatsapp" style="font-size: 20px;"></i> ${telefone}</a>` : ''}
                 </div>
-                <p style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Acompanhe o histórico completo de compras deste cliente na sua loja.</p>
+                <p style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Acompanhe o histórico completo de compras e pendências financeiras deste cliente.</p>
             `;
 
+            document.getElementById('dividaContainer').innerHTML = ''; 
             document.getElementById('corpoHistorico').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Buscando histórico de compras...</div>';
             document.getElementById('modalHistorico').style.display = 'flex';
 
             try {
+                // Tenta buscar a dívida do cliente
+                try {
+                    const resDivida = await fetch('/api/divida_cliente/' + id);
+                    if (resDivida.ok) {
+                        const dadosDivida = await resDivida.json();
+                        let dividaHtml = '';
+                        
+                        if (dadosDivida.divida > 0) {
+                            dividaHtml = `
+                                <div style="background: #fef2f2; border: 2px dashed #ef4444; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                                    <div>
+                                        <span style="display: block; font-size: 11px; font-weight: 800; color: #b91c1c; text-transform: uppercase;">🚨 Dívida Ativa (Fiado)</span>
+                                        <span style="font-size: 28px; font-weight: 800; color: #ef4444;">R$ ${dadosDivida.divida.toFixed(2).replace('.', ',')}</span>
+                                    </div>
+                                    <button onclick="abrirModalPagamento('${id}', ${dadosDivida.divida})" class="btn" style="background: #10b981; color: white; border: none; height: 45px; padding: 0 20px; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 10px rgba(16,185,129,0.3);">💰 Receber Pagamento</button>
+                                </div>
+                            `;
+                        } else {
+                            dividaHtml = `
+                                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px 20px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 20px;">✅</span>
+                                    <div>
+                                        <span style="display: block; font-size: 13px; font-weight: 700; color: #047857;">Cliente sem pendências</span>
+                                        <span style="font-size: 11px; color: #065f46;">Nenhum valor em aberto no fiado.</span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        document.getElementById('dividaContainer').innerHTML = dividaHtml;
+                    }
+                } catch(e) {}
+
+                // Busca o histórico de compras
                 const response = await fetch('/historico_cliente/' + id);
                 const dados = await response.json();
                 
@@ -305,6 +366,42 @@
 
             } catch (error) {
                 document.getElementById('corpoHistorico').innerHTML = '<p style="color: var(--danger); text-align: center; font-weight: bold;">Erro ao carregar o histórico. Verifique a conexão com o banco de dados.</p>';
+            }
+        }
+
+        // Função que abre a janelinha para escolher PIX/Cartão/Dinheiro
+        function abrirModalPagamento(id_cliente, valor) {
+            document.getElementById('idClientePagamento').value = id_cliente;
+            document.getElementById('valorPagamentoModal').innerText = valor.toFixed(2).replace('.', ',');
+            
+            // Força o modal principal a ficar por baixo usando z-index
+            document.getElementById('modalHistorico').style.zIndex = '1900';
+            document.getElementById('modalPagamentoFiado').style.zIndex = '2100';
+            
+            document.getElementById('modalPagamentoFiado').style.display = 'flex';
+        }
+
+        // Função final que manda a forma de pagamento pro Servidor
+        async function confirmarPagamentoFiado() {
+            let id_cliente = document.getElementById('idClientePagamento').value;
+            let forma_pagto = document.getElementById('formaPagamentoFiado').value;
+            
+            try {
+                let res = await fetch('/api/pagar_divida/' + id_cliente, { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ forma_pagamento: forma_pagto })
+                });
+                let data = await res.json();
+                
+                if(data.sucesso) {
+                    alert('✅ Pagamento recebido com sucesso no ' + forma_pagto + '! O financeiro foi atualizado.');
+                    window.location.reload();
+                } else {
+                    alert('❌ Erro ao registrar pagamento: ' + data.erro);
+                }
+            } catch(e) {
+                alert('❌ Erro de comunicação com o servidor.');
             }
         }
     </script>

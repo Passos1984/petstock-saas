@@ -7,209 +7,64 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --primary: #222533; 
-            --accent: #5c4dff; 
-            --accent-hover: #4a3ecc;
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --bg-body: #f4f6f9; 
-            --text-main: #333333;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-        }
-        
-        body { 
-            display: flex; 
-            height: 100vh; 
-            margin: 0; 
-            font-family: 'Inter', sans-serif; 
-            background: var(--bg-body); 
-            color: var(--text-main); 
-            font-size: 14px;
-        }
-        
-        /* --- MENU LATERAL PREMIUM PADRONIZADO --- */
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; z-index: 1001; flex-shrink: 0;}
-        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
-        
-        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
-        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
-        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
-        
-        main { 
-            flex: 1; 
-            padding: 40px; 
-            overflow-y: auto; 
-            display: flex; 
-            align-items: flex-start; 
-            justify-content: center; 
-        }
-        
-        .card { 
-            background: white; 
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
-            width: 100%; 
-            max-width: 650px; 
-            border: 1px solid var(--border-color);
-            margin-top: 20px;
-        }
-        
-        .input-control { 
-            width: 100%; 
-            padding: 14px 16px; 
-            margin-top: 6px; 
-            margin-bottom: 20px; 
-            border: 1.5px solid #cbd5e1; 
-            border-radius: 10px; 
-            font-family: inherit; 
-            font-size: 14px;
-            box-sizing: border-box; 
-            outline: none;
-            transition: 0.2s;
-        }
-        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
-        
-        .btn { 
-            padding: 16px; 
-            border: none; 
-            border-radius: 10px; 
-            background: var(--success); 
-            color: white; 
-            font-weight: 700; 
-            width: 100%; 
-            cursor: pointer; 
-            font-size: 16px; 
-            margin-top: 10px;
-            transition: 0.2s;
-            font-family: inherit;
-        }
-
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.2); }
-        
-        .btn-voltar { 
-            background: transparent; 
-            color: var(--text-muted); 
-            text-decoration: none; 
-            padding: 14px; 
-            display: block; 
-            text-align: center; 
-            border-radius: 10px; 
-            margin-top: 10px; 
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        .btn-voltar:hover { background: #f8fafc; color: var(--text-main);}
-
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
+        :root { --primary: #222533; --accent: #10b981; --accent-hover: #059669; --bg-body: #f4f6f9; --border-color: #e2e8f0; --text-main: #333333; --text-muted: #64748b;}
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; color: var(--text-main);}
+        .card { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        h2 { margin-top: 0; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 22px;}
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
         label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            aside { display: none; } /* Oculta o menu na tela de edição pelo celular para focar no formulário */
-            main { padding: 20px 15px; }
-            .card { padding: 25px 20px; margin-top: 0;}
-            .row { flex-direction: column; gap: 0; }
-            .pets-container { flex-direction: column !important; gap: 0 !important; }
+        .input-control { padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; font-family: inherit; font-weight: 500;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
+        .btn { padding: 15px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 15px; transition: 0.2s; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; font-family: inherit;}
+        .btn-save { background: var(--accent); color: white; margin-bottom: 12px; margin-top: 10px;}
+        .btn-save:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16,185,129,0.3); }
+        .btn-cancel { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);}
+        .btn-cancel:hover { background: #e2e8f0; color: var(--text-main);}
+        .section-title { font-size: 13px; font-weight: 800; color: var(--accent); margin: 25px 0 15px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; text-transform: uppercase;}
+        
+        @media(max-width: 600px) {
+            .form-row { flex-direction: column; gap: 0 !important; }
         }
     </style>
 </head>
 <body>
-    <aside id="sidebar">
-        <h2 class="logo">🐾 PetStock</h2>
-        
-        {% if loja_logada %}
-        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
-            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Base de Clientes:</span><br>
-            <strong style="font-size: 16px; color: var(--warning); font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
-        </div>
-        {% endif %}
-
-        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
-            <a href="/clientes" class="menu-link active"><span>👥</span> Clientes</a>
-            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
-            {% if cargo == 'Gerente' %}
-            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
-            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
-            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
-            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
-            {% endif %}
-        </div>
-        
-        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
-            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda na Gestão de Clientes do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
-            <a href="/logout" class="menu-link" style="color: #fca5a5; justify-content: center; background: rgba(239, 68, 68, 0.1); font-weight: 700; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
-        </div>
-    </aside>
-
-    <main>
-        <div class="card">
-            <h2 style="margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 800; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 25px;">
-                <span>✏️</span> Editar Cadastro do Cliente
-            </h2>
-            <form method="POST">
-                
-                <div class="row">
-                    <div class="col" style="flex: 2;">
-                        <label>NOME COMPLETO</label>
-                        <input type="text" name="nome" value="{{ cliente.nome }}" class="input-control" required>
-                    </div>
-                    <div class="col" style="flex: 1;">
-                        <label>WHATSAPP / CELULAR</label>
-                        <input type="text" name="telefone" value="{{ cliente.telefone }}" class="input-control" required>
-                    </div>
+    <div class="card">
+        <h2>👤 Editar Ficha do Cliente</h2>
+        <form method="POST">
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" value="{{ c.nome }}" class="input-control" required>
+            </div>
+            <div class="form-row" style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Telefone / WhatsApp</label>
+                    <input type="text" name="telefone" value="{{ c.telefone }}" class="input-control" required>
                 </div>
-
-                <div class="row">
-                    <div class="col">
-                        <label>CPF (OPCIONAL)</label>
-                        <input type="text" name="cpf" value="{{ cliente.cpf or '' }}" class="input-control" placeholder="Apenas números">
-                    </div>
+                <div class="input-group" style="flex: 1;">
+                    <label>🐾 Meus Pets</label>
+                    <input type="text" name="nome_pet" value="{{ c.nome_pet }}" class="input-control">
                 </div>
+            </div>
 
-                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                    <label style="color: var(--accent); display: block; margin-bottom: 10px;">🐾 MEUS PETS (ATÉ 3)</label>
-                    <div class="row pets-container" style="gap: 15px;">
-                        <div class="col">
-                            <label style="font-size: 10px;">PET 01</label>
-                            <input type="text" name="nome_pet" value="{{ cliente.nome_pet or '' }}" class="input-control" style="margin-bottom: 0;" placeholder="Nome do primeiro pet">
-                        </div>
-                        <div class="col">
-                            <label style="font-size: 10px;">PET 02</label>
-                            <input type="text" name="nome_pet_2" value="{{ cliente.nome_pet_2 or '' }}" class="input-control" style="margin-bottom: 0;" placeholder="Segundo pet">
-                        </div>
-                        <div class="col">
-                            <label style="font-size: 10px;">PET 03</label>
-                            <input type="text" name="nome_pet_3" value="{{ cliente.nome_pet_3 or '' }}" class="input-control" style="margin-bottom: 0;" placeholder="Terceiro pet">
-                        </div>
-                    </div>
+            <div class="section-title">📍 Endereço de Entrega</div>
+            <div class="input-group">
+                <label>Rua / Avenida</label>
+                <input type="text" name="rua" value="{{ c.rua }}" class="input-control">
+            </div>
+            <div class="form-row" style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Número</label>
+                    <input type="text" name="numero" value="{{ c.numero }}" class="input-control">
                 </div>
-
-                <div class="row">
-                    <div class="col" style="flex: 2;">
-                        <label>ENDEREÇO (RUA / AVENIDA)</label>
-                        <input type="text" name="rua" value="{{ cliente.rua or '' }}" class="input-control">
-                    </div>
-                    <div class="col" style="flex: 0.5;">
-                        <label>Nº</label>
-                        <input type="text" name="numero" value="{{ cliente.numero or '' }}" class="input-control">
-                    </div>
-                    <div class="col" style="flex: 1.5;">
-                        <label>BAIRRO</label>
-                        <input type="text" name="bairro" value="{{ cliente.bairro or '' }}" class="input-control">
-                    </div>
+                <div class="input-group" style="flex: 2;">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" value="{{ c.bairro }}" class="input-control">
                 </div>
+            </div>
 
-                <button type="submit" class="btn">💾 Salvar Alterações</button>
-                <a href="/clientes" class="btn-voltar">← Cancelar e Voltar para a Lista</a>
-            </form>
-        </div>
-    </main>
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Atualizar Cadastro</button>
+            <a href="/clientes" class="btn btn-cancel">Cancelar e Voltar</a>
+        </form>
+    </div>
 </body>
 </html>

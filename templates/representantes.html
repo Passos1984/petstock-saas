@@ -3,290 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Representantes Premium</title>
+    <title>PetStock - Fornecedores</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --primary: #222533; 
-            --accent: #5c4dff; 
-            --accent-hover: #4a3ecc;
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --bg-body: #f4f6f9; 
-            --text-main: #333333;
-            --text-muted: #777777;
-            --border-color: #eeeeee;
-            --bg-card: #ffffff;
-            --input-border: #cbd5e1; 
+        :root {
+            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
-        
         * { box-sizing: border-box; }
-        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
-        
-        /* --- MENU LATERAL PREMIUM --- */
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
-        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
-        
-        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
-        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
-        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
-
-        /* --- CORPO PRINCIPAL --- */
-        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative; }
-        
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px;}
-        .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;}
-
-        .panel { background: var(--bg-card); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .panel-title { margin-top: 0; color: var(--text-main); font-size: 18px; margin-bottom: 25px; font-weight: 800; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-
-        /* --- FORMULÁRIOS --- */
-        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; align-items: end; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-        .input-control { padding: 14px 18px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s ease; font-family: inherit; font-weight: 500; width: 100%; box-sizing: border-box;}
-        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
-
-        /* --- BOTÕES --- */
-        .btn { padding: 14px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit;}
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); }
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0;}
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; }
+        main { flex: 1; padding: 40px; overflow-y: auto; }
+        .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; }
+        .input-control { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit;}
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;}
         .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-whats { background: #25D366; color: white; padding: 10px 16px; font-size: 13px; border-radius: 8px; font-weight: 700; border: 1px solid #1da851; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: 0.2s;}
-        .btn-whats:hover { background: #1ebd57; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);}
-
-        /* --- TABELA --- */
-        table { width: 100%; border-collapse: separate; border-spacing: 0; }
-        th { background-color: #ffffff; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 11px; padding: 18px 20px; text-align: left; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px;}
-        td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: 14px;}
-        .badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid; display: inline-block;}
-
-        /* --- MODAIS --- */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
-        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 650px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; box-sizing: border-box; position: relative;}
-        .close-btn { position: absolute; top: 25px; right: 25px; cursor: pointer; font-size: 24px; color: #94a3b8; font-weight: bold; background: none; border: none; transition: 0.2s;}
-        .close-btn:hover { color: var(--danger); }
-
-        /* --- ESTRUTURA MOBILE (CELULAR) --- */
-        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
-
-        @media (max-width: 768px) {
-            body { flex-direction: column; height: auto; display: block;}
-            .mobile-header { display: flex; }
-            
-            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
-            aside.active { left: 0; }
-            .overlay.active { display: block; }
-            
-            main { padding: 20px 15px; }
-            
-            .header-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; }
-            .header-bar > div { flex-wrap: wrap; width: 100%; }
-            .header-bar button, .header-bar a { flex: 1; text-align: center; justify-content: center; width: 100%; }
-
-            .form-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
-            .input-group { grid-column: span 1 !important; }
-            
-            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--border-color); }
-            table { min-width: 700px; border: none; }
-            
-            .modal-content { padding: 25px; }
-        }
+        .btn-whats { background: #25D366; color: white; font-size: 12px; padding: 6px 12px;}
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); }
+        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: top;}
+        .badge { background: #f8fafc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid var(--border-color); }
+        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; height: auto; } main { padding: 15px; } }
     </style>
 </head>
 <body>
-
-    <div class="mobile-header">
-        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
-        <button class="btn-mobile-menu" onclick="toggleMenu()">
-            <i class="fas fa-bars"></i>
-        </button>
-    </div>
-
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-    <aside id="sidebar">
-        <h2 class="logo">🐾 PetStock</h2>
-        {% if loja_logada %}
-        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
-            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
-            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+    <aside>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 150px;">
         </div>
-        {% endif %}
-        
-        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
-            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
-            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
-            {% if cargo == 'Gerente' %}
-            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
-            <a href="/representantes" class="menu-link active"><span>🚚</span> Representantes</a>
-            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
-            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
-            {% endif %}
-        </div>
-        
-        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
-            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com os Fornecedores no PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
-            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
-        </div>
+        <a href="/" class="menu-link">📦 Estoque</a>
+        <a href="/clientes" class="menu-link">👥 Clientes</a>
+        <a href="/pdv" class="menu-link">🛒 PDV</a>
+        <a href="/radar" class="menu-link">📡 Radar</a>
+        <a href="/representantes" class="menu-link active">🚚 Representantes</a>
+        <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        <a href="/logout" class="menu-link" style="margin-top:auto; color:#fca5a5;">🚪 Sair</a>
     </aside>
 
     <main>
-        <div class="header-bar">
-            <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-                <h2 class="page-title">
-                    <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px; vertical-align: middle;">🚚</span>
-                    Gestão de Representantes
-                </h2>
-                <button class="btn" style="background: #eef2ff; color: var(--accent); border: 1px solid #c7d2fe; padding: 10px 16px; font-size: 13px;" onclick="abrirModal('modalAjudaRep')">❓ Ajuda</button>
-            </div>
-            <button class="btn btn-primary" onclick="abrirModal('modalNovoRep')">➕ Novo Fornecedor</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+            <h1 style="margin:0; font-weight:800;">🚚 Representantes</h1>
+            <button onclick="document.getElementById('modalNovo').style.display='flex'" class="btn btn-primary">➕ Novo Fornecedor</button>
         </div>
 
-        <div class="panel" style="padding: 0; overflow: hidden; border: none;">
-            <div class="table-responsive">
+        <div class="panel" style="padding:0; overflow:hidden;">
+            <div style="overflow-x:auto;">
                 <table>
                     <thead>
-                        <tr>
-                            <th style="padding-left: 30px;">Distribuidora / CNPJ</th>
-                            <th>Representante</th>
-                            <th style="text-align: center;">WhatsApp</th>
-                            <th>Condições Logísticas</th>
-                            <th style="text-align: right; padding-right: 30px;">Ações</th>
-                        </tr>
+                        <tr><th>Distribuidora</th><th>Contacto</th><th>WhatsApp</th><th>Condições / Observações</th><th style="text-align:right;">Ações</th></tr>
                     </thead>
                     <tbody>
                         {% for f in representantes %}
                         <tr>
-                            <td style="padding-left: 30px;">
-                                <strong style="font-size: 15px; color: var(--text-main);">{{ f.nome_fantasia }}</strong><br>
-                                <span style="color: var(--text-muted); font-size: 12px; font-weight: 600;">{{ f.cnpj or 'Sem CNPJ' }}</span>
-                            </td>
-                            <td><span style="font-weight: 700; color: var(--accent);">👤 {{ f.representante_nome or 'Não inf.' }}</span></td>
-                            <td style="text-align: center;">
+                            <td><strong>{{ f.nome_fantasia }}</strong><br><small>{{ f.cnpj }}</small></td>
+                            <td>{{ f.representante_nome }}</td>
+                            <td>
                                 {% if f.whatsapp %}
-                                    {% set tel = f.whatsapp|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('+', '') %}
-                                    {% if not tel.startswith('55') %}{% set tel = '55' ~ tel %}{% endif %}
-                                    <a href="https://api.whatsapp.com/send?phone={{ tel }}&text=Olá%20{{ f.representante_nome }}!" target="_blank" class="btn-whats"><i class="fab fa-whatsapp"></i> Chamar no Whats</a>
-                                {% else %}
-                                    <span style="color: #cbd5e1; font-style: italic;">Não cadastrado</span>
+                                <a href="https://api.whatsapp.com/send?phone=55{{ f.whatsapp|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}" target="_blank" class="btn btn-whats"><i class="fab fa-whatsapp"></i> Chamar</a>
                                 {% endif %}
                             </td>
                             <td>
-                                <span class="badge" style="background: #fffbeb; color: #b45309; border-color: #fde68a;">Pedido Mín: R$ {{ f.pedido_minimo or '0,00' }}</span><br>
-                                <small style="color: var(--text-muted); font-weight: 600; display: inline-block; margin-top: 6px;">⏱️ Entrega: {{ f.prazo_entrega or 'N/A' }}</small>
+                                <span class="badge">Mínimo: R$ {{ f.pedido_minimo or '0,00' }}</span>
+                                {% if f.prazo_entrega %}<span class="badge">Prazo: {{ f.prazo_entrega }}</span>{% endif %}
                                 {% if f.observacoes %}
-                                <br><small style="color: var(--accent); font-weight: 700; display: inline-block; margin-top: 4px;">📝 {{ f.observacoes }}</small>
+                                <br><small style="color: var(--accent); font-weight: 700; display: inline-block; margin-top: 6px;">📝 {{ f.observacoes }}</small>
                                 {% endif %}
                             </td>
-                            <td style="text-align: right; padding-right: 30px;">
-                                <button onclick="abrirEditar('{{ f.id }}', '{{ f.nome_fantasia }}', '{{ f.cnpj }}', '{{ f.representante_nome }}', '{{ f.whatsapp }}', '{{ f.prazo_entrega }}', '{{ f.pedido_minimo }}', '{{ f.observacoes }}')" 
-                                        style="background: #f8fafc; color: var(--accent); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; font-size: 16px; padding: 8px 12px; margin-right: 8px; transition: 0.2s;" title="Editar">✏️</button>
-                                
-                                <a href="/excluir_representante/{{ f.id }}" style="text-decoration: none; font-size: 16px; display: inline-block; padding: 8px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; transition: 0.2s;" title="Excluir" onclick="return confirm('Apagar fornecedor?')">🗑️</a>
+                            <td style="text-align:right;">
+                                <a href="/excluir_representante/{{ f.id }}" style="color:var(--danger);" onclick="return confirm('Apagar fornecedor?')"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                {% if not representantes %}
-                <div style="padding: 40px; text-align: center; color: var(--text-muted); font-weight: 500;">
-                    Nenhum fornecedor cadastrado ainda. Clique em "Novo Fornecedor" para começar.
-                </div>
-                {% endif %}
             </div>
         </div>
     </main>
 
-    <div id="modalNovoRep" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="fecharModal('modalNovoRep')">&times;</button>
-            <h3 class="panel-title" style="margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">➕ Novo Fornecedor</h3>
+    <div id="modalNovo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; padding: 20px;">
+        <div style="background:white; padding:30px; border-radius:15px; width:100%; max-width:450px;">
+            <h2 style="margin-top:0;">➕ Novo Fornecedor</h2>
             <form action="/representantes" method="POST">
-                <div class="form-grid">
-                    <div class="input-group" style="grid-column: span 2;"><label>Distribuidora (*)</label><input type="text" name="nome_fantasia" class="input-control" required placeholder="Nome da empresa"></div>
-                    <div class="input-group"><label>CNPJ</label><input type="text" name="cnpj" class="input-control" placeholder="00.000.000/0000-00"></div>
-                    <div class="input-group"><label>Representante</label><input type="text" name="representante_nome" class="input-control" placeholder="Nome do contato"></div>
-                    <div class="input-group"><label>WhatsApp</label><input type="text" name="whatsapp" class="input-control" placeholder="(00) 00000-0000"></div>
-                    <div class="input-group"><label>Pedido Mínimo (R$)</label><input type="text" name="pedido_minimo" class="input-control" placeholder="Ex: 500,00"></div>
-                    <div class="input-group" style="grid-column: span 1;"><label>Prazo de Entrega</label><input type="text" name="prazo_entrega" class="input-control" placeholder="Ex: 3 dias úteis"></div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label>📝 Observações Internas</label>
-                        <textarea name="observacoes" class="input-control" rows="2" placeholder="Ex: Entrega só na terça, aceita boleto..."></textarea>
+                <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Distribuidora</label>
+                <input type="text" name="nome_fantasia" class="input-control" required>
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Representante</label>
+                        <input type="text" name="representante_nome" class="input-control">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">WhatsApp (DDD)</label>
+                        <input type="text" name="whatsapp" class="input-control">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 25px; height: 50px; font-size: 16px;">💾 Salvar Fornecedor</button>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Pedido Mín. (R$)</label>
+                        <input type="text" name="pedido_minimo" class="input-control">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Prazo de Entrega</label>
+                        <input type="text" name="prazo_entrega" class="input-control">
+                    </div>
+                </div>
+
+                <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">📝 Observações Internas</label>
+                <textarea name="observacoes" class="input-control" rows="2" placeholder="Ex: Entrega na terça, aceita boleto..."></textarea>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 10px;">Salvar Fornecedor</button>
+                <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:var(--text-muted); font-weight: 700;">Cancelar</button>
             </form>
         </div>
     </div>
-
-    <div id="modalEditarRep" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="fecharModal('modalEditarRep')">&times;</button>
-            <h3 class="panel-title" style="margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">✏️ Editar Fornecedor</h3>
-            <form id="formEditar" method="POST" action="/editar_representante/">
-                <div class="form-grid">
-                    <div class="input-group" style="grid-column: span 2;"><label>Distribuidora (*)</label><input type="text" name="nome_fantasia" id="edit_nome" class="input-control" required></div>
-                    <div class="input-group"><label>CNPJ</label><input type="text" name="cnpj" id="edit_cnpj" class="input-control"></div>
-                    <div class="input-group"><label>Representante</label><input type="text" name="representante_nome" id="edit_rep" class="input-control"></div>
-                    <div class="input-group"><label>WhatsApp</label><input type="text" name="whatsapp" id="edit_whats" class="input-control"></div>
-                    <div class="input-group"><label>Pedido Mínimo (R$)</label><input type="text" name="pedido_minimo" id="edit_min" class="input-control"></div>
-                    <div class="input-group"><label>Prazo de Entrega</label><input type="text" name="prazo_entrega" id="edit_prazo" class="input-control"></div>
-                    <div class="input-group" style="grid-column: span 2;">
-                        <label>📝 Observações Internas</label>
-                        <textarea name="observacoes" id="edit_obs" class="input-control" rows="2"></textarea>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 25px; height: 50px; font-size: 16px;">💾 Atualizar Fornecedor</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="modalAjudaRep" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="fecharModal('modalAjudaRep')">&times;</button>
-            <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">❓ Manual de Fornecedores</h2>
-            <div style="margin-bottom: 20px; margin-top: 20px;">
-                <h4 style="color: #25D366; margin: 0 0 5px 0;"><i class="fab fa-whatsapp"></i> Chamar no Whats</h4>
-                <p style="color: var(--text-muted); margin: 0; font-size: 14px; line-height: 1.6;">Se você preencher o WhatsApp do representante, um botão verde aparecerá na tabela. Basta clicar nele e o sistema abre uma conversa já enviando um "Olá" automático para o vendedor.</p>
-            </div>
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 15px; height: 50px; font-size: 16px;" onclick="fecharModal('modalAjudaRep')">Entendi!</button>
-        </div>
-    </div>
-
-    <script>
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
-        
-        // Fechar modal ao clicar fora
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) { 
-                event.target.style.display = "none"; 
-            }
-        }
-        
-        function abrirEditar(id, nome, cnpj, rep, whats, prazo, min, obs) {
-            document.getElementById('formEditar').action = '/editar_representante/' + id;
-            document.getElementById('edit_nome').value = nome;
-            document.getElementById('edit_cnpj').value = cnpj;
-            document.getElementById('edit_rep').value = rep;
-            document.getElementById('edit_whats').value = whats;
-            document.getElementById('edit_prazo').value = prazo;
-            document.getElementById('edit_min').value = min;
-            document.getElementById('edit_obs').value = obs;
-            abrirModal('modalEditarRep');
-        }
-    </script>
 </body>
 </html>

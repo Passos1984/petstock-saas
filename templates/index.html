@@ -95,13 +95,15 @@
 <body>
 
     <div class="mobile-header">
-        <h2 style="margin:0; font-size: 18px; font-weight: 800;">🐾 PetStock</h2>
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
         <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </div>
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <aside id="sidebar">
-        <h2 class="logo">🐾 PetStock</h2>
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
         {% if loja_logada %}
         <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%;">
             <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
@@ -198,7 +200,7 @@
                                 {{ p.estoque }}
                             </td>
                             <td style="text-align: right; padding-right: 30px;">
-                                <button class="btn" style="background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 10px; margin-right: 5px;" onclick="abrirModalBaixa('{{ p.id }}', '{{ p.nome }}')" title="Baixa / Brinde">🔻 Baixa</button>
+                                <button class="btn" style="background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; padding: 6px 10px; margin-right: 5px;" data-nome="{{ p.nome }}" onclick="abrirModalBaixa('{{ p.id }}', this.getAttribute('data-nome'))" title="Baixa / Brinde">🔻 Baixa</button>
                                 <a href="/editar_produto/{{ p.id }}" style="text-decoration: none; display: inline-block; padding: 6px 10px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; margin-right: 5px; transition: 0.2s;" title="Editar">✏️</a>
                                 <a href="/inativar_produto/{{ p.id }}" style="text-decoration: none; display: inline-block; padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; transition: 0.2s;" title="Excluir" onclick="return confirm('Mover para lixeira?')">🗑️</a>
                             </td>
@@ -247,12 +249,12 @@
                         <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">CATEGORIA</label>
                         <input type="text" name="categoria" class="input-control" placeholder="Selecione ou digite..." list="catList" required>
                         <datalist id="catList">
-                            <option value="Rações">
-                            <option value="Acessórios">
-                            <option value="Farmácia">
-                            <option value="Higiene">
-                            <option value="Petiscos">
-                            <option value="Diversos">
+                            <option value="Rações"></option>
+                            <option value="Acessórios"></option>
+                            <option value="Farmácia"></option>
+                            <option value="Higiene"></option>
+                            <option value="Petiscos"></option>
+                            <option value="Diversos"></option>
                         </datalist>
                     </div>
 
@@ -391,8 +393,24 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+        function abrirModal(id) { 
+            let modal = document.getElementById(id);
+            modal.style.display = 'flex'; 
+            
+            // Limpa o formulário sozinho toda vez que abrir o Novo Produto
+            if (id === 'modalCadastro') {
+                let form = modal.querySelector('form');
+                if (form) form.reset();
+                let preview = document.getElementById('lucroPreview');
+                if (preview) preview.style.display = 'none';
+                let sugestao = document.getElementById('sugestaoPreco');
+                if (sugestao) sugestao.innerText = '';
+            }
+        }
+        
+        function fecharModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+        }
 
         function abrirModalBaixa(id, nome) {
             document.getElementById('idProdutoBaixa').value = id;
@@ -404,30 +422,29 @@
             if (event.target.classList.contains('modal')) { event.target.style.display = "none"; }
         }
 
-       function calcularMargem() {
+        function calcularMargem() {
             let custoStr = document.getElementById('cadCusto').value.replace(',', '.');
-            let vendaInput = document.getElementById('cadVenda');
-            let vendaStr = vendaInput.value.replace(',', '.');
+            let vendaStr = document.getElementById('cadVenda').value.replace(',', '.');
 
             let custo = parseFloat(custoStr) || 0;
             let venda = parseFloat(vendaStr) || 0;
             let preview = document.getElementById('lucroPreview');
+            let sugestao = document.getElementById('sugestaoPreco');
 
-            // SE ELE DIGITOU O CUSTO, MAS AINDA NÃO DIGITOU A VENDA: AUTO-PREENCHE COM 100% DE MARGEM!
-            if (custo > 0 && venda === 0) {
-                let valorSugerido = custo * 2; // Dobra o valor (100% de lucro)
-                vendaInput.value = valorSugerido.toFixed(2).replace('.', ',');
-                venda = valorSugerido; // Atualiza a variável para a caixa de lucro ficar verde
+            if (custo > 0) {
+                let valorSugerido = custo * 1.40; 
+                sugestao.innerText = `💡 Sugestão (40% de margem): R$ ${valorSugerido.toFixed(2).replace('.', ',')}`;
+            } else {
+                sugestao.innerText = '';
             }
 
-            // Lógica do Lucro Real na caixinha verde/vermelha
             if(custo > 0 && venda > 0) {
                 let lucro = venda - custo;
                 let pct = (lucro / custo) * 100;
                 preview.style.display = 'block';
                 if(lucro > 0) {
                     preview.style.background = '#d1fae5'; preview.style.color = '#047857'; preview.style.borderColor = '#a7f3d0';
-                    preview.innerText = `📈 Lucro Real Unitário: R$ ${lucro.toFixed(2).replace('.',',')} (${pct.toFixed(1)}%)`;
+                    preview.innerText = `📈 Lucro Real: R$ ${lucro.toFixed(2).replace('.',',')} (${pct.toFixed(1)}%)`;
                 } else {
                     preview.style.background = '#fee2e2'; preview.style.color = '#b91c1c'; preview.style.borderColor = '#fecaca';
                     preview.innerText = `🚨 Atenção: Prejuízo de R$ ${Math.abs(lucro).toFixed(2).replace('.',',')}`;

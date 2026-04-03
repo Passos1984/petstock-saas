@@ -1,91 +1,155 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PetStock - Configurações</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { 
+            --primary: #222533; 
+            --accent: #5c4dff; 
+            --accent-hover: #4a3ecc;
+            --success: #10b981; 
+            --warning: #f59e0b; 
+            --danger: #ef4444; 
+            --bg-body: #f4f6f9; 
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-color: #eeeeee;
+            --bg-card: #ffffff;
+            --input-border: #cbd5e1; 
+        }
+        
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
+        
+        /* --- MENU LATERAL PREMIUM --- */
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        /* --- CORPO PRINCIPAL --- */
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative; }
+        .page-title { margin: 0 0 30px 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;}
+
+        .panel { background: var(--bg-card); padding: 35px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 600px;}
+        .panel-title { margin-top: 0; color: var(--text-main); font-size: 18px; margin-bottom: 10px; font-weight: 800; }
+        .panel-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
+
+        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 25px;}
+        .input-group label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .input-control { padding: 16px 18px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 15px; outline: none; transition: all 0.2s ease; font-family: inherit; font-weight: 500; width: 100%;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+
+        .btn { padding: 16px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; transition: 0.2s; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit; width: 100%;}
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 25px; font-weight: 700; font-size: 14px; text-align: center;}
+        .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        /* --- RESPONSIVO MOBILE --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; display: block;}
+            .mobile-header { display: flex; }
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            main { padding: 20px 15px; }
+            .panel { padding: 25px 20px; }
+        }
+    </style>
 </head>
+<body>
 
-<body
-    style="display: flex; height: 100vh; margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6;">
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
 
-    <aside
-        style="width: 200px; background-color: #2c3e50; color: white; padding: 20px; display: flex; flex-direction: column;">
-        <h2 style="margin-top: 0; border-bottom: 1px solid #34495e; padding-bottom: 10px; font-size: 18px;">🐾 PetStock
-        </h2>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
+        
         {% if loja_logada %}
-        <div
-            style="background-color: #34495e; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;">
-            <span style="font-size: 11px; color: #bdc3c7; text-transform: uppercase;">Licenciado para:</span><br>
-            <strong style="font-size: 14px; color: #f1c40f;">{{ loja_logada.nome_fantasia }}</strong>
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
         </div>
         {% endif %}
 
-        <a href="/" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📦 Estoque
-            Atual</a>
-        <a href="/clientes" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">👥
-            Clientes</a>
-        <a href="/pdv" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">🛒 Ponto de
-            Venda</a>
-        <a href="/radar" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📡 Radar de
-            Vendas</a>
-        <a href="/relatorios" style="color: #bdc3c7; text-decoration: none; padding: 10px 0; font-size: 14px;">📊
-            Relatórios</a>
-        <a href="/configuracoes"
-            style="color: white; text-decoration: none; padding: 10px 0; font-size: 14px; font-weight: bold;">⚙️
-            Configurações</a>
-
-        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá%20Guilherme!%20Preciso%20de%20ajuda%20com%20o%20sistema%20PetStock."
-            target="_blank"
-            style="background-color: #27ae60; color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; text-align: center; margin-top: 15px; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.3); transition: 0.3s;">
-            🎧 Falar com Suporte
-        </a>
-
-        <a href="/logout"
-            style="color: #e74c3c; text-decoration: none; padding: 10px 0; margin-top: auto; font-size: 14px; font-weight: bold;">🚪
-            Sair</a>
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            {% endif %}
+            <a href="/configuracoes" class="menu-link active" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
+        </div>
+        
+        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com o PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
     </aside>
 
-    <main style="flex: 1; padding: 25px; overflow-y: auto;">
-        <h2 style="margin-top: 0; color: #2c3e50; margin-bottom: 15px; font-size: 22px;">⚙️ Configurações da Loja</h2>
+    <main>
+        <h2 class="page-title">
+            <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px;">⚙️</span>
+            Configurações da Loja
+        </h2>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div
-            style="background-color: {{ '#27ae60' if category == 'success' else '#e74c3c' }}; color: white; padding: 10px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 13px; font-weight: bold;">
-            {{ message }}
-        </div>
-        {% endfor %}
-        {% endif %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}">
+                        {{ '✅' if category == 'success' else '⚠️' }} {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
 
-        <div
-            style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 500px;">
-            <h3 style="margin-top: 0; color: #2c3e50; font-size: 16px; margin-bottom: 15px;">Informações de Pagamento
-                (PDV)</h3>
-            <p style="color: #7f8c8d; font-size: 13px; margin-bottom: 20px;">
-                Defina sua chave PIX abaixo. Ela será exibida automaticamente na tela do Caixa quando o cliente for
-                pagar com PIX.
+        <div class="panel">
+            <h3 class="panel-title">💳 Informações de Pagamento (PDV)</h3>
+            <p class="panel-desc">
+                Defina sua chave PIX abaixo. Ela será exibida automaticamente na tela do Caixa quando o cliente optar por pagar com PIX, facilitando a transferência.
             </p>
 
-            <form action="/configuracoes" method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label style="font-weight: bold; font-size: 12px; color: #34495e; text-transform: uppercase;">Sua
-                        Chave PIX</label>
-                    <input type="text" name="chave_pix" value="{{ loja_logada.chave_pix or '' }}"
-                        placeholder="Ex: CNPJ, E-mail, Celular..."
-                        style="padding: 12px; border: 1px solid #ccc; border-radius: 8px; outline: none; font-size: 14px;">
+            <form action="/configuracoes" method="POST">
+                <div class="input-group">
+                    <label>Sua Chave PIX</label>
+                    <input type="text" name="chave_pix" value="{{ loja_logada.chave_pix or '' }}" class="input-control" placeholder="Ex: CNPJ, E-mail, Celular ou Aleatória">
                 </div>
 
-                <button type="submit"
-                    style="background: #3498db; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s;">
-                    💾 Salvar Configurações
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar Configurações
                 </button>
             </form>
         </div>
     </main>
-</body>
 
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+    </script>
+</body>
 </html>

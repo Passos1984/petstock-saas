@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { 
-            --primary: #222533; /* Fundo do menu unificado com o sistema */
-            --accent: #3b82f6; /* Azul CEO */
+            --primary: #222533; 
+            --accent: #3b82f6; 
             --accent-hover: #2563eb;
             --success: #10b981; 
             --warning: #f59e0b; 
@@ -25,7 +25,6 @@
         
         /* --- MENU LATERAL DO CEO --- */
         aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; z-index: 1001; transition: left 0.3s ease; flex-shrink: 0;}
-        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 25px; font-size: 22px; font-weight: 800; color: white; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px;}
         .menu-link { color: #94a3b8; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; font-weight: 600; transition: 0.2s; font-size: 15px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
         .menu-link.active { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
@@ -99,14 +98,21 @@
 <body>
 
     <div class="mobile-header">
-        <h2 style="margin:0; font-size: 18px; font-weight: 800;"><i class="fas fa-crown" style="color: var(--warning);"></i> PetStock CEO</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-crown" style="color: var(--warning); font-size: 18px;"></i>
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 25px;">
+        </div>
         <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <aside id="sidebar">
-        <h2 class="logo"><i class="fas fa-crown" style="color: var(--warning);"></i> PetStock CEO</h2>
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <i class="fas fa-crown" style="color: var(--warning); font-size: 24px;"></i>
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
+
         <div style="flex: 1; margin-top: 20px;">
             <a href="/admin_guilherme" class="menu-link active"><i class="fas fa-chart-line"></i> Dashboard</a>
         </div>
