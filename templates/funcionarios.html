@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Equipa</title>
+    <title>PetStock - Equipe</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,46 +13,97 @@
             --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
-        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); }
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0;}
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); overflow: hidden;}
+        
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1002; transition: left 0.3s ease;}
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .menu-link.active { background: var(--accent); color: white; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); font-weight: 600;}
+        
         main { flex: 1; padding: 40px; overflow-y: auto; }
-        .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; }
-        .input-control { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; }
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;}
+        .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);}
+        .input-control { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit;}
+        .input-control:focus { border-color: var(--accent); }
+        
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit;}
         .btn-primary { background: var(--success); color: white; }
+        
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); }
-        td { padding: 15px; border-bottom: 1px solid var(--border-color); }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); white-space: nowrap;}
+        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; white-space: nowrap;}
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);}
+
+        /* Classes para o formulário responsivo */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end; }
+
+        /* --- BARRA MOBILE E OVERLAY --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 10px 20px; align-items: center; justify-content: space-between; position: fixed; top: 0; width: 100%; z-index: 1000; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; }
+
+        /* --- AJUSTES MOBILE --- */
+        @media (max-width: 991px) {
+            body { flex-direction: column; overflow: auto; }
+            .mobile-header { display: flex; }
+            .overlay.active { display: block; }
+            
+            main { padding: 80px 15px 20px 15px; height: auto; }
+            
+            aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            
+            .form-grid { grid-template-columns: 1fr; gap: 5px; }
+            .form-grid button { width: 100%; margin-top: 10px; height: 48px; }
+            
+            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 500px; }
+        }
     </style>
 </head>
 <body>
-    <aside>
-        <div style="text-align: center; margin-bottom: 20px;">
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 150px;">
         </div>
-        <a href="/" class="menu-link">📦 Estoque</a>
-        <a href="/clientes" class="menu-link">👥 Clientes</a>
-        <a href="/pdv" class="menu-link">🛒 PDV</a>
-        <a href="/radar" class="menu-link">📡 Radar</a>
-        <a href="/funcionarios" class="menu-link active">👤 Equipe / Caixas</a>
-        <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        <div class="menu-container" style="flex: 1;">
+            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link active"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
+        </div>
         <a href="/logout" class="menu-link" style="margin-top:auto; color:#fca5a5;">🚪 Sair</a>
     </aside>
 
     <main>
-        <h1 style="margin:0 0 30px 0; font-weight:800;">👤 Gestão de Equipe</h1>
+        <h1 style="margin:0 0 30px 0; font-weight:800; font-size: 24px;">👤 Gestão de Equipe</h1>
 
         <div class="panel">
             <h3 style="margin-top:0;">➕ Cadastrar Novo Acesso</h3>
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">A senha inicial será sempre **123456**. O funcionário poderá mudar no primeiro login.</p>
-            <form action="/funcionarios" method="POST" style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:15px; align-items:end;">
-                <div><label style="font-size:11px; font-weight:800;">NOME COMPLETO</label><input type="text" name="nome" class="input-control" required></div>
-                <div><label style="font-size:11px; font-weight:800;">UTILIZADOR (LOGIN)</label><input type="text" name="usuario" class="input-control" required></div>
-                <div><label style="font-size:11px; font-weight:800;">NÍVEL</label>
-                    <select name="cargo" class="input-control">
+            
+            <form action="/funcionarios" method="POST" class="form-grid">
+                <div>
+                    <label style="font-size:11px; font-weight:800;">NOME COMPLETO</label>
+                    <input type="text" name="nome" class="input-control" required>
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:800;">UTILIZADOR (LOGIN)</label>
+                    <input type="text" name="usuario" class="input-control" required>
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:800;">NÍVEL</label>
+                    <select name="cargo" class="input-control" style="background: white;">
                         <option value="Caixa">Caixa (Só vendas)</option>
                         <option value="Gerente">Gerente (Acesso total)</option>
                     </select>
@@ -62,23 +113,39 @@
         </div>
 
         <div class="panel" style="padding:0; overflow:hidden;">
-            <table>
-                <thead><tr><th>Funcionário</th><th>Utilizador</th><th>Nível</th><th style="text-align:right;">Ações</th></tr></thead>
-                <tbody>
-                    {% for f in funcionarios %}
-                    <tr>
-                        <td><strong>{{ f.nome }}</strong></td>
-                        <td><code>{{ f.usuario }}</code></td>
-                        <td><span class="badge">{{ f.cargo }}</span></td>
-                        <td style="text-align:right;">
-                            <a href="/resetar_senha/{{ f.id }}" style="color:var(--warning); margin-right:15px;" title="Resetar Senha para 123456"><i class="fas fa-key"></i></a>
-                            <a href="/excluir_funcionario/{{ f.id }}" style="color:var(--danger);" onclick="return confirm('Eliminar este acesso?')"><i class="fas fa-trash"></i></a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="padding-left: 25px;">Funcionário</th>
+                            <th>Utilizador</th>
+                            <th>Nível</th>
+                            <th style="text-align:right; padding-right: 25px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in funcionarios %}
+                        <tr>
+                            <td style="padding-left: 25px;"><strong>{{ f.nome }}</strong></td>
+                            <td><code>{{ f.usuario }}</code></td>
+                            <td><span class="badge">{{ f.cargo }}</span></td>
+                            <td style="text-align:right; padding-right: 25px;">
+                                <a href="/resetar_senha/{{ f.id }}" style="color:var(--warning); margin-right:15px; text-decoration: none; font-size: 16px;" title="Resetar Senha para 123456"><i class="fas fa-key"></i></a>
+                                <a href="/excluir_funcionario/{{ f.id }}" style="color:var(--danger); text-decoration: none; font-size: 16px;" onclick="return confirm('Eliminar este acesso?')"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

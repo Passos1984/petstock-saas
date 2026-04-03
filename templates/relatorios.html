@@ -70,23 +70,55 @@
         .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
 
+        /* --- MÁGICA DOS CARDS NO CELULAR --- */
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; display: block;}
-            .mobile-header { display: flex; }
-            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            .mobile-header { display: flex; position: fixed; top: 0; width: 100%; }
+            
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); z-index: 1002;}
             aside.active { left: 0; }
-            .overlay.active { display: block; }
-            main { padding: 20px 15px; }
+            .overlay.active { display: block; z-index: 1001;}
+            
+            main { padding: 80px 15px 20px 15px; } /* Ajuste de padding pro header fixo */
+            
             .header-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; }
             .header-bar > div { flex-wrap: wrap; width: 100%; }
             .header-bar button, .header-bar a { flex: 1; text-align: center; justify-content: center; min-width: 140px; }
+            
             .filter-form { flex-direction: column !important; align-items: stretch !important; gap: 15px !important; }
             .filter-form button, .filter-form a { width: 100%; height: auto !important; padding: 14px; }
+            
             .content-wrapper { flex-direction: column !important; }
-            .table-panel { min-width: 100% !important; flex: none !important; padding: 15px !important; }
+            .table-panel { min-width: 100% !important; flex: none !important; padding: 15px !important; background: transparent; border: none; box-shadow: none;}
             .chart-panel { min-width: 100% !important; flex: none !important; margin-top: 20px;}
-            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid var(--border-color);}
-            table { min-width: 600px; border: none; } 
+            
+            /* Transformando Tabela em Cards */
+            .table-responsive { width: 100%; overflow-x: hidden; border: none;}
+            .table-responsive table, .table-responsive thead, .table-responsive tbody, .table-responsive th, .table-responsive td, .table-responsive tr { display: block; width: 100%; }
+            .table-responsive thead tr { display: none; } /* Esconde o cabeçalho original */
+            
+            .table-responsive tr {
+                background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+            }
+            .table-responsive td {
+                display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-color); text-align: right;
+            }
+            .table-responsive td:last-child { border-bottom: none; padding-bottom: 0; }
+            
+            /* Pseudo-elemento para criar o rótulo da coluna */
+            .table-responsive td::before {
+                content: attr(data-label); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;
+            }
+            
+            /* Ajustes Específicos para melhor leitura no celular */
+            .table-responsive td[data-label="Produto"] { flex-direction: column; align-items: flex-start; text-align: left; }
+            .table-responsive td[data-label="Produto"]::before { margin-bottom: 6px; }
+            .table-responsive td[data-label="Produto"] strong { white-space: normal; } /* Permite quebrar linha de nome longo */
+            
+            .table-responsive td[data-label="Total"] {
+                background: #f0fdf4; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 18px !important; color: var(--success); font-weight: 800; border: 1px solid #bbf7d0;
+            }
+            .table-responsive td[data-label="Total"]::before { color: #16a34a; }
         }
     </style>
 </head>
@@ -242,16 +274,16 @@
                         <tbody>
                             {% for v in vendas %}
                             <tr>
-                                <td style="padding-left: 30px; color: var(--text-muted); font-size: 12px; font-weight: 600; white-space: nowrap;">{{ v.data_venda.strftime('%d/%m %H:%M') }}</td>
-                                <td style="white-space: nowrap;"><strong style="color: var(--accent);">{{ v.vendedor }}</strong></td>
-                                <td><strong style="color: var(--text-main);">{{ v.produto.nome if v.produto else 'Item Excluído' }}</strong></td>
-                                <td style="text-align: center; color: var(--text-muted); font-weight: 600;">{{ v.quantidade }}</td>
-                                <td>
+                                <td data-label="Data" style="padding-left: 30px; color: var(--text-muted); font-size: 12px; font-weight: 600; white-space: nowrap;">{{ v.data_venda.strftime('%d/%m %H:%M') }}</td>
+                                <td data-label="Vendedor" style="white-space: nowrap;"><strong style="color: var(--accent);">{{ v.vendedor }}</strong></td>
+                                <td data-label="Produto"><strong style="color: var(--text-main);">{{ v.produto.nome if v.produto else 'Item Excluído' }}</strong></td>
+                                <td data-label="Qtd" style="text-align: center; color: var(--text-muted); font-weight: 600;">{{ v.quantidade }}</td>
+                                <td data-label="Pagamento">
                                     <span class="badge" style="background-color: {% if v.forma_pagamento_1 == 'Crediário / Fiado' %}#fee2e2; color: #b91c1c; border-color: #fecaca;{% else %}#f8fafc; color: var(--text-muted); border-color: var(--border-color);{% endif %}">
                                         {{ v.forma_pagamento_1 }}
                                     </span>
                                 </td>
-                                <td style="text-align: right; padding-right: 30px; font-weight: 800; color: var(--success); font-size: 15px; white-space: nowrap;">
+                                <td data-label="Total" style="text-align: right; padding-right: 30px; font-weight: 800; color: var(--success); font-size: 15px; white-space: nowrap;">
                                     R$ {{ "%.2f"|format(v.valor_total or 0)|replace('.', ',') }}
                                 </td>
                             </tr>
