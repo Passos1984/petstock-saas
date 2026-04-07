@@ -6,6 +6,7 @@
     <title>PetStock - Gestão de Estoque</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
             --primary: #222533;
@@ -227,7 +228,12 @@
 
                     <div style="grid-column: span 2;">
                         <label style="font-size: 11px; font-weight: 800; color: var(--text-muted);">CÓDIGO (SKU / BARRAS / EAN)</label>
-                        <input type="text" name="sku" class="input-control" placeholder="Bipe, digite ou deixe vazio p/ automático" style="background: #f8fafc;">
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" name="sku" id="cadSku" class="input-control" placeholder="Bipe, digite ou deixe vazio p/ automático" style="background: #f8fafc; flex: 1;">
+                            <button type="button" onclick="abrirScannerEstoque()" class="btn btn-primary" style="padding: 0 20px; border-radius: 10px; font-size: 18px;" title="Abrir Câmera para Bipar">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div style="grid-column: span 2;">
@@ -277,6 +283,15 @@
                 <div id="lucroPreview" class="lucro-tag" style="display: none;">Lucro: R$ 0,00 (0%)</div>
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 16px; font-size: 16px;">Salvar no Estoque</button>
             </form>
+        </div>
+    </div>
+
+    <div id="modalScannerEstoque" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 20px;">
+            <button class="close-btn" onclick="fecharScannerEstoque()">&times;</button>
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--text-main);">📸 Ler Código de Barras</h3>
+            <div id="readerEstoque" style="width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px;"></div>
+            <button type="button" class="btn btn-outline" style="width: 100%; margin-top: 5px;" onclick="fecharScannerEstoque()">Cancelar</button>
         </div>
     </div>
 
@@ -388,6 +403,44 @@
     </div>
 
     <script>
+        // CIRURGIA: Variável e Lógica do Scanner de Estoque
+        let html5QrCodeEstoque = null;
+
+        function abrirScannerEstoque() {
+            document.getElementById('modalScannerEstoque').style.display = 'flex';
+            if (!html5QrCodeEstoque) {
+                html5QrCodeEstoque = new Html5Qrcode("readerEstoque");
+            }
+            
+            html5QrCodeEstoque.start(
+                { facingMode: "environment" }, 
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 150 }
+                },
+                function onScanSuccess(decodedText, decodedResult) {
+                    fecharScannerEstoque(); 
+                    document.getElementById('cadSku').value = decodedText; // Preenche o campo de código automaticamente
+                },
+                function onScanFailure(error) {
+                    // ignorar os erros silenciosos enquanto tenta focar a câmera
+                }
+            ).catch((err) => {
+                alert("Não foi possível acessar a câmera. Verifique as permissões no seu navegador.");
+            });
+        }
+
+        function fecharScannerEstoque() {
+            document.getElementById('modalScannerEstoque').style.display = 'none';
+            if (html5QrCodeEstoque) {
+                html5QrCodeEstoque.stop().then(() => {
+                    html5QrCodeEstoque.clear();
+                }).catch(err => {
+                    console.log("Erro ao parar a câmera", err);
+                });
+            }
+        }
+
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
@@ -419,7 +472,10 @@
         }
 
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) { event.target.style.display = "none"; }
+            // Evita fechar a câmera sem querer clicando fora
+            if (event.target.classList.contains('modal') && event.target.id !== 'modalScannerEstoque') { 
+                event.target.style.display = "none"; 
+            }
         }
 
         function calcularMargem() {
