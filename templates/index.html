@@ -37,7 +37,7 @@
         .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
 
         {% set metricas = namespace(valor_total=0, criticos=0) %}
-        {% for p in produtos %}
+        {% for p in produtos.items %}
             {% set metricas.valor_total = metricas.valor_total + (p.preco_custo * p.estoque) %}
             {% if p.estoque < 5 %}{% set metricas.criticos = metricas.criticos + 1 %}{% endif %}
         {% endfor %}
@@ -157,14 +157,14 @@
         <div class="dashboard-grid">
             <div class="dash-card" style="border-bottom-color: var(--accent);">
                 <h4>Total de Produtos</h4>
-                <div class="value">{{ produtos|length }}</div>
+                <div class="value">{{ produtos.total }}</div>
             </div>
             <div class="dash-card" style="border-bottom-color: var(--success);">
-                <h4>Capital Imobilizado (Custo)</h4>
+                <h4>Capital Imobilizado (Página)</h4>
                 <div class="value" style="color: var(--success);">R$ {{ "%.2f"|format(metricas.valor_total)|replace('.', ',') }}</div>
             </div>
             <div class="dash-card" style="border-bottom-color: var(--danger); background: {% if metricas.criticos > 0 %}#fef2f2{% else %}#ffffff{% endif %};">
-                <h4 style="color: {% if metricas.criticos > 0 %}var(--danger){% else %}var(--text-muted){% endif %};">Estoque Crítico (Abaixo de 5)</h4>
+                <h4 style="color: {% if metricas.criticos > 0 %}var(--danger){% else %}var(--text-muted){% endif %};">Estoque Crítico (Página)</h4>
                 <div class="value" style="color: var(--danger);">{{ metricas.criticos }} itens</div>
             </div>
         </div>
@@ -187,7 +187,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for p in produtos %}
+                        {% for p in produtos.items %}
                         <tr>
                             <td style="padding-left: 30px;">
                                 <strong style="color: var(--text-main); font-size: 15px;">{{ p.nome }}</strong><br>
@@ -215,7 +215,27 @@
                         {% endfor %}
                     </tbody>
                 </table>
-            </div>
+                
+                {% if produtos.pages > 1 %}
+                <div style="padding: 20px; display: flex; justify-content: center; gap: 10px; border-top: 1px solid var(--border-color); align-items: center; background: #fafafa;">
+                    
+                    {% if produtos.has_prev %}
+                        <a href="{{ url_for('home', page=produtos.prev_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;"><i class="fas fa-chevron-left"></i> Anterior</a>
+                    {% else %}
+                        <button class="btn" style="background: #f1f5f9; border: 1px solid var(--border-color); padding: 8px 12px; color: #cbd5e1; cursor: not-allowed;" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
+                    {% endif %}
+
+                    <span style="font-weight: 700; font-size: 13px; color: var(--text-muted);">Página {{ produtos.page }} de {{ produtos.pages }}</span>
+
+                    {% if produtos.has_next %}
+                        <a href="{{ url_for('home', page=produtos.next_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;">Próxima <i class="fas fa-chevron-right"></i></a>
+                    {% else %}
+                        <button class="btn" style="background: #f1f5f9; border: 1px solid var(--border-color); padding: 8px 12px; color: #cbd5e1; cursor: not-allowed;" disabled>Próxima <i class="fas fa-chevron-right"></i></button>
+                    {% endif %}
+
+                </div>
+                {% endif %}
+                </div>
         </div>
     </main>
 
@@ -224,6 +244,8 @@
             <button class="close-btn" onclick="fecharModal('modalCadastro')">&times;</button>
             <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">📦 Cadastrar Produto</h3>
             <form action="/cadastrar_produto" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div class="form-grid" style="margin-top: 0;">
 
                     <div style="grid-column: span 2;">
@@ -300,11 +322,13 @@
             <button class="close-btn" onclick="fecharModal('modalFracionar')">&times;</button>
             <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">⚖️ Fracionar Ração (Saco -> Granel)</h3>
             <form action="/desmembrar" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--danger);">1. SACO FECHADO (ORIGEM)</label>
                     <select name="origem_id" id="selOrigem" class="input-control" required style="border-color: var(--danger);" onchange="mostrarEstoqueOrigem()">
                         <option value="">-- Selecione o Saco Fechado --</option>
-                        {% for p in produtos %}
+                        {% for p in produtos.items %}
                             <option value="{{ p.id }}" data-estoque="{{ p.estoque }}">{{ p.nome }} (Estoque: {{ p.estoque }})</option>
                         {% endfor %}
                     </select>
@@ -320,7 +344,7 @@
                     <label style="font-size: 11px; font-weight: 800; color: var(--success);">2. RAÇÃO GRANEL (DESTINO)</label>
                     <select name="destino_id" class="input-control" required style="border-color: var(--success);">
                         <option value="">-- Selecione o produto Granel --</option>
-                        {% for p in produtos %}
+                        {% for p in produtos.items %}
                             <option value="{{ p.id }}">{{ p.nome }}</option>
                         {% endfor %}
                     </select>
@@ -343,6 +367,7 @@
             <p id="nomeProdutoBaixa" style="font-weight: 800; color: var(--text-main); margin-bottom: 20px;"></p>
 
             <form action="/dar_baixa" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="produto_id" id="idProdutoBaixa">
 
                 <div style="margin-bottom: 15px;">
@@ -372,6 +397,7 @@
             <h3 style="margin-top: 0; color: var(--text-main);">Importar Planilha</h3>
             <p style="color: var(--text-muted); font-size: 13px;">Sua planilha precisa estar no formato CSV com as colunas na ordem exata.</p>
             <form action="/importar_produtos" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="file" name="arquivo" accept=".csv" required style="margin-bottom: 20px; width: 100%; padding: 10px; border: 1px dashed var(--border-color); border-radius: 8px;">
                 <button type="submit" class="btn btn-success" style="width: 100%;">Carregar Planilha</button>
             </form>

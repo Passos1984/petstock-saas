@@ -88,11 +88,26 @@
     <main>
         <h1 style="margin:0 0 30px 0; font-weight:800; font-size: 24px;">👤 Gestão de Equipe</h1>
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 700; font-size: 14px;
+                        {% if category == 'danger' %} background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
+                        {% elif category == 'warning' %} background: #fef3c7; color: #92400e; border: 1px solid #fbbf24;
+                        {% else %} background: #d1fae5; color: #065f46; border: 1px solid #34d399; {% endif %}">
+                        {{ message | safe }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="panel">
             <h3 style="margin-top:0;">➕ Cadastrar Novo Acesso</h3>
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">A senha inicial será sempre **123456**. O funcionário poderá mudar no primeiro login.</p>
             
             <form action="/funcionarios" method="POST" class="form-grid">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <div>
                     <label style="font-size:11px; font-weight:800;">NOME COMPLETO</label>
                     <input type="text" name="nome" class="input-control" required>
@@ -132,6 +147,12 @@
                             <td style="text-align:right; padding-right: 25px;">
                                 <a href="/resetar_senha/{{ f.id }}" style="color:var(--warning); margin-right:15px; text-decoration: none; font-size: 16px;" title="Resetar Senha para 123456"><i class="fas fa-key"></i></a>
                                 <a href="/excluir_funcionario/{{ f.id }}" style="color:var(--danger); text-decoration: none; font-size: 16px;" onclick="return confirm('Eliminar este acesso?')"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                                Nenhum funcionário cadastrado.
                             </td>
                         </tr>
                         {% endfor %}

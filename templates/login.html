@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,48 +7,289 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #222533; --accent: #5c4dff; --bg-body: #f4f6f9; --text-main: #333333; --text-muted: #64748b; }
-        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); padding: 20px; }
-        .login-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
-        .logo-area { margin-bottom: 30px; }
-        .logo-area img { max-width: 180px; height: auto; }
-        .input-group { text-align: left; margin-bottom: 20px; }
-        .input-group label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 8px; }
-        .input-control { width: 100%; padding: 14px 18px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; transition: 0.3s; box-sizing: border-box; }
-        .input-control:focus { border-color: var(--accent); background: #fcfcff; }
-        .btn-login { width: 100%; padding: 16px; background: var(--accent); color: white; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(92, 77, 255, 0.3); }
-        .alert { padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 13px; font-weight: 600; line-height: 1.5; }
-        .alert-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .alert-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-        .hint { font-size: 12px; color: var(--text-muted); margin-top: 15px; display: block; background: #f8fafc; padding: 10px; border-radius: 8px; }
+        :root {
+            --primary: #222533;
+            --accent: #5c4dff;
+            --bg-body: #f4f6f9;
+            --text-main: #333333;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-body);
+            padding: 20px;
+        }
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-card {
+            background: white;
+            padding: 44px 40px 36px;
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .logo-area {
+            margin-bottom: 32px;
+        }
+        .logo-area img {
+            max-width: 180px;
+            height: auto;
+        }
+        .logo-fallback {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: -1px;
+        }
+        .logo-fallback span { color: var(--primary); }
+        .card-title {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+        .input-group {
+            text-align: left;
+            margin-bottom: 18px;
+            position: relative;
+        }
+        .input-group label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .input-control {
+            width: 100%;
+            padding: 14px 18px 14px 42px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            color: var(--text-main);
+            background: #fafafa;
+        }
+        .input-control:focus {
+            border-color: var(--accent);
+            background: #fcfcff;
+        }
+        .toggle-senha {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .toggle-senha:hover { color: var(--accent); }
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(92, 77, 255, 0.35);
+            background: #4a3de8;
+        }
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        .btn-login.loading {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+        .alert {
+            padding: 13px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.5;
+            text-align: left;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .alert i { margin-top: 1px; flex-shrink: 0; }
+        .alert-danger {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+        .alert-warning {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .alert-success {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .footer-login {
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+        .footer-login a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .footer-login a:hover { text-decoration: underline; }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #cbd5e1;
+            font-size: 12px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        @media (max-width: 480px) {
+            .login-card { padding: 32px 24px 28px; border-radius: 20px; }
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <div class="logo-area">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="PetStock Logo">
+    <div class="login-wrapper">
+        <div class="login-card">
+
+            <div class="logo-area">
+                <img src="{{ url_for('static', filename='img/logo.png') }}"
+                     alt="PetStock Logo"
+                     onerror="this.style.display='none'; document.getElementById('logo-fb').style.display='block'">
+                <div id="logo-fb" class="logo-fallback" style="display:none;">
+                    🐾 Pet<span>Stock</span>
+                </div>
+            </div>
+
+            <p class="card-title">Acesse sua conta para continuar</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="fa fa-{% if category == 'danger' %}circle-exclamation{% elif category == 'warning' %}triangle-exclamation{% else %}circle-check{% endif %}"></i>
+                            <span>{{ message | safe }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form action="/login" method="POST" id="form-login">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="input-group">
+                    <label for="login">Usuário</label>
+                    <div class="input-wrapper">
+                        <i class="fa fa-user"></i>
+                        <input type="text"
+                               id="login"
+                               name="login"
+                               class="input-control"
+                               required
+                               autocomplete="username"
+                               placeholder="Seu nome de acesso"
+                               autofocus>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <div class="input-wrapper">
+                        <i class="fa fa-lock"></i>
+                        <input type="password"
+                               id="senha"
+                               name="senha"
+                               class="input-control"
+                               required
+                               autocomplete="current-password"
+                               placeholder="••••••••">
+                        <button type="button" class="toggle-senha" onclick="toggleSenha()" title="Mostrar/ocultar senha">
+                            <i class="fa fa-eye" id="icone-olho"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btn-entrar" onclick="setLoading(this)">
+                    <i class="fa fa-right-to-bracket"></i>
+                    Entrar no sistema
+                </button>
+            </form>
+
+            <div class="footer-login">
+                Precisa de ajuda? <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20suporte%20no%20PetStock." target="_blank">Fale com o suporte</a>
+            </div>
         </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}{% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message | safe }}</div>
-            {% endfor %}{% endif %}
-        {% endwith %}
-
-        <form action="/login" method="POST">
-            <div class="input-group">
-                <label>Utilizador</label>
-                <input type="text" name="login" class="input-control" required placeholder="O seu nome de acesso">
-            </div>
-            <div class="input-group">
-                <label>Palavra-passe</label>
-                <input type="password" name="senha" class="input-control" required placeholder="••••••••">
-            </div>
-            <button type="submit" class="btn-login">Entrar no Sistema</button>
-        </form>
-
-        <span class="hint">💡 Primeiro acesso? Utilize a senha <b>123456</b></span>
     </div>
+
+    <script>
+        function toggleSenha() {
+            const campo = document.getElementById('senha');
+            const icone = document.getElementById('icone-olho');
+            if (campo.type === 'password') {
+                campo.type = 'text';
+                icone.className = 'fa fa-eye-slash';
+            } else {
+                campo.type = 'password';
+                icone.className = 'fa fa-eye';
+            }
+        }
+        function setLoading(btn) {
+            setTimeout(() => {
+                btn.classList.add('loading');
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Entrando...';
+            }, 100);
+        }
+    </script>
 </body>
 </html>

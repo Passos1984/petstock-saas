@@ -30,6 +30,8 @@
     <div class="card">
         <h2>✏️ Editar Produto</h2>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
             <div class="input-group">
                 <label>Código SKU / Barras</label>
                 <input type="text" name="sku" class="input-control" value="{{ p.codigo_sku }}" required style="background: #f8fafc;">

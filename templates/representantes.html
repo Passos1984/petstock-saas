@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
-            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --primary: #222533; --accent: #5c4dff; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9;
             --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
@@ -45,6 +45,19 @@
     </aside>
 
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: 700; font-size: 14px;
+                        {% if category == 'danger' %} background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
+                        {% elif category == 'warning' %} background: #fef3c7; color: #92400e; border: 1px solid #fbbf24;
+                        {% else %} background: #d1fae5; color: #065f46; border: 1px solid #34d399; {% endif %}">
+                        {{ message | safe }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
             <h1 style="margin:0; font-weight:800;">🚚 Representantes</h1>
             <button onclick="document.getElementById('modalNovo').style.display='flex'" class="btn btn-primary">➕ Novo Fornecedor</button>
@@ -88,9 +101,12 @@
         <div style="background:white; padding:30px; border-radius:15px; width:100%; max-width:450px;">
             <h2 style="margin-top:0;">➕ Novo Fornecedor</h2>
             <form action="/representantes" method="POST">
+                
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                 <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Distribuidora</label>
                 <input type="text" name="nome_fantasia" class="input-control" required>
-                
+
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Representante</label>

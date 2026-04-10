@@ -234,6 +234,8 @@
             <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5;">Crie um acesso para um novo cliente do sistema. A senha inicial será sempre <b>123456</b> (o cliente pode trocar depois).</p>
             
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
                 <label>NOME FANTASIA / RAZÃO SOCIAL</label>
                 <input type="text" name="nome_fantasia" class="input-control" placeholder="Ex: Agropet do João" required>
                 

@@ -102,6 +102,8 @@
 </head>
 <body>
 
+    <input type="hidden" id="csrfTokenPDV" value="{{ csrf_token() }}">
+
     <div class="mobile-header">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px; max-width: 140px;">
         <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
@@ -509,9 +511,15 @@
                 })
             };
 
+            // CIRURGIA 2: O JavaScript pegando o crachá e mostrando para o servidor
+            let csrf_token = document.getElementById('csrfTokenPDV').value;
+
             fetch('/api/finalizar_venda', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrf_token // <-- Crachá na mão!
+                },
                 body: JSON.stringify(dados)
             }).then(r => r.json()).then(res => {
                 if(res.sucesso) { 

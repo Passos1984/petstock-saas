@@ -133,6 +133,9 @@
             </p>
 
             <form action="/configuracoes" method="POST">
+                
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
                 <div class="input-group">
                     <label>Sua Chave PIX</label>
                     <input type="text" name="chave_pix" value="{{ loja_logada.chave_pix or '' }}" class="input-control" placeholder="Ex: CNPJ, E-mail, Celular ou Aleatória">

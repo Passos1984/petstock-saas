@@ -26,6 +26,9 @@
     <div class="card">
         <h2>✏️ Editar Assinatura</h2>
         <form method="POST">
+            
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
             <div class="input-group">
                 <label>Nome Fantasia</label>
                 <input type="text" name="nome_fantasia" value="{{ loja.nome_fantasia }}" class="input-control" required>

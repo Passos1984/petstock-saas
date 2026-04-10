@@ -20,12 +20,13 @@
     <div class="card">
         <h2 style="margin-top:0;">🛡️ Segurança</h2>
         <p style="color:#64748b; font-size:14px; margin-bottom:30px;">A sua conta está com a palavra-passe padrão. Por favor, crie uma nova senha agora.</p>
-        
+
         {% with messages = get_flashed_messages() %}
             {% if messages %}{% for msg in messages %}<div style="color:red; font-size:13px; margin-bottom:15px;">{{ msg }}</div>{% endfor %}{% endif %}
         {% endwith %}
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="input-group">
                 <label>Nova Palavra-passe</label>
                 <input type="password" name="nova_senha" class="input-control" required>
