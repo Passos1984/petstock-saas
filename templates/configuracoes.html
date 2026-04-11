@@ -35,7 +35,7 @@
         main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative; }
         .page-title { margin: 0 0 30px 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;}
 
-        .panel { background: var(--bg-card); padding: 35px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 600px;}
+        .panel { background: var(--bg-card); padding: 35px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); max-width: 700px;}
         .panel-title { margin-top: 0; color: var(--text-main); font-size: 18px; margin-bottom: 10px; font-weight: 800; }
         .panel-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 25px; line-height: 1.5; }
 
@@ -65,6 +65,7 @@
             .overlay.active { display: block; }
             main { padding: 20px 15px; }
             .panel { padding: 25px 20px; }
+            .flex-row { flex-direction: column; gap: 0 !important; }
         }
     </style>
 </head>
@@ -133,19 +134,65 @@
             </p>
 
             <form action="/configuracoes" method="POST">
-                
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
                 <div class="input-group">
                     <label>Sua Chave PIX</label>
                     <input type="text" name="chave_pix" value="{{ loja_logada.chave_pix or '' }}" class="input-control" placeholder="Ex: CNPJ, E-mail, Celular ou Aleatória">
                 </div>
-
                 <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Salvar Configurações
+                    <i class="fas fa-save"></i> Salvar Chave PIX
                 </button>
             </form>
         </div>
+
+        <div class="panel">
+            <h3 class="panel-title">🧾 Dados Fiscais (NFC-e)</h3>
+            <p class="panel-desc">
+                Configure as informações da sua empresa e envie o seu <b>Certificado Digital A1</b> para liberar a emissão automática de Cupons Fiscais direto no PDV.
+            </p>
+
+            <form action="/salvar_fiscal" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="flex-row" style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>CNPJ da Empresa</label>
+                        <input type="text" name="cnpj" class="input-control" placeholder="00.000.000/0001-00" value="{{ loja_logada.cnpj or '' }}">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Inscrição Estadual (IE)</label>
+                        <input type="text" name="inscricao_estadual" class="input-control" placeholder="Apenas números" value="{{ loja_logada.ie or '' }}">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Certificado Digital A1 (Arquivo .pfx)</label>
+                    <input type="file" name="certificado" accept=".pfx,.p12" class="input-control" style="padding: 12px 18px; background: #f8fafc;">
+                    <small style="color: var(--accent); font-weight: 700; margin-top: 5px;">
+                        {% if loja_logada.caminho_certificado %} ✅ Certificado já enviado e guardado no cofre. Envie apenas se precisar atualizar. {% else %} ⚠️ Nenhum certificado enviado ainda. {% endif %}
+                    </small>
+                </div>
+
+                <div class="flex-row" style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>Senha do Certificado</label>
+                        <input type="password" name="senha_certificado" class="input-control" placeholder="********">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label>Ambiente da SEFAZ</label>
+                        <select name="ambiente_nfe" class="input-control" style="background: white;">
+                            <option value="homologacao">🛠️ Homologação (Ambiente de Testes)</option>
+                            <option value="producao">✅ Produção (Cupons Reais / Validade Jurídica)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn" style="background: #10b981; color: white;">
+                    <i class="fas fa-file-invoice"></i> Salvar Configurações Fiscais
+                </button>
+            </form>
+        </div>
+
     </main>
 
     <script>

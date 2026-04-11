@@ -1,4 +1,6 @@
 import os
+import os
+from werkzeug.utils import secure_filename
 import csv
 import io
 import random
@@ -31,6 +33,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'troque-essa-chave-no-env')
+# Cofre para os Certificados Digitais
+PASTA_CERTIFICADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'certificados_cofre')
+os.makedirs(PASTA_CERTIFICADOS, exist_ok=True)
+app.config['UPLOAD_CERTIFICADOS'] = PASTA_CERTIFICADOS
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
 # --- EXTENSÕES ---
@@ -66,13 +72,20 @@ def data_brasil():
 # ==========================================
 class Loja(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nome_fantasia = db.Column(db.String(100), nullable=False)
-    usuario = db.Column(db.String(100), unique=True, nullable=False)
+    nome_fantasia = db.Column(db.String(150), nullable=False)
+    usuario = db.Column(db.String(50), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     data_vencimento = db.Column(db.Date, nullable=False)
     chave_pix = db.Column(db.String(100))
     email = db.Column(db.String(150))
     valor_plano = db.Column(db.Float, default=80.00)
+
+    # --- NOVAS COLUNAS FISCAIS ---
+    cnpj = db.Column(db.String(20))
+    ie = db.Column(db.String(30)) # Inscrição Estadual
+    caminho_certificado = db.Column(db.String(255)) # Onde o arquivo .pfx está salvo
+    senha_certificado = db.Column(db.String(255)) # Senha do certificado
+    ambiente_nfe = db.Column(db.String(20), default='homologacao')
 
 class Funcionario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -93,7 +106,10 @@ class Produto(db.Model):
     ativo = db.Column(db.Boolean, default=True)
     descricao = db.Column(db.String(200))
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
-
+    # --- NOVAS COLUNAS FISCAIS ---
+    ncm = db.Column(db.String(20))
+    cfop = db.Column(db.String(10), default='5102') # 5102 é o padrão para venda dentro do estado
+    cest = db.Column(db.String(20))
 class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -326,7 +342,10 @@ def cadastrar_produto():
         preco_custo=p_custo,
         preco_venda=p_venda,
         estoque=qtd,
-        loja_id=session['loja_id']
+        loja_id=session['loja_id'],
+        ncm=request.form.get('ncm'),
+        cfop=request.form.get('cfop'),
+        cest=request.form.get('cest')
     )
     db.session.add(novo_produto)
     db.session.commit()
@@ -377,6 +396,9 @@ def editar_produto(id):
         prod.codigo_sku = request.form.get('sku')
         prod.nome = request.form.get('nome')
         prod.categoria = request.form.get('categoria')
+        prod.ncm = request.form.get('ncm')
+        prod.cfop = request.form.get('cfop')
+        prod.cest = request.form.get('cest')
         try:
             prod.preco_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
         except:
@@ -1110,6 +1132,45 @@ def logout_ceo():
 # --- Inicialização ---
 with app.app_context():
     db.create_all()
+@app.route('/salvar_fiscal', methods=['POST'])
+def salvar_fiscal():
+    if 'loja_id' not in session:
+        return redirect(url_for('login'))
+
+    loja = Loja.query.get(session['loja_id'])
+
+    # Pega os textos digitados
+    loja.cnpj = request.form.get('cnpj')
+    loja.ie = request.form.get('inscricao_estadual')
+    loja.ambiente_nfe = request.form.get('ambiente_nfe')
+
+    # Só atualiza a senha se o cliente digitou uma nova
+    nova_senha = request.form.get('senha_certificado')
+    if nova_senha:
+        loja.senha_certificado = nova_senha
+
+    # Pega o arquivo do certificado digital
+    arquivo_cert = request.files.get('certificado')
+
+    if arquivo_cert and arquivo_cert.filename != '':
+        # Verifica se é um formato válido (.pfx ou .p12)
+        if arquivo_cert.filename.endswith('.pfx') or arquivo_cert.filename.endswith('.p12'):
+            # Cria um nome seguro: ex -> cert_loja_1_arquivo.pfx
+            nome_seguro = secure_filename(f"cert_loja_{loja.id}_{arquivo_cert.filename}")
+            caminho_completo = os.path.join(app.config['UPLOAD_CERTIFICADOS'], nome_seguro)
+
+            # Salva o arquivo fisicamente na pasta do servidor
+            arquivo_cert.save(caminho_completo)
+
+            # Salva o caminho no banco de dados para a API achar depois
+            loja.caminho_certificado = caminho_completo
+        else:
+            flash('Erro: O certificado precisa ser no formato .PFX ou .P12!', 'danger')
+            return redirect(url_for('configuracoes'))
+
+    db.session.commit()
+    flash('Configurações Fiscais salvas com sucesso! 🎉', 'success')
+    return redirect(url_for('configuracoes'))
 
 if __name__ == '__main__':
     app.run(debug=False)
