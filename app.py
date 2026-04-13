@@ -1,13 +1,11 @@
 import os
-import os
-from werkzeug.utils import secure_filename
 import csv
 import io
 import random
 import logging
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate  # <-- Nova ferramenta aqui
+from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -21,7 +19,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# --- CONFIGURAÇÃO SEGURA (tudo vem do .env) --- # <-- O APP NASCE AQUI (Muito importante!)
+# --- CONFIGURAÇÃO SEGURA (tudo vem do .env) --- 
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_dir = os.path.join(basedir, 'instance')
 if not os.path.exists(db_dir):
@@ -33,10 +31,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'troque-essa-chave-no-env')
-# Cofre para os Certificados Digitais
-PASTA_CERTIFICADOS = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'certificados_cofre')
-os.makedirs(PASTA_CERTIFICADOS, exist_ok=True)
-app.config['UPLOAD_CERTIFICADOS'] = PASTA_CERTIFICADOS
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
 # --- EXTENSÕES ---
@@ -79,13 +73,8 @@ class Loja(db.Model):
     chave_pix = db.Column(db.String(100))
     email = db.Column(db.String(150))
     valor_plano = db.Column(db.Float, default=80.00)
-
-    # --- NOVAS COLUNAS FISCAIS ---
-    cnpj = db.Column(db.String(20))
-    ie = db.Column(db.String(30)) # Inscrição Estadual
-    caminho_certificado = db.Column(db.String(255)) # Onde o arquivo .pfx está salvo
-    senha_certificado = db.Column(db.String(255)) # Senha do certificado
-    ambiente_nfe = db.Column(db.String(20), default='homologacao')
+    telefone = db.Column(db.String(20)) 
+    plano = db.Column(db.String(50), default='pro') # gratis, pro, elite
 
 class Funcionario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -106,10 +95,7 @@ class Produto(db.Model):
     ativo = db.Column(db.Boolean, default=True)
     descricao = db.Column(db.String(200))
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
-    # --- NOVAS COLUNAS FISCAIS ---
-    ncm = db.Column(db.String(20))
-    cfop = db.Column(db.String(10), default='5102') # 5102 é o padrão para venda dentro do estado
-    cest = db.Column(db.String(20))
+
 class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -143,7 +129,7 @@ class Venda(db.Model):
     data_previsao_fim = db.Column(db.DateTime)
     vendedor = db.Column(db.String(50), default='Dono/Gerente')
     produto = db.relationship('Produto', backref='vendas_list')
-    comprador = db.relationship('Cliente', backref='compras_list')
+    compras = db.relationship('Cliente', backref='compras_list')
 
 
 @app.context_processor
@@ -159,6 +145,69 @@ def injetar_dados_globais():
         cargo='Gerente',
         vendedor_atual='Dono/Gerente'
     )
+
+
+# ==========================================
+# --- ROTA PRINCIPAL (LANDING PAGE) ---
+# ==========================================
+@app.route('/')
+def index():
+    # Se já estiver logado, pula a landing page e vai pro painel
+    if 'loja_id' in session:
+        return redirect(url_for('painel'))
+    return render_template('landing.html')
+
+# ==========================================
+# --- ROTA DE ASSINATURA (FREE TRIAL) ---
+# ==========================================
+@app.route('/assinar', methods=['POST'])
+@limiter.limit("5 per minute")
+def assinar():
+    try:
+        nome_fantasia = request.form.get('nome_fantasia')
+        telefone = request.form.get('telefone')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
+        plano_escolhido = request.form.get('plano', 'pro')
+
+        # Verifica se o email (usuário) já existe
+        if Loja.query.filter_by(usuario=email).first():
+            flash('❌ Este e-mail já está cadastrado. Faça login ou use outro.', 'danger')
+            return redirect(url_for('index'))
+
+        # Define valor baseado no plano
+        valor = 0.0
+        if plano_escolhido == 'pro':
+            valor = 80.00
+        elif plano_escolhido == 'elite':
+            valor = 150.00
+
+        # Cria a loja dando 15 DIAS GRÁTIS de teste!
+        nova_loja = Loja(
+            nome_fantasia=nome_fantasia,
+            usuario=email, # O email será o login
+            email=email,
+            telefone=telefone,
+            senha=generate_password_hash(senha),
+            data_vencimento=data_brasil() + timedelta(days=15),
+            valor_plano=valor,
+            plano=plano_escolhido
+        )
+        
+        db.session.add(nova_loja)
+        db.session.commit()
+
+        # Já loga o cliente automaticamente na primeira vez
+        session['loja_id'] = nova_loja.id
+        logger.info(f"Nova Assinatura Trial: {nome_fantasia} ({plano_escolhido})")
+        
+        flash('🎉 Bem-vindo ao PetStock! Seus 15 dias grátis começaram agora.', 'success')
+        return redirect(url_for('painel'))
+        
+    except Exception as e:
+        logger.error(f"Erro ao criar assinatura: {e}")
+        flash('❌ Ocorreu um erro. Tente novamente.', 'danger')
+        return redirect(url_for('index'))
 
 
 # ==========================================
@@ -192,7 +241,7 @@ def login():
                 return redirect(url_for('mudar_senha'))
 
             session['loja_id'] = loja.id
-            return redirect(url_for('home'))
+            return redirect(url_for('painel'))
 
         logger.warning(f"Tentativa de login falhou: usuario={u} ip={request.remote_addr}")
         flash('❌ Usuário ou senha incorretos.', 'danger')
@@ -218,7 +267,7 @@ def mudar_senha():
             session.clear()
             session['loja_id'] = loja.id
             flash('✅ Senha alterada com sucesso! Bem-vindo(a).', 'success')
-            return redirect(url_for('home'))
+            return redirect(url_for('painel'))
         else:
             flash('❌ As senhas digitadas não conferem. Tente novamente.', 'danger')
 
@@ -291,15 +340,13 @@ def resetar_senha(id):
 # ==========================================
 # --- ROTAS DE GESTÃO DE ESTOQUE ---
 # ==========================================
-@app.route('/')
-def home():
+@app.route('/painel')
+def painel():
     if 'loja_id' not in session:
         return redirect(url_for('login'))
 
-    # Pega o número da página na URL (se não tiver, é a página 1)
     page = request.args.get('page', 1, type=int)
 
-    # Substituímos o .all() por .paginate() limitando a 50 itens por página
     produtos_paginados = Produto.query.filter_by(
         loja_id=session['loja_id'], ativo=True
     ).paginate(page=page, per_page=50, error_out=False)
@@ -342,15 +389,12 @@ def cadastrar_produto():
         preco_custo=p_custo,
         preco_venda=p_venda,
         estoque=qtd,
-        loja_id=session['loja_id'],
-        ncm=request.form.get('ncm'),
-        cfop=request.form.get('cfop'),
-        cest=request.form.get('cest')
+        loja_id=session['loja_id']
     )
     db.session.add(novo_produto)
     db.session.commit()
     flash('✅ Produto salvo no estoque com sucesso!', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('painel'))
 
 
 @app.route('/desmembrar', methods=['POST'])
@@ -381,7 +425,7 @@ def desmembrar():
             flash(f'⚖️ Sucesso! Transformamos {qtd_origem} saco(s) em {qtd_destino} KG a granel.', 'success')
         else:
             flash('❌ Erro: Você não tem essa quantidade no estoque!', 'danger')
-    return redirect(url_for('home'))
+    return redirect(url_for('painel'))
 
 
 @app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
@@ -390,15 +434,12 @@ def editar_produto(id):
         return redirect(url_for('login'))
     prod = Produto.query.get(id)
     if not prod or prod.loja_id != session['loja_id']:
-        return redirect(url_for('home'))
+        return redirect(url_for('painel'))
 
     if request.method == 'POST':
         prod.codigo_sku = request.form.get('sku')
         prod.nome = request.form.get('nome')
         prod.categoria = request.form.get('categoria')
-        prod.ncm = request.form.get('ncm')
-        prod.cfop = request.form.get('cfop')
-        prod.cest = request.form.get('cest')
         try:
             prod.preco_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
         except:
@@ -413,7 +454,7 @@ def editar_produto(id):
             pass
         db.session.commit()
         flash('✅ Produto atualizado com sucesso!', 'success')
-        return redirect(url_for('home'))
+        return redirect(url_for('painel'))
 
     return render_template('editar_produto.html', p=prod)
 
@@ -427,7 +468,7 @@ def inativar_produto(id):
         prod.ativo = False
         db.session.commit()
         flash('🗑️ Produto movido para a Lixeira.', 'warning')
-    return redirect(url_for('home'))
+    return redirect(url_for('painel'))
 
 
 @app.route('/inativos')
@@ -469,7 +510,7 @@ def baixa_estoque():
         else:
             flash('❌ Erro: Quantidade insuficiente em estoque para dar baixa.', 'danger')
 
-    return redirect(url_for('home'))
+    return redirect(url_for('painel'))
 
 
 @app.route('/restaurar_produto/<int:id>')
@@ -492,7 +533,7 @@ def importar_produtos():
 
     if not arquivo or arquivo.filename == '':
         flash('❌ Nenhum arquivo selecionado.', 'danger')
-        return redirect(url_for('home'))
+        return redirect(url_for('painel'))
 
     try:
         stream = io.StringIO(arquivo.stream.read().decode("UTF8"), newline=None)
@@ -533,7 +574,7 @@ def importar_produtos():
         logger.error(f"Erro na importação de produtos: {e}")
         flash(f'❌ Erro na importação. Salve sua planilha como CSV (UTF-8).', 'danger')
 
-    return redirect(url_for('home'))
+    return redirect(url_for('painel'))
 
 
 # ==========================================
@@ -1132,45 +1173,6 @@ def logout_ceo():
 # --- Inicialização ---
 with app.app_context():
     db.create_all()
-@app.route('/salvar_fiscal', methods=['POST'])
-def salvar_fiscal():
-    if 'loja_id' not in session:
-        return redirect(url_for('login'))
-
-    loja = Loja.query.get(session['loja_id'])
-
-    # Pega os textos digitados
-    loja.cnpj = request.form.get('cnpj')
-    loja.ie = request.form.get('inscricao_estadual')
-    loja.ambiente_nfe = request.form.get('ambiente_nfe')
-
-    # Só atualiza a senha se o cliente digitou uma nova
-    nova_senha = request.form.get('senha_certificado')
-    if nova_senha:
-        loja.senha_certificado = nova_senha
-
-    # Pega o arquivo do certificado digital
-    arquivo_cert = request.files.get('certificado')
-
-    if arquivo_cert and arquivo_cert.filename != '':
-        # Verifica se é um formato válido (.pfx ou .p12)
-        if arquivo_cert.filename.endswith('.pfx') or arquivo_cert.filename.endswith('.p12'):
-            # Cria um nome seguro: ex -> cert_loja_1_arquivo.pfx
-            nome_seguro = secure_filename(f"cert_loja_{loja.id}_{arquivo_cert.filename}")
-            caminho_completo = os.path.join(app.config['UPLOAD_CERTIFICADOS'], nome_seguro)
-
-            # Salva o arquivo fisicamente na pasta do servidor
-            arquivo_cert.save(caminho_completo)
-
-            # Salva o caminho no banco de dados para a API achar depois
-            loja.caminho_certificado = caminho_completo
-        else:
-            flash('Erro: O certificado precisa ser no formato .PFX ou .P12!', 'danger')
-            return redirect(url_for('configuracoes'))
-
-    db.session.commit()
-    flash('Configurações Fiscais salvas com sucesso! 🎉', 'success')
-    return redirect(url_for('configuracoes'))
 
 if __name__ == '__main__':
     app.run(debug=False)
