@@ -34,7 +34,13 @@
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);}
 
         /* Classes para o formulário responsivo */
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end; }
+        .form-grid { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr auto; gap: 15px; align-items: end; }
+
+        /* Modal de Edição */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative;}
+        .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; background: none; border: none; font-weight: bold;}
+        .close-btn:hover { color: var(--danger); }
 
         /* --- BARRA MOBILE E OVERLAY --- */
         .mobile-header { display: none; background-color: var(--primary); color: white; padding: 10px 20px; align-items: center; justify-content: space-between; position: fixed; top: 0; width: 100%; z-index: 1000; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -56,7 +62,7 @@
             .form-grid button { width: 100%; margin-top: 10px; height: 48px; }
             
             .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-            table { min-width: 500px; }
+            table { min-width: 600px; }
         }
     </style>
 </head>
@@ -81,6 +87,7 @@
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link active"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
             <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
         </div>
         <a href="/logout" class="menu-link" style="margin-top:auto; color:#fca5a5;">🚪 Sair</a>
@@ -103,7 +110,7 @@
         {% endwith %}
 
         <div class="panel">
-            <h3 style="margin-top:0;">➕ Cadastrar Novo Acesso</h3>
+            <h3 style="margin-top:0;">➕ Cadastrar Novo Acesso / Profissional</h3>
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">A senha inicial será sempre **123456**. O funcionário poderá mudar no primeiro login.</p>
             
             <form action="/funcionarios" method="POST" class="form-grid">
@@ -118,11 +125,16 @@
                     <input type="text" name="usuario" class="input-control" required>
                 </div>
                 <div>
-                    <label style="font-size:11px; font-weight:800;">NÍVEL</label>
+                    <label style="font-size:11px; font-weight:800;">NÍVEL / CARGO</label>
                     <select name="cargo" class="input-control" style="background: white;">
                         <option value="Caixa">Caixa (Só vendas)</option>
+                        <option value="Tosador">Tosador / Banhista</option>
                         <option value="Gerente">Gerente (Acesso total)</option>
                     </select>
+                </div>
+                <div>
+                    <label style="font-size:11px; font-weight:800; color: var(--accent);">% COMISSÃO</label>
+                    <input type="number" name="comissao" class="input-control" placeholder="Ex: 40" value="0" style="border-color: var(--accent); background: #eef2ff;" step="any">
                 </div>
                 <button type="submit" class="btn btn-primary" style="height:45px; margin-bottom:15px;">💾 Gerar Acesso</button>
             </form>
@@ -136,6 +148,7 @@
                             <th style="padding-left: 25px;">Funcionário</th>
                             <th>Utilizador</th>
                             <th>Nível</th>
+                            <th style="text-align: center;">Comissão</th>
                             <th style="text-align:right; padding-right: 25px;">Ações</th>
                         </tr>
                     </thead>
@@ -145,14 +158,18 @@
                             <td style="padding-left: 25px;"><strong>{{ f.nome }}</strong></td>
                             <td><code>{{ f.usuario }}</code></td>
                             <td><span class="badge">{{ f.cargo }}</span></td>
-                            <td style="text-align:right; padding-right: 25px;">
+                            <td style="text-align: center;">
+                                <span class="badge" style="background: #eef2ff; color: var(--accent); border-color: #c7d2fe;">{{ f.comissao_servicos }} %</span>
+                            </td>
+                            <td style="text-align:right; padding-right: 25px; white-space: nowrap;">
+                                <button onclick="abrirModalEdicao('{{ f.id }}', '{{ f.nome }}', '{{ f.cargo }}', '{{ f.comissao_servicos }}')" style="background: none; border: none; color: var(--accent); margin-right:15px; cursor: pointer; font-size: 16px;" title="Editar Dados"><i class="fas fa-edit"></i></button>
                                 <a href="/resetar_senha/{{ f.id }}" style="color:var(--warning); margin-right:15px; text-decoration: none; font-size: 16px;" title="Resetar Senha para 123456"><i class="fas fa-key"></i></a>
                                 <a href="/excluir_funcionario/{{ f.id }}" style="color:var(--danger); text-decoration: none; font-size: 16px;" onclick="return confirm('Eliminar este acesso?')"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                            <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
                                 Nenhum funcionário cadastrado.
                             </td>
                         </tr>
@@ -163,10 +180,65 @@
         </div>
     </main>
 
+    <div id="modalEditarFuncionario" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModalEdicao()">&times;</button>
+            <h3 style="margin-top: 0; color: var(--text-main); margin-bottom: 20px;">✏️ Editar Profissional</h3>
+            
+            <form action="/editar_funcionario" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="func_id" id="editFuncId">
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Nome Completo</label>
+                    <input type="text" name="nome" id="editNome" class="input-control" required>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Nível / Cargo</label>
+                    <select name="cargo" id="editCargo" class="input-control" style="background: white;">
+                        <option value="Caixa">Caixa (Só vendas)</option>
+                        <option value="Tosador">Tosador / Banhista</option>
+                        <option value="Gerente">Gerente (Acesso total)</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase;">% Comissão</label>
+                    <input type="number" name="comissao" id="editComissao" class="input-control" placeholder="Ex: 40" style="border-color: var(--accent); background: #eef2ff;" step="any">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 45px; margin-top: 10px; background: var(--accent);">💾 Salvar Alterações</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Script para abrir e preencher o modal de edição
+        function abrirModalEdicao(id, nome, cargo, comissao) {
+            document.getElementById('editFuncId').value = id;
+            document.getElementById('editNome').value = nome;
+            document.getElementById('editCargo').value = cargo;
+            document.getElementById('editComissao').value = parseFloat(comissao) || 0;
+            
+            document.getElementById('modalEditarFuncionario').style.display = 'flex';
+        }
+
+        function fecharModalEdicao() {
+            document.getElementById('modalEditarFuncionario').style.display = 'none';
+        }
+
+        // Fechar clicando fora
+        window.onclick = function(event) {
+            let modal = document.getElementById('modalEditarFuncionario');
+            if (event.target == modal) {
+                fecharModalEdicao();
+            }
         }
     </script>
 </body>

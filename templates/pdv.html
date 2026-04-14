@@ -65,6 +65,10 @@
         .troco-box .label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .troco-box .value { font-size: 32px; font-weight: 800; margin-top: 5px; }
 
+        /* CIRURGIA: Caixa de Saldo Cashback */
+        #boxCashback { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 8px; margin-top: 10px; color: var(--accent); font-weight: 700; align-items: center; justify-content: space-between; }
+        #valorCashback { font-size: 16px; font-weight: 900; }
+
         /* MODAIS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; }
@@ -139,9 +143,11 @@
                     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
                         <div>
                             <label class="label-mini" style="color: var(--accent);">👤 Cliente (Nome ou Telefone)</label>
-                            <input type="text" id="cliente" placeholder="Consumidor Final" list="listaClientes" style="border-color: var(--accent);">
+                            <input type="text" id="cliente" placeholder="Consumidor Final" list="listaClientes" style="border-color: var(--accent);" onchange="verificarCashback()">
                             <datalist id="listaClientes">
-                                {% for c in clientes %}<option value="{{ c.nome }}">{{ c.telefone }}</option>{% endfor %}
+                                {% for c in clientes %}
+                                <option value="{{ c.nome }}" data-id="{{ c.id }}">{{ c.telefone }}</option>
+                                {% endfor %}
                             </datalist>
                         </div>
                         <div>
@@ -200,11 +206,16 @@
                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                             <option value="Cartão de Débito">Cartão de Débito</option>
                             <option value="Crediário / Fiado">Crediário / Fiado</option>
-                        </select>
+                            <option value="Saldo Cashback">🎁 Saldo Cashback</option> </select>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div id="boxCashback">
+                    <span style="font-size: 12px; text-transform: uppercase;">💼 Cashback Disponível:</span>
+                    <span id="valorCashback">R$ 0,00</span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
                     <div>
                         <label class="label-mini">Desconto Global</label>
                         <input type="number" id="descGeral" class="pdv-field" value="0" step="any" oninput="calcular()" onfocus="this.select()">
@@ -215,7 +226,7 @@
                     </div>
                 </div>
 
-                <div class="total-box">
+                <div class="total-box" style="margin-top: 10px;">
                     <span class="label-mini" style="color:#a0a5ba; margin-bottom: 5px;">Subtotal da Venda: R$ <span id="subTotalTxt">0,00</span></span>
                     <span style="font-size: 13px; font-weight: 800; text-transform: uppercase; margin-top: 10px; display: block;">Total a Pagar</span>
                     <span class="total-val" id="totalFinal">R$ 0,00</span>
@@ -291,6 +302,7 @@
         let carrinho = [];
         let ultimaVendaSalva = {}; 
         let html5QrCode = null; 
+        let saldoAtualCliente = 0.0; // CIRURGIA: Variável Global do Saldo
 
         window.onload = () => {
             carregarEstoque();
@@ -300,6 +312,37 @@
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // CIRURGIA: Busca o Cashback do cliente na API
+        function verificarCashback() {
+            let nomeSelecionado = document.getElementById('cliente').value;
+            let options = document.getElementById('listaClientes').options;
+            let clienteId = null;
+
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === nomeSelecionado) {
+                    clienteId = options[i].getAttribute('data-id');
+                    break;
+                }
+            }
+
+            if (clienteId) {
+                fetch('/api/divida_cliente/' + clienteId)
+                .then(response => response.json())
+                .then(data => {
+                    saldoAtualCliente = parseFloat(data.cashback) || 0.0;
+                    if (saldoAtualCliente > 0) {
+                        document.getElementById('valorCashback').innerText = 'R$ ' + saldoAtualCliente.toFixed(2).replace('.', ',');
+                        document.getElementById('boxCashback').style.display = 'flex';
+                    } else {
+                        document.getElementById('boxCashback').style.display = 'none';
+                    }
+                });
+            } else {
+                saldoAtualCliente = 0.0;
+                document.getElementById('boxCashback').style.display = 'none';
+            }
         }
 
         function carregarEstoque() {
@@ -426,6 +469,8 @@
             document.getElementById('descGeral').value = 0; 
             document.getElementById('recebido').value = 0; 
             document.getElementById('cliente').value = ''; 
+            document.getElementById('boxCashback').style.display = 'none'; // CIRURGIA
+            saldoAtualCliente = 0.0;
             render(); 
             document.getElementById('buscaProduto').focus();
         }
@@ -521,13 +566,23 @@
         function finalizar() {
             if(carrinho.length === 0) return alert("O carrinho está vazio!");
             let pag = document.getElementById('pagamento').value;
-            if(pag === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
-                return alert("⚠️ Selecione um cliente para vender no Fiado!");
-
             let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
             let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
             let total_numerico = subtotal_venda - descGeral;
             if (total_numerico < 0) total_numerico = 0;
+
+            if(pag === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
+                return alert("⚠️ Selecione um cliente para vender no Fiado!");
+
+            // CIRURGIA: Validação do Cashback
+            if (pag === 'Saldo Cashback') {
+                if (!document.getElementById('cliente').value) {
+                    return alert("⚠️ Você precisa selecionar um cliente para usar o Cashback!");
+                }
+                if (saldoAtualCliente < total_numerico) {
+                    return alert(`⚠️ O cliente não tem saldo suficiente. A compra deu R$ ${total_numerico.toFixed(2)}, mas ele só tem R$ ${saldoAtualCliente.toFixed(2)}.`);
+                }
+            }
 
             ultimaVendaSalva = {
                 itens: JSON.parse(JSON.stringify(carrinho)),
@@ -550,7 +605,6 @@
                 let nomeLoja = document.getElementById('nomeFantasiaLoja').value;
                 let payload = gerarPayloadPix(chavePix, ultimaVendaSalva.totalNum, nomeLoja);
                 
-                // Gera a imagem do QR Code usando uma API pública simples
                 let qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(payload);
                 document.getElementById('imgQrPix').src = qrUrl;
                 document.getElementById('valorPixTela').innerText = ultimaVendaSalva.total;

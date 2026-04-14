@@ -53,14 +53,20 @@
         .btn-check:hover { background: var(--success); color: white; }
         .btn-cancel { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
         .btn-cancel:hover { background: var(--danger); color: white; }
+        .btn-edit { background: #fffbeb; color: var(--warning); border: 1px solid #fde68a; }
+        .btn-edit:hover { background: var(--warning); color: white; }
+        
+        .btn-whats-icon { background: #dcfce7; color: #059669; border: 1px solid #a7f3d0; }
+        .btn-whats-icon:hover { background: #10b981; color: white; transform: scale(1.05); }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
-        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto;}
-        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #94a3b8; background: none; border: none; font-weight: bold;}
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto; position: relative;}
+        .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; background: none; border: none; font-weight: bold;}
+        .close-btn:hover { color: var(--danger); }
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;}
-        .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; font-family: inherit;}
+        .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; font-family: inherit;}
         .input-control:focus { border-color: var(--accent); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
@@ -106,6 +112,7 @@
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             {% endif %}
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
         <div class="menu-container" style="margin-top: 15px;">
@@ -126,7 +133,7 @@
 
         <div class="header-bar">
             <h2 class="page-title">🛁 Agenda de Serviços</h2>
-            <button class="btn btn-primary" onclick="abrirModal()">➕ Novo Agendamento</button>
+            <button class="btn btn-primary" onclick="abrirModalNova()">➕ Novo Agendamento</button>
         </div>
 
         <div class="agenda-container">
@@ -150,13 +157,25 @@
                             <i class="fas fa-paw" style="color: var(--accent); margin-right: 5px;"></i> {{ a.raca_porte }} | 
                             <i class="fas fa-cut" style="color: var(--warning); margin-left: 10px; margin-right: 5px;"></i> {{ a.servico }} | 
                             <i class="fas fa-tag" style="color: var(--success); margin-left: 10px; margin-right: 5px;"></i> R$ {{ "%.2f"|format(a.valor_servico)|replace('.', ',') }}
+                            
+                            {% if a.profissional %}
+                            <br><i class="fas fa-user-check" style="color: #8b5cf6; margin-right: 5px; margin-top: 5px;"></i> Profissional: <strong>{{ a.profissional.nome }}</strong>
+                            {% endif %}
+
                             {% if a.cliente %}
                             <br><i class="fas fa-user" style="color: var(--text-muted); margin-right: 5px; margin-top: 5px;"></i> Tutor: {{ a.cliente.nome }} ({{ a.cliente.telefone }})
                             {% endif %}
                         </div>
                     </div>
                     <div class="action-btns">
+                        <button onclick="abrirModalEdicao('{{ a.id }}', '{{ a.nome_pet }}', '{{ a.raca_porte }}', '{{ a.servico }}', '{{ a.valor_servico }}', '{{ a.data_agendamento }}', '{{ a.hora_agendamento }}', '{{ a.observacoes }}', '{{ a.funcionario_id or '' }}')" class="btn-icon btn-edit" title="Editar Agendamento"><i class="fas fa-edit"></i></button>
+
                         {% if a.status == 'Agendado' %}
+                        
+                        {% if a.cliente and a.cliente.telefone %}
+                        <a href="https://api.whatsapp.com/send?phone=55{{ a.cliente.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}&text=Olá, {{ a.cliente.nome }}! 🐾 Passando para confirmar o agendamento do(a) *{{ a.nome_pet }}* para *{{ a.servico }}* hoje às *{{ a.hora_agendamento }}*. Te esperamos! 🐶🚿" target="_blank" class="btn-icon btn-whats-icon" title="Enviar Lembrete no WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                        {% endif %}
+
                         <a href="/mudar_status_agenda/{{ a.id }}/Concluído" class="btn-icon btn-check" title="Marcar como Concluído"><i class="fas fa-check"></i></a>
                         <a href="/mudar_status_agenda/{{ a.id }}/Cancelado" class="btn-icon btn-cancel" title="Cancelar Agendamento" onclick="return confirm('Deseja realmente cancelar este horário?')"><i class="fas fa-times"></i></a>
                         {% endif %}
@@ -175,14 +194,15 @@
     <div id="modalAgendamento" class="modal">
         <div class="modal-content">
             <button class="close-btn" onclick="fecharModal()">&times;</button>
-            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">➕ Agendar Serviço</h3>
+            <h3 id="modalTitle" style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">➕ Agendar Serviço</h3>
             
-            <form action="/agenda" method="POST">
+            <form id="formAgendamento" action="/agenda" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="agendamento_id" id="agendamentoId">
 
-                <div class="input-group">
+                <div class="input-group" id="groupCliente">
                     <label>Tutor (Cliente Cadastrado - Opcional)</label>
-                    <select name="cliente_id" class="input-control" style="background: white;">
+                    <select name="cliente_id" id="clienteId" class="input-control" style="background: white;">
                         <option value="">-- Avulso / Não cadastrado --</option>
                         {% for c in clientes %}
                         <option value="{{ c.id }}">{{ c.nome }} ({{ c.telefone }})</option>
@@ -190,21 +210,31 @@
                     </select>
                 </div>
 
+                <div class="input-group">
+                    <label style="color: var(--accent);">Profissional Responsável (Opcional)</label>
+                    <select name="funcionario_id" id="funcionarioId" class="input-control" style="background: #eef2ff; border-color: var(--accent);">
+                        <option value="">-- Selecione quem vai dar o banho --</option>
+                        {% for prof in equipe %}
+                            <option value="{{ prof.id }}">{{ prof.nome }} (Comissão: {{ prof.comissao_servicos }}%)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div class="input-group">
                         <label>Nome do Pet *</label>
-                        <input type="text" name="nome_pet" class="input-control" required placeholder="Ex: Bob">
+                        <input type="text" name="nome_pet" id="nomePet" class="input-control" required placeholder="Ex: Bob">
                     </div>
                     <div class="input-group">
                         <label>Raça / Porte</label>
-                        <input type="text" name="raca_porte" class="input-control" placeholder="Ex: Poodle - P">
+                        <input type="text" name="raca_porte" id="racaPorte" class="input-control" placeholder="Ex: Poodle - P">
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="input-group">
                         <label>Serviço *</label>
-                        <select name="servico" class="input-control" required style="background: white;">
+                        <select name="servico" id="servico" class="input-control" required style="background: white;">
                             <option value="Banho">Banho</option>
                             <option value="Tosa">Tosa</option>
                             <option value="Banho e Tosa">Banho e Tosa</option>
@@ -214,27 +244,27 @@
                     </div>
                     <div class="input-group">
                         <label>Valor (R$)</label>
-                        <input type="text" name="valor_servico" class="input-control" placeholder="0,00" required>
+                        <input type="text" name="valor_servico" id="valorServico" class="input-control" placeholder="0,00" required>
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="input-group">
                         <label>Data *</label>
-                        <input type="date" name="data_agendamento" class="input-control" required>
+                        <input type="date" name="data_agendamento" id="dataAgendamento" class="input-control" required>
                     </div>
                     <div class="input-group">
                         <label>Hora *</label>
-                        <input type="time" name="hora_agendamento" class="input-control" required>
+                        <input type="time" name="hora_agendamento" id="horaAgendamento" class="input-control" required>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <label>Observações</label>
-                    <input type="text" name="observacoes" class="input-control" placeholder="Ex: Alérgico a perfume">
+                    <input type="text" name="observacoes" id="observacoes" class="input-control" placeholder="Ex: Alérgico a perfume">
                 </div>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 10px;">Salvar Agendamento</button>
+                <button type="submit" id="btnSalvar" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 10px;">Salvar Agendamento</button>
             </form>
         </div>
     </div>
@@ -245,9 +275,39 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function abrirModal() {
-            // Auto preencher data atual no formulário
-            document.querySelector('input[name="data_agendamento"]').valueAsDate = new Date();
+        // Prepara o modal para criar um NOVO agendamento
+        function abrirModalNova() {
+            document.getElementById('formAgendamento').action = "/agenda";
+            document.getElementById('agendamentoId').value = "";
+            document.getElementById('modalTitle').innerText = "➕ Novo Agendamento";
+            document.getElementById('btnSalvar').innerText = "Salvar Agendamento";
+            document.getElementById('groupCliente').style.display = "block"; // Mostra o campo Cliente
+            
+            // Limpa os campos
+            document.getElementById('formAgendamento').reset();
+            document.getElementById('dataAgendamento').valueAsDate = new Date();
+            
+            document.getElementById('modalAgendamento').style.display = 'flex';
+        }
+
+        // Prepara o modal para EDITAR um agendamento existente
+        function abrirModalEdicao(id, nomePet, raca, servico, valor, data, hora, obs, funcId) {
+            document.getElementById('formAgendamento').action = "/editar_agendamento";
+            document.getElementById('agendamentoId').value = id;
+            document.getElementById('modalTitle').innerText = "✏️ Editar Agendamento";
+            document.getElementById('btnSalvar').innerText = "Atualizar Agendamento";
+            document.getElementById('groupCliente').style.display = "none"; // Esconde Cliente na edição para não dar conflito
+            
+            // Preenche os dados
+            document.getElementById('nomePet').value = nomePet;
+            document.getElementById('racaPorte').value = raca !== 'None' ? raca : '';
+            document.getElementById('servico').value = servico;
+            document.getElementById('valorServico').value = parseFloat(valor).toFixed(2).replace('.', ',');
+            document.getElementById('dataAgendamento').value = data;
+            document.getElementById('horaAgendamento').value = hora;
+            document.getElementById('observacoes').value = obs !== 'None' ? obs : '';
+            document.getElementById('funcionarioId').value = funcId !== 'None' ? funcId : '';
+
             document.getElementById('modalAgendamento').style.display = 'flex';
         }
 
