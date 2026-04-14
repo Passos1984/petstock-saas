@@ -103,6 +103,9 @@
 <body>
 
     <input type="hidden" id="csrfTokenPDV" value="{{ csrf_token() }}">
+    
+    <input type="hidden" id="chavePixLoja" value="{{ loja_logada.chave_pix or '' }}">
+    <input type="hidden" id="nomeFantasiaLoja" value="{{ loja_logada.nome_fantasia or 'PetStock' }}">
 
     <div class="mobile-header">
         <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px; max-width: 140px;">
@@ -117,9 +120,10 @@
         </div>
 
         <nav style="flex:1">
-            <a href="/" class="menu-link">📦 Estoque</a>
+            <a href="/painel" class="menu-link">📦 Estoque</a>
             <a href="/clientes" class="menu-link">👥 Clientes</a>
             <a href="/pdv" class="menu-link active">🛒 PDV</a>
+            <a href="/agenda" class="menu-link">🛁 Agenda Banho/Tosa</a>
             <a href="/radar" class="menu-link">📡 Radar</a>
             <a href="/relatorios" class="menu-link">📊 Financeiro</a>
             <a href="/configuracoes" class="menu-link">⚙️ Configurações</a>
@@ -191,11 +195,11 @@
                     <div>
                         <label class="label-mini">Forma de Pagamento</label>
                         <select id="pagamento" class="pdv-select" style="border-color: var(--accent);">
-                            <option>Dinheiro</option>
-                            <option>Pix</option>
-                            <option>Cartão de Crédito</option>
-                            <option>Cartão de Débito</option>
-                            <option>Crediário / Fiado</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Crediário / Fiado">Crediário / Fiado</option>
                         </select>
                     </div>
                 </div>
@@ -233,6 +237,27 @@
         </div>
     </main>
 
+    <div id="modalPix" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="close-modal" onclick="document.getElementById('modalPix').style.display='none'">&times;</button>
+            <h2 style="color: var(--accent); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <i class="fab fa-pix"></i> Pagamento PIX
+            </h2>
+            <p style="color: var(--text-muted); font-size: 14px;">Peça para o cliente escanear o código abaixo pelo app do banco:</p>
+
+            <div style="background: #f8fafc; padding: 20px; border-radius: 16px; display: inline-block; margin: 15px 0; border: 2px dashed var(--accent);">
+                <img id="imgQrPix" src="" alt="QR Code PIX" style="width: 200px; height: 200px;">
+            </div>
+
+            <h3 style="font-size: 32px; color: var(--primary); margin: 10px 0;" id="valorPixTela">R$ 0,00</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 25px;">Sua Chave Cadastrada: <strong id="chavePixExibicao"></strong></p>
+
+            <button class="btn btn-success" style="width: 100%; height: 55px; font-size: 16px;" onclick="confirmarPixRecebido()">
+                <i class="fas fa-check-circle"></i> Confirmar Recebimento
+            </button>
+        </div>
+    </div>
+
     <div id="modalRecibo" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <h2 style="color: var(--success); margin-top: 0; font-size: 24px;">✅ Venda Concluída!</h2>
@@ -254,7 +279,7 @@
 
     <div id="modalScanner" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center; padding: 20px;">
-            <button class="close-btn" onclick="fecharScanner()">&times;</button>
+            <button class="close-modal" onclick="fecharScanner()">&times;</button>
             <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--text-main);">📸 Ler Código de Barras</h3>
             <div id="reader"></div>
             <button class="btn btn-outline" style="width: 100%; margin-top: 5px;" onclick="fecharScanner()">Cancelar</button>
@@ -265,11 +290,10 @@
         let catalogo = [];
         let carrinho = [];
         let ultimaVendaSalva = {}; 
-        let html5QrCode = null; // Variável nova do motor da câmera
+        let html5QrCode = null; 
 
         window.onload = () => {
             carregarEstoque();
-            // Ao abrir o PDV, já foca automaticamente no campo do leitor
             document.getElementById('buscaProduto').focus();
         };
 
@@ -312,18 +336,12 @@
 
         function abrirScanner() {
             document.getElementById('modalScanner').style.display = 'flex';
-            if (!html5QrCode) {
-                html5QrCode = new Html5Qrcode("reader");
-            }
-            // Forçando a câmera TRASEIRA com 'environment'
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+            
             html5QrCode.start(
                 { facingMode: "environment" }, 
-                {
-                    fps: 10,
-                    qrbox: { width: 250, height: 150 }
-                },
-                onScanSuccess,
-                onScanFailure
+                { fps: 10, qrbox: { width: 250, height: 150 } },
+                onScanSuccess, onScanFailure
             ).catch((err) => {
                 alert("Não foi possível acessar a câmera. Verifique as permissões.");
             });
@@ -332,29 +350,18 @@
         function fecharScanner() {
             document.getElementById('modalScanner').style.display = 'none';
             if (html5QrCode) {
-                html5QrCode.stop().then(() => {
-                    html5QrCode.clear();
-                }).catch(err => {
-                    console.log("Erro ao parar a câmera", err);
-                });
+                html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => { console.log(err); });
             }
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            fecharScanner(); // Fecha a câmera assim que ler
+            fecharScanner();
             let t = decodedText.toLowerCase();
             let p = catalogo.find(x => x.sku.toLowerCase() === t || x.nome.toLowerCase() === t);
-            
-            if(p) { 
-                add(p); 
-            } else {
-                alert("Produto código " + decodedText + " não encontrado no estoque!");
-            }
+            if(p) { add(p); } else { alert("Produto código " + decodedText + " não encontrado!"); }
         }
 
-        function onScanFailure(error) {
-            // Fica quieto enquanto tenta ler
-        }
+        function onScanFailure(error) {}
 
         function add(p) {
             let item = carrinho.find(i => i.id === p.id);
@@ -378,7 +385,6 @@
             tbody.innerHTML = '';
             carrinho.forEach((item, idx) => {
                 let totalItem = (item.preco - item.desc_un) * item.qtd;
-                // CIRURGIA 2.1: Identificador visual de Brinde na tabela
                 let isBrinde = (item.desc_un >= item.preco && item.preco > 0) ? '<span style="background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; vertical-align: middle;">🎁 BRINDE</span>' : '';
                 
                 tbody.innerHTML += `<tr>
@@ -476,22 +482,96 @@
             document.getElementById('recebido').select();
         }
 
+        // ==========================================
+        // MÁGICA DO PIX (Cálculo do Payload EMV)
+        // ==========================================
+        function crc16(str) {
+            let crc = 0xFFFF;
+            for (let c = 0; c < str.length; c++) {
+                crc ^= str.charCodeAt(c) << 8;
+                for (let i = 0; i < 8; i++) {
+                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
+                    else crc = crc << 1;
+                }
+            }
+            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function gerarPayloadPix(chave, valor, nome) {
+            const f = (id, val) => { let v = String(val); return id + String(v.length).padStart(2, '0') + v; };
+            chave = chave.trim();
+            let nomeLoja = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 25);
+            if(!nomeLoja) nomeLoja = 'PetStock';
+
+            let p = '';
+            p += f('00', '01'); 
+            p += f('26', f('00', 'br.gov.bcb.pix') + f('01', chave)); 
+            p += f('52', '0000'); 
+            p += f('53', '986');  
+            if (valor > 0) p += f('54', valor.toFixed(2)); 
+            p += f('58', 'BR');   
+            p += f('59', nomeLoja); 
+            p += f('60', 'Brasil'); 
+            p += f('62', f('05', '***')); 
+            p += '6304'; 
+            p += crc16(p);
+            return p;
+        }
+
         function finalizar() {
             if(carrinho.length === 0) return alert("O carrinho está vazio!");
-            if(document.getElementById('pagamento').value === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
+            let pag = document.getElementById('pagamento').value;
+            if(pag === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
                 return alert("⚠️ Selecione um cliente para vender no Fiado!");
 
             let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
             let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
+            let total_numerico = subtotal_venda - descGeral;
+            if (total_numerico < 0) total_numerico = 0;
 
             ultimaVendaSalva = {
                 itens: JSON.parse(JSON.stringify(carrinho)),
+                totalNum: total_numerico,
                 total: document.getElementById('totalFinal').innerText,
                 troco: document.getElementById('trocoTxt').innerText,
                 cliente: document.getElementById('cliente').value || 'Consumidor Final',
-                pagamento: document.getElementById('pagamento').value,
+                pagamento: pag,
                 data: new Date().toLocaleString('pt-BR')
             };
+
+            // Se for PIX, abre a tela do QR Code antes de salvar no banco!
+            if (pag === 'Pix') {
+                let chavePix = document.getElementById('chavePixLoja').value;
+                if (!chavePix) {
+                    alert("⚠️ Você não configurou sua Chave PIX! Vá no menu Configurações para adicionar.");
+                    return enviarVendaProBackend(); // Salva a venda normal sem abrir QR
+                }
+                
+                let nomeLoja = document.getElementById('nomeFantasiaLoja').value;
+                let payload = gerarPayloadPix(chavePix, ultimaVendaSalva.totalNum, nomeLoja);
+                
+                // Gera a imagem do QR Code usando uma API pública simples
+                let qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(payload);
+                document.getElementById('imgQrPix').src = qrUrl;
+                document.getElementById('valorPixTela').innerText = ultimaVendaSalva.total;
+                document.getElementById('chavePixExibicao').innerText = chavePix;
+                
+                document.getElementById('modalPix').style.display = 'flex';
+            } else {
+                enviarVendaProBackend();
+            }
+        }
+
+        // Chamado quando o caixa clica em "Confirmar Recebimento" na tela do PIX
+        function confirmarPixRecebido() {
+            enviarVendaProBackend();
+        }
+
+        // ==========================================
+
+        function enviarVendaProBackend() {
+            let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
+            let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
 
             let dados = {
                 cliente_nome: ultimaVendaSalva.cliente,
@@ -511,18 +591,18 @@
                 })
             };
 
-            // CIRURGIA 2: O JavaScript pegando o crachá e mostrando para o servidor
             let csrf_token = document.getElementById('csrfTokenPDV').value;
 
             fetch('/api/finalizar_venda', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf_token // <-- Crachá na mão!
+                    'X-CSRFToken': csrf_token
                 },
                 body: JSON.stringify(dados)
             }).then(r => r.json()).then(res => {
                 if(res.sucesso) { 
+                    document.getElementById('modalPix').style.display = 'none'; // Esconde PIX se estiver aberto
                     document.getElementById('modalRecibo').style.display = 'flex';
                 } else {
                     alert("❌ Erro: " + res.erro);
@@ -593,7 +673,6 @@
             carregarEstoque(); 
         }
 
-        // Captura inteligente do leitor de código de barras
         document.addEventListener('keypress', function(e) {
             if (e.key !== 'Enter' && e.key !== ' ' && !e.ctrlKey && !e.altKey && !e.metaKey) {
                 let active = document.activeElement;
@@ -615,7 +694,7 @@
                 limpar();
             } else if (event.key === 'F8') {
                 event.preventDefault();
-                if(document.getElementById('modalRecibo').style.display !== 'flex') {
+                if(document.getElementById('modalRecibo').style.display !== 'flex' && document.getElementById('modalPix').style.display !== 'flex') {
                     finalizar();
                 }
             }

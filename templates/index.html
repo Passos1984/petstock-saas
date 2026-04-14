@@ -112,9 +112,10 @@
         </div>
         {% endif %}
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/" class="menu-link active"><span>📦</span> Estoque</a>
+            <a href="/painel" class="menu-link active"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
@@ -221,7 +222,7 @@
                 <div style="padding: 20px; display: flex; justify-content: center; gap: 10px; border-top: 1px solid var(--border-color); align-items: center; background: #fafafa;">
                     
                     {% if produtos.has_prev %}
-                        <a href="{{ url_for('home', page=produtos.prev_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;"><i class="fas fa-chevron-left"></i> Anterior</a>
+                        <a href="{{ url_for('painel', page=produtos.prev_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;"><i class="fas fa-chevron-left"></i> Anterior</a>
                     {% else %}
                         <button class="btn" style="background: #f1f5f9; border: 1px solid var(--border-color); padding: 8px 12px; color: #cbd5e1; cursor: not-allowed;" disabled><i class="fas fa-chevron-left"></i> Anterior</button>
                     {% endif %}
@@ -229,7 +230,7 @@
                     <span style="font-weight: 700; font-size: 13px; color: var(--text-muted);">Página {{ produtos.page }} de {{ produtos.pages }}</span>
 
                     {% if produtos.has_next %}
-                        <a href="{{ url_for('home', page=produtos.next_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;">Próxima <i class="fas fa-chevron-right"></i></a>
+                        <a href="{{ url_for('painel', page=produtos.next_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;">Próxima <i class="fas fa-chevron-right"></i></a>
                     {% else %}
                         <button class="btn" style="background: #f1f5f9; border: 1px solid var(--border-color); padding: 8px 12px; color: #cbd5e1; cursor: not-allowed;" disabled>Próxima <i class="fas fa-chevron-right"></i></button>
                     {% endif %}

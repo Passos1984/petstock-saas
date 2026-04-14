@@ -3,230 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - O Sistema Definitivo para Agropets</title>
+    <title>PetStock - Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #222533;
-            --accent: #5c4dff;
-            --accent-hover: #4a3ecc;
-            --success: #10b981;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --bg-light: #f8fafc;
+            --primary: #222533; --accent: #5c4dff; --accent-hover: #4a3ecc;
+            --text-main: #1e293b; --text-muted: #64748b; --bg-light: #f8fafc;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        body { background-color: #ffffff; color: var(--text-main); line-height: 1.6; overflow-x: hidden; }
-
-        /* NAVBAR */
-        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: white; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; margin-left: 30px; transition: 0.2s; }
-        .nav-links a:hover { color: var(--accent); }
-        .btn-login { border: 2px solid var(--border-color); padding: 10px 20px; border-radius: 8px; color: var(--primary); font-weight: 700; text-decoration: none; transition: 0.2s; background: #f8fafc;}
-        .btn-login:hover { background: #e2e8f0; }
-
-        /* HERO SECTION */
-        .hero { padding: 100px 5%; text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%); position: relative;}
-        .hero h1 { font-size: 48px; font-weight: 900; color: var(--primary); margin-bottom: 20px; line-height: 1.2; letter-spacing: -1px;}
-        .hero h1 span { color: var(--accent); }
-        .hero p { font-size: 18px; color: var(--text-muted); max-width: 700px; margin: 0 auto 40px auto; }
-        .btn-cta { background: var(--accent); color: white; padding: 18px 40px; font-size: 18px; font-weight: 800; border-radius: 12px; text-decoration: none; display: inline-block; transition: 0.3s; box-shadow: 0 10px 25px rgba(92, 77, 255, 0.3); border: none; cursor: pointer;}
-        .btn-cta:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(92, 77, 255, 0.4); background: var(--accent-hover);}
-
-        /* FEATURES */
-        .features { padding: 80px 5%; background: white; }
-        .section-title { text-align: center; font-size: 32px; font-weight: 900; margin-bottom: 50px; }
-        .grid-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-        .card-feature { background: var(--bg-light); padding: 40px 30px; border-radius: 16px; text-align: center; transition: 0.3s; border: 1px solid #f1f5f9; }
-        .card-feature:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
-        .icon-circle { width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; color: var(--accent); margin: 0 auto 20px auto; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .card-feature h3 { font-size: 20px; font-weight: 800; margin-bottom: 15px; }
-
-        /* PRICING */
-        .pricing { padding: 80px 5%; background: var(--bg-light); }
-        .grid-pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
-        .card-price { background: white; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; text-align: center; position: relative; transition: 0.3s; }
-        .card-price.popular { border: 2px solid var(--accent); box-shadow: 0 20px 40px rgba(92, 77, 255, 0.1); transform: scale(1.02); }
-        .badge-popular { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; }
-        .price-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; color: var(--text-muted); }
-        .price-value { font-size: 48px; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
-        .price-value span { font-size: 16px; color: var(--text-muted); font-weight: 500; }
-        .price-list { list-style: none; margin-bottom: 30px; text-align: left; }
-        .price-list li { margin-bottom: 15px; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
-        .price-list li i { color: var(--success); }
-
-        /* MODAL CADASTRO */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: white; padding: 40px; border-radius: 20px; width: 100%; max-width: 450px; position: relative; }
-        .close-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); }
-        .input-group { margin-bottom: 15px; text-align: left;}
-        .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
-        .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; }
-        .input-control:focus { border-color: var(--accent); }
-        .alerta-flash { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; background: #fee2e2; color: #b91c1c;}
-
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 36px; }
-            .card-price.popular { transform: none; }
-            .nav-links { display: none; }
-        }
+        body { background: var(--bg-light); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .login-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; border: 1px solid #e2e8f0; }
+        .logo-area { text-align: center; margin-bottom: 30px; }
+        .logo-area img { height: 45px; border-radius: 8px; margin-bottom: 15px; }
+        .logo-area h2 { color: var(--primary); font-weight: 900; font-size: 24px; }
+        
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        .input-control { width: 100%; padding: 14px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; font-family: inherit;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+        
+        .btn-login { background: var(--accent); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; font-family: inherit;}
+        .btn-login:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(92, 77, 255, 0.3); }
+        
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: 700; font-size: 14px; }
+        .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+        
+        .back-link { display: block; text-align: center; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;}
+        .back-link:hover { color: var(--accent); }
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="PetStock" style="height: 35px; border-radius: 8px;"> 
-            PetStock
+    <div class="login-container">
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="PetStock Logo">
+            <h2>Acessar Painel</h2>
         </div>
-        <div style="display: flex; align-items: center;">
-            <div class="nav-links">
-                <a href="#funcionalidades">Funcionalidades</a>
-                <a href="#planos">Planos</a>
-            </div>
-            <a href="/login" class="btn-login" style="margin-left: 30px;">Entrar</a>
-        </div>
-    </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div style="padding: 15px; text-align: center; background: #fef2f2; color: #b91c1c; font-weight: bold; border-bottom: 1px solid #fecaca;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
                 {% for category, message in messages %}
-                    {{ message }}
+                    <div class="alert alert-{{ category }}">
+                        {{ message | safe }}
+                    </div>
                 {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+            {% endif %}
+        {% endwith %}
 
-    <section class="hero">
-        <h1>Gestão de Estoque e PDV <br><span>Feito para Agropets</span></h1>
-        <p>Aposente o caderninho. Controle seu estoque a granel, feche vendas no PDV super rápido e acabe com a dor de cabeça de cobrar fiado. Tudo online, no celular ou no PC.</p>
-        <button class="btn-cta" onclick="abrirModal('pro')">Testar Grátis por 15 Dias</button>
-        <p style="margin-top: 15px; font-size: 13px; font-weight: 600;">Sem compromisso. Não pedimos cartão de crédito.</p>
-    </section>
-
-    <section id="funcionalidades" class="features">
-        <h2 class="section-title">Por que as lojas amam o PetStock?</h2>
-        <div class="grid-features">
-            <div class="card-feature">
-                <div class="icon-circle"><i class="fas fa-balance-scale"></i></div>
-                <h3>Estoque a Granel</h3>
-                <p>Fracione sacos fechados em quilos facilmente. Venda ração a granel direto no PDV sem precisar de balança conectada.</p>
-            </div>
-            <div class="card-feature">
-                <div class="icon-circle"><i class="fas fa-desktop"></i></div>
-                <h3>Frente de Caixa (PDV)</h3>
-                <p>Um sistema de caixa ágil, feito para não ter fila. Bipe o código de barras ou busque por nome em segundos.</p>
-            </div>
-            <div class="card-feature">
-                <div class="icon-circle"><i class="fas fa-book-open"></i></div>
-                <h3>Controle de Fiado</h3>
-                <p>Saiba exatamente quem está devendo, qual o valor da dívida e registre o pagamento dos clientes na hora.</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="planos" class="pricing">
-        <h2 class="section-title">Escolha o plano ideal para sua loja</h2>
-        <div class="grid-pricing">
+        <form method="POST" action="/login">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             
-            <div class="card-price">
-                <div class="price-title">Básico</div>
-                <div class="price-value">R$ 49<span>,90/mês</span></div>
-                <ul class="price-list">
-                    <li><i class="fas fa-check"></i> Controle de Estoque (Ilimitado)</li>
-                    <li><i class="fas fa-check"></i> 1 Acesso (Dono)</li>
-                    <li><i class="fas fa-check"></i> Cadastro de Clientes</li>
-                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> PDV de Vendas</li>
-                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Controle de Fiado</li>
-                </ul>
-                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #f1f5f9; color: var(--text-main); box-shadow: none; border: 1px solid #cbd5e1;" onclick="abrirModal('basico')">Testar BÁSICO Grátis (15 dias)</button>
+            <div class="input-group">
+                <label>E-mail ou Usuário</label>
+                <input type="text" name="login" class="input-control" placeholder="Digite seu e-mail" required autofocus>
             </div>
-
-            <div class="card-price popular">
-                <div class="badge-popular">Mais Escolhido</div>
-                <div class="price-title" style="color: var(--accent);">Pro</div>
-                <div class="price-value">R$ 80<span>,00/mês</span></div>
-                <ul class="price-list">
-                    <li><i class="fas fa-check"></i> <b>Tudo do plano Básico</b></li>
-                    <li><i class="fas fa-check"></i> <b>PDV Super Rápido</b></li>
-                    <li><i class="fas fa-check"></i> <b>Controle de Fiado</b></li>
-                    <li><i class="fas fa-check"></i> Relatórios Financeiros</li>
-                    <li><i class="fas fa-check"></i> Acesso para Caixas/Vendedores</li>
-                </ul>
-                <button class="btn-cta" style="width: 100%; font-size: 16px;" onclick="abrirModal('pro')">Testar PRO Grátis (15 dias)</button>
-            </div>
-
-            <div class="card-price">
-                <div class="price-title">Elite</div>
-                <div class="price-value">R$ 150<span>,00/mês</span></div>
-                <ul class="price-list">
-                    <li><i class="fas fa-check"></i> <b>Tudo do plano PRO</b></li>
-                    <li><i class="fas fa-check"></i> Suporte Prioritário VIP</li>
-                    <li><i class="fas fa-check"></i> Radar de Inteligência (Alerta 7 dias)</li>
-                    <li><i class="fas fa-check"></i> Gestão de Fornecedores</li>
-                </ul>
-                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #0f172a;" onclick="abrirModal('elite')">Testar ELITE Grátis (15 dias)</button>
-            </div>
-
-        </div>
-    </section>
-
-    <div class="modal-overlay" id="modalTrial">
-        <div class="modal-content">
-            <button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button>
-            <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 5px; color: var(--primary);">Criar Conta Grátis</h2>
-            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Aproveite 15 dias sem custo no plano escolhido. Cancele quando quiser.</p>
             
-            <form action="/assinar" method="POST">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="plano" id="planoEscolhido" value="pro">
+            <div class="input-group">
+                <label>Senha</label>
+                <input type="password" name="senha" class="input-control" placeholder="••••••••" required>
+            </div>
 
-                <div class="input-group">
-                    <label>Nome da Agropet / Petshop</label>
-                    <input type="text" name="nome_fantasia" class="input-control" placeholder="Ex: Casa da Ração" required>
-                </div>
-
-                <div class="input-group">
-                    <label>WhatsApp (Para contato do suporte)</label>
-                    <input type="text" name="telefone" class="input-control" placeholder="(00) 00000-0000" required>
-                </div>
-
-                <div class="input-group">
-                    <label>E-mail (Seu login)</label>
-                    <input type="email" name="email" class="input-control" placeholder="loja@email.com" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Senha de Acesso</label>
-                    <input type="password" name="senha" class="input-control" placeholder="Mínimo 6 caracteres" required minlength="6">
-                </div>
-
-                <button type="submit" class="btn-cta" style="width: 100%; margin-top: 10px;">Criar Conta e Acessar Painel</button>
-            </form>
-        </div>
+            <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i> Entrar no Sistema</button>
+        </form>
+        
+        <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para a página inicial</a>
     </div>
-
-    <script>
-        function abrirModal(plano) {
-            document.getElementById('planoEscolhido').value = plano;
-            document.getElementById('modalTrial').style.display = 'flex';
-        }
-
-        function fecharModal() {
-            document.getElementById('modalTrial').style.display = 'none';
-        }
-
-        // Fechar ao clicar fora
-        window.onclick = function(event) {
-            let modal = document.getElementById('modalTrial');
-            if (event.target == modal) {
-                fecharModal();
-            }
-        }
-    </script>
 </body>
 </html>

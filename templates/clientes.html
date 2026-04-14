@@ -122,15 +122,17 @@
         {% endif %}
 
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link active"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             {% endif %}
+            <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
         
         <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
@@ -389,14 +391,14 @@
         async function confirmarPagamentoFiado() {
             let id_cliente = document.getElementById('idClientePagamento').value;
             let forma_pagto = document.getElementById('formaPagamentoFiado').value;
-            let csrf_token = document.getElementById('csrfTokenFiado').value; // CIRURGIA: Pegando o crachá para enviar via JS
+            let csrf_token = document.getElementById('csrfTokenFiado').value; 
             
             try {
                 let res = await fetch('/api/pagar_divida/' + id_cliente, { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrf_token // CIRURGIA: Mostrando o crachá pro segurança do backend
+                        'X-CSRFToken': csrf_token 
                     },
                     body: JSON.stringify({ forma_pagamento: forma_pagto })
                 });

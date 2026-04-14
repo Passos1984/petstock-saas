@@ -23,9 +23,10 @@
         /* NAVBAR */
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: white; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100; }
         .logo { font-size: 24px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-links { display: flex; align-items: center; }
         .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; margin-left: 30px; transition: 0.2s; }
         .nav-links a:hover { color: var(--accent); }
-        .btn-login { border: 2px solid var(--border-color); padding: 10px 20px; border-radius: 8px; color: var(--primary); font-weight: 700; text-decoration: none; transition: 0.2s; background: #f8fafc;}
+        .btn-login { border: 2px solid var(--border-color); padding: 10px 20px; border-radius: 8px; color: var(--primary) !important; font-weight: 800 !important; text-decoration: none; transition: 0.2s; background: #f8fafc;}
         .btn-login:hover { background: #e2e8f0; }
 
         /* HERO SECTION */
@@ -48,13 +49,13 @@
         /* PRICING */
         .pricing { padding: 80px 5%; background: var(--bg-light); }
         .grid-pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; max-width: 1100px; margin: 0 auto; }
-        .card-price { background: white; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; text-align: center; position: relative; transition: 0.3s; }
+        .card-price { background: white; padding: 40px; border-radius: 20px; border: 1px solid #e2e8f0; text-align: center; position: relative; transition: 0.3s; display: flex; flex-direction: column; }
         .card-price.popular { border: 2px solid var(--accent); box-shadow: 0 20px 40px rgba(92, 77, 255, 0.1); transform: scale(1.02); }
         .badge-popular { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: white; padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; }
         .price-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; color: var(--text-muted); }
         .price-value { font-size: 48px; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
         .price-value span { font-size: 16px; color: var(--text-muted); font-weight: 500; }
-        .price-list { list-style: none; margin-bottom: 30px; text-align: left; }
+        .price-list { list-style: none; margin-bottom: 30px; text-align: left; flex: 1; }
         .price-list li { margin-bottom: 15px; font-size: 15px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; }
         .price-list li i { color: var(--success); }
 
@@ -66,12 +67,12 @@
         .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
         .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; }
         .input-control:focus { border-color: var(--accent); }
-        .alerta-flash { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; background: #fee2e2; color: #b91c1c;}
-
+        
+        /* Ajustes Mobile */
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .card-price.popular { transform: none; }
-            .nav-links { display: none; }
+            .nav-links a.menu-item { display: none; } /* Esconde só os textos, deixa o botão de login */
         }
     </style>
 </head>
@@ -82,18 +83,17 @@
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="PetStock" style="height: 35px; border-radius: 8px;"> 
             PetStock
         </div>
-        <div style="display: flex; align-items: center;">
-            <div class="nav-links">
-                <a href="#funcionalidades">Funcionalidades</a>
-                <a href="#planos">Planos</a>
-            </div>
-            <a href="/login" class="btn-login" style="margin-left: 30px;">Entrar</a>
+        <div class="nav-links">
+            <a href="#funcionalidades" class="menu-item">Funcionalidades</a>
+            <a href="#planos" class="menu-item">Planos</a>
+            <a href="/login" class="btn-login"><i class="fas fa-sign-in-alt" style="margin-right: 5px;"></i> Entrar</a>
         </div>
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div style="padding: 15px; text-align: center; background: #fef2f2; color: #b91c1c; font-weight: bold; border-bottom: 1px solid #fecaca;">
+            <div style="padding: 15px; text-align: center; background: #fee2e2; color: #b91c1c; font-weight: 800; border-bottom: 1px solid #fecaca; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                <i class="fas fa-exclamation-circle"></i>
                 {% for category, message in messages %}
                     {{ message }}
                 {% endfor %}
@@ -143,7 +143,7 @@
                     <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> PDV de Vendas</li>
                     <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Controle de Fiado</li>
                 </ul>
-                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #f1f5f9; color: var(--text-main); box-shadow: none; border: 1px solid #cbd5e1;" onclick="abrirModal('basico')">Começar com Básico</button>
+                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #f1f5f9; color: var(--text-main); box-shadow: none; border: 1px solid #cbd5e1;" onclick="abrirModal('basico')">Testar BÁSICO Grátis (15 dias)</button>
             </div>
 
             <div class="card-price popular">
@@ -169,7 +169,7 @@
                     <li><i class="fas fa-check"></i> Radar de Inteligência (Alerta 7 dias)</li>
                     <li><i class="fas fa-check"></i> Gestão de Fornecedores</li>
                 </ul>
-                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #0f172a;" onclick="abrirModal('elite')">Assinar Elite</button>
+                <button class="btn-cta" style="width: 100%; font-size: 16px; background: #0f172a;" onclick="abrirModal('elite')">Testar ELITE Grátis (15 dias)</button>
             </div>
 
         </div>
@@ -206,6 +206,10 @@
                 </div>
 
                 <button type="submit" class="btn-cta" style="width: 100%; margin-top: 10px;">Criar Conta e Acessar Painel</button>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <a href="/login" style="color: var(--accent); font-weight: 700; text-decoration: none; font-size: 15px;">Já tem uma conta? Faça Login aqui ➡️</a>
+                </div>
             </form>
         </div>
     </div>

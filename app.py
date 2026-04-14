@@ -131,6 +131,21 @@ class Venda(db.Model):
     produto = db.relationship('Produto', backref='vendas_list')
     compras = db.relationship('Cliente', backref='compras_list')
 
+# CIRURGIA: Nova tabela para a Agenda de Banho e Tosa
+class Agendamento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=True)
+    loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
+    nome_pet = db.Column(db.String(100), nullable=False)
+    raca_porte = db.Column(db.String(100))
+    servico = db.Column(db.String(100), nullable=False) # Ex: Banho, Tosa, Hidratação
+    valor_servico = db.Column(db.Float, default=0.0)
+    data_agendamento = db.Column(db.Date, nullable=False)
+    hora_agendamento = db.Column(db.String(10), nullable=False) # Ex: 14:30
+    status = db.Column(db.String(50), default='Agendado') # Agendado, Em Andamento, Concluído, Cancelado
+    observacoes = db.Column(db.String(255))
+    cliente = db.relationship('Cliente', backref='agendamentos')
+
 
 @app.context_processor
 def injetar_dados_globais():
@@ -742,7 +757,9 @@ def historico_cliente(id):
     historico = []
     for v in vendas:
         nome_prod = v.produto.nome if v.produto else (
-            '💰 Pagamento de Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else 'Produto Excluído'
+            '💰 Pagamento de Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else (
+            '🛁 Serviço Banho/Tosa' if 'Banho/Tosa' in (v.forma_pagamento_1 or '') else 'Produto Excluído'
+            )
         )
         historico.append({
             'data': v.data_venda.strftime('%d/%m/%Y %H:%M'),
@@ -1019,7 +1036,9 @@ def exportar_relatorio():
 
     for v in vendas:
         nome_prod = v.produto.nome if v.produto else (
-            'Pagamento Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else 'Produto Excluído'
+            'Pagamento Fiado' if 'Pgto' in (v.forma_pagamento_1 or '') else (
+            'Serviço Banho/Tosa' if 'Banho/Tosa' in (v.forma_pagamento_1 or '') else 'Produto Excluído'
+            )
         )
         writer.writerow([
             v.data_venda.strftime('%d/%m/%Y %H:%M'),
@@ -1168,6 +1187,97 @@ def excluir_loja(id):
 def logout_ceo():
     session.pop('ceo_logado', None)
     return redirect(url_for('login_ceo'))
+
+
+# ==========================================
+# --- ROTAS DA AGENDA DE SERVIÇOS (BANHO E TOSA) ---
+# ==========================================
+@app.route('/agenda', methods=['GET', 'POST'])
+def agenda():
+    if 'loja_id' not in session:
+        return redirect(url_for('login'))
+        
+    loja_id = session['loja_id']
+
+    # Cadastro de um novo agendamento
+    if request.method == 'POST':
+        cliente_id_str = request.form.get('cliente_id')
+        cliente_id = int(cliente_id_str) if cliente_id_str else None
+        
+        try:
+            valor = float(request.form.get('valor_servico', '0').replace('.', '').replace(',', '.'))
+        except:
+            valor = 0.0
+
+        novo_agendamento = Agendamento(
+            cliente_id=cliente_id,
+            loja_id=loja_id,
+            nome_pet=request.form.get('nome_pet'),
+            raca_porte=request.form.get('raca_porte'),
+            servico=request.form.get('servico'),
+            valor_servico=valor,
+            data_agendamento=datetime.strptime(request.form.get('data_agendamento'), '%Y-%m-%d').date(),
+            hora_agendamento=request.form.get('hora_agendamento'),
+            observacoes=request.form.get('observacoes'),
+            status='Agendado'
+        )
+        
+        db.session.add(novo_agendamento)
+        db.session.commit()
+        flash('✅ Horário agendado com sucesso!', 'success')
+        return redirect(url_for('agenda'))
+
+    # Listagem para exibir na tela
+    hoje = data_brasil()
+    data_filtro_str = request.args.get('data_filtro', hoje.strftime('%Y-%m-%d'))
+    data_filtro = datetime.strptime(data_filtro_str, '%Y-%m-%d').date()
+
+    agendamentos = Agendamento.query.filter_by(
+        loja_id=loja_id, 
+        data_agendamento=data_filtro
+    ).order_by(Agendamento.hora_agendamento.asc()).all()
+
+    clientes_loja = Cliente.query.filter_by(loja_id=loja_id).order_by(Cliente.nome).all()
+
+    return render_template(
+        'agenda.html', 
+        agendamentos=agendamentos, 
+        data_filtro=data_filtro_str, 
+        clientes=clientes_loja
+    )
+
+@app.route('/mudar_status_agenda/<int:id>/<status>')
+def mudar_status_agenda(id, status):
+    if 'loja_id' not in session:
+        return redirect(url_for('login'))
+        
+    agendamento = Agendamento.query.get_or_404(id)
+    
+    if agendamento.loja_id == session['loja_id']:
+        agendamento.status = status
+        
+        # CIRURGIA: Lançar venda automática no caixa ao concluir o banho
+        if status == 'Concluído' and agendamento.valor_servico > 0:
+            venda_servico = Venda(
+                produto_id=None, # Não é um produto físico
+                cliente_id=agendamento.cliente_id,
+                loja_id=session['loja_id'],
+                quantidade=1.0,
+                valor_total=agendamento.valor_servico,
+                forma_pagamento_1='Dinheiro (Banho/Tosa)', # Etiqueta especial
+                data_venda=hora_brasil(),
+                vendedor=session.get('vendedor_atual', 'Dono/Gerente')
+            )
+            db.session.add(venda_servico)
+            flash(f'🚿 Serviço concluído! O valor de R$ {agendamento.valor_servico:.2f} foi lançado no caixa.', 'success')
+        elif status == 'Cancelado':
+            flash('🚫 Agendamento cancelado.', 'warning')
+        else:
+            flash('🚿 Status do serviço atualizado.', 'success')
+            
+        db.session.commit()
+            
+    return redirect(url_for('agenda'))
 
 
 # --- Inicialização ---

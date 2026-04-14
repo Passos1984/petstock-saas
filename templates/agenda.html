@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - Agenda Banho e Tosa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px; }
+
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+
+        .btn { padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;}
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        .agenda-container { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.02); overflow: hidden; }
+        .agenda-header { padding: 20px 30px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        
+        .agenda-list { display: flex; flex-direction: column; }
+        .agenda-item { display: flex; align-items: center; padding: 20px 30px; border-bottom: 1px solid var(--border-color); transition: 0.2s; }
+        .agenda-item:hover { background: #f8fafc; }
+        .agenda-item:last-child { border-bottom: none; }
+        
+        .time-badge { background: var(--accent); color: white; padding: 8px 15px; border-radius: 8px; font-weight: 800; font-size: 16px; min-width: 80px; text-align: center; margin-right: 25px; }
+        .pet-info { flex: 1; }
+        .pet-name { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; display: flex; align-items: center; gap: 10px;}
+        .pet-details { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        
+        .status-tag { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .status-agendado { background: #e0e7ff; color: #4338ca; }
+        .status-concluido { background: #d1fae5; color: #047857; }
+        .status-cancelado { background: #fee2e2; color: #b91c1c; }
+
+        .action-btns { display: flex; gap: 8px; }
+        .btn-icon { width: 36px; height: 36px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: 0.2s; text-decoration: none;}
+        .btn-check { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
+        .btn-check:hover { background: var(--success); color: white; }
+        .btn-cancel { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+        .btn-cancel:hover { background: var(--danger); color: white; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
+        .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); max-height: 90vh; overflow-y: auto;}
+        .close-btn { float: right; cursor: pointer; font-size: 24px; color: #94a3b8; background: none; border: none; font-weight: bold;}
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase;}
+        .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; font-family: inherit;}
+        .input-control:focus { border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* Mobile */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto;}
+            .mobile-header { display: flex; }
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            main { padding: 20px 15px; }
+            .header-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .agenda-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .action-btns { width: 100%; justify-content: flex-end; }
+            .time-badge { margin-right: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link active"><span>🛁</span> Agenda Banho/Tosa</a>
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            {% endif %}
+            <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
+        </div>
+        <div class="menu-container" style="margin-top: 15px;">
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center;">🚪 Sair</a>
+        </div>
+    </aside>
+
+    <main>
+        <div style="margin-bottom: 20px;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}{% for category, message in messages %}
+                    <div style="padding: 15px; border-radius: 10px; margin-bottom: 15px; font-weight: 700; font-size: 14px; text-align: center; background: #d1fae5; color: #065f46; border: 1px solid #34d399;">
+                        {{ message | safe }}
+                    </div>
+                {% endfor %}{% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="header-bar">
+            <h2 class="page-title">🛁 Agenda de Serviços</h2>
+            <button class="btn btn-primary" onclick="abrirModal()">➕ Novo Agendamento</button>
+        </div>
+
+        <div class="agenda-container">
+            <div class="agenda-header">
+                <h3 style="margin: 0; font-size: 16px;">Horários do Dia</h3>
+                <form action="/agenda" method="GET" style="display: flex; gap: 10px;">
+                    <input type="date" name="data_filtro" value="{{ data_filtro }}" class="input-control" style="padding: 8px 12px; width: auto;" onchange="this.form.submit()">
+                </form>
+            </div>
+
+            <div class="agenda-list">
+                {% for a in agendamentos %}
+                <div class="agenda-item">
+                    <div class="time-badge {% if a.status == 'Cancelado' %}style="background: #cbd5e1;"{% endif %}">{{ a.hora_agendamento }}</div>
+                    <div class="pet-info">
+                        <div class="pet-name">
+                            {{ a.nome_pet }}
+                            <span class="status-tag status-{{ a.status|lower|replace('í', 'i')|replace(' ', '') }}">{{ a.status }}</span>
+                        </div>
+                        <div class="pet-details">
+                            <i class="fas fa-paw" style="color: var(--accent); margin-right: 5px;"></i> {{ a.raca_porte }} | 
+                            <i class="fas fa-cut" style="color: var(--warning); margin-left: 10px; margin-right: 5px;"></i> {{ a.servico }} | 
+                            <i class="fas fa-tag" style="color: var(--success); margin-left: 10px; margin-right: 5px;"></i> R$ {{ "%.2f"|format(a.valor_servico)|replace('.', ',') }}
+                            {% if a.cliente %}
+                            <br><i class="fas fa-user" style="color: var(--text-muted); margin-right: 5px; margin-top: 5px;"></i> Tutor: {{ a.cliente.nome }} ({{ a.cliente.telefone }})
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="action-btns">
+                        {% if a.status == 'Agendado' %}
+                        <a href="/mudar_status_agenda/{{ a.id }}/Concluído" class="btn-icon btn-check" title="Marcar como Concluído"><i class="fas fa-check"></i></a>
+                        <a href="/mudar_status_agenda/{{ a.id }}/Cancelado" class="btn-icon btn-cancel" title="Cancelar Agendamento" onclick="return confirm('Deseja realmente cancelar este horário?')"><i class="fas fa-times"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div style="padding: 50px; text-align: center; color: var(--text-muted);">
+                    <i class="fas fa-calendar-times" style="font-size: 48px; color: #cbd5e1; margin-bottom: 15px;"></i>
+                    <p style="font-size: 16px; font-weight: 600;">Nenhum serviço agendado para esta data.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <div id="modalAgendamento" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="fecharModal()">&times;</button>
+            <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">➕ Agendar Serviço</h3>
+            
+            <form action="/agenda" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="input-group">
+                    <label>Tutor (Cliente Cadastrado - Opcional)</label>
+                    <select name="cliente_id" class="input-control" style="background: white;">
+                        <option value="">-- Avulso / Não cadastrado --</option>
+                        {% for c in clientes %}
+                        <option value="{{ c.id }}">{{ c.nome }} ({{ c.telefone }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Nome do Pet *</label>
+                        <input type="text" name="nome_pet" class="input-control" required placeholder="Ex: Bob">
+                    </div>
+                    <div class="input-group">
+                        <label>Raça / Porte</label>
+                        <input type="text" name="raca_porte" class="input-control" placeholder="Ex: Poodle - P">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Serviço *</label>
+                        <select name="servico" class="input-control" required style="background: white;">
+                            <option value="Banho">Banho</option>
+                            <option value="Tosa">Tosa</option>
+                            <option value="Banho e Tosa">Banho e Tosa</option>
+                            <option value="Hidratação">Hidratação</option>
+                            <option value="Corte de Unhas">Corte de Unhas</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Valor (R$)</label>
+                        <input type="text" name="valor_servico" class="input-control" placeholder="0,00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group">
+                        <label>Data *</label>
+                        <input type="date" name="data_agendamento" class="input-control" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Hora *</label>
+                        <input type="time" name="hora_agendamento" class="input-control" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Observações</label>
+                    <input type="text" name="observacoes" class="input-control" placeholder="Ex: Alérgico a perfume">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 16px; margin-top: 10px;">Salvar Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function abrirModal() {
+            // Auto preencher data atual no formulário
+            document.querySelector('input[name="data_agendamento"]').valueAsDate = new Date();
+            document.getElementById('modalAgendamento').style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('modalAgendamento').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            let modal = document.getElementById('modalAgendamento');
+            if (event.target == modal) {
+                fecharModal();
+            }
+        }
+    </script>
+</body>
+</html>

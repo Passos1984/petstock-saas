@@ -71,25 +71,43 @@
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <aside id="sidebar">
-        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px;">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
-        <div class="menu-container" style="flex: 1;">
-            <a href="/" class="menu-link"><span>📦</span> Estoque</a>
+        
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link active"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
+            {% endif %}
         </div>
-        <a href="/logout" class="menu-link" style="color: #fca5a5;">🚪 Sair</a>
+        
+        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com o Radar do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
     </aside>
 
     <main>
         <div class="header-bar">
-            <h2 class="page-title">📡 Radar de Inteligência</h2>
+            <h2 class="page-title">
+                <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px;">📡</span>
+                Radar de Inteligência
+            </h2>
             <button onclick="document.getElementById('modalAjuda').style.display='flex'" style="background:#eef2ff; color:var(--accent); border:1px solid #c7d2fe; padding:10px 16px; border-radius:10px; cursor:pointer; font-weight:700;">❓ Como usar</button>
         </div>
 

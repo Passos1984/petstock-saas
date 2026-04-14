@@ -13,34 +13,71 @@
             --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
-        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); }
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0;}
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); overflow: hidden;}
+        
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1002; transition: left 0.3s ease;}
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-        .menu-link.active { background: var(--accent); color: white; font-weight: 600; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); font-weight: 600;}
+        
         main { flex: 1; padding: 40px; overflow-y: auto; }
-        .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; }
+        .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);}
         .input-control { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit;}
+        .input-control:focus { border-color: var(--accent); }
+        
         .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;}
         .btn-primary { background: var(--accent); color: white; }
-        .btn-whats { background: #25D366; color: white; font-size: 12px; padding: 6px 12px;}
+        .btn-whats { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; padding: 8px 14px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 13px; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;}
+        .btn-whats:hover { background: var(--success); color: white; transform: translateY(-2px);}
+        
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); }
-        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: top;}
-        .badge { background: #f8fafc; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid var(--border-color); }
-        @media (max-width: 768px) { body { flex-direction: column; } aside { width: 100%; height: auto; } main { padding: 15px; } }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); white-space: nowrap;}
+        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; white-space: nowrap;}
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);}
+
+        /* --- BARRA MOBILE E OVERLAY --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 10px 20px; align-items: center; justify-content: space-between; position: fixed; top: 0; width: 100%; z-index: 1000; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; }
+
+        @media (max-width: 991px) {
+            body { flex-direction: column; overflow: auto; }
+            .mobile-header { display: flex; }
+            .overlay.active { display: block; }
+            
+            main { padding: 80px 15px 20px 15px; height: auto; }
+            
+            aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            
+            .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+            table { min-width: 800px; }
+        }
     </style>
 </head>
 <body>
-    <aside>
-        <div style="text-align: center; margin-bottom: 20px;">
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 150px;">
         </div>
-        <a href="/" class="menu-link">📦 Estoque</a>
-        <a href="/clientes" class="menu-link">👥 Clientes</a>
-        <a href="/pdv" class="menu-link">🛒 PDV</a>
-        <a href="/radar" class="menu-link">📡 Radar</a>
-        <a href="/representantes" class="menu-link active">🚚 Representantes</a>
-        <a href="/relatorios" class="menu-link">📊 Financeiro</a>
+        <div class="menu-container" style="flex: 1;">
+            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link active"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
+        </div>
         <a href="/logout" class="menu-link" style="margin-top:auto; color:#fca5a5;">🚪 Sair</a>
     </aside>
 
@@ -58,36 +95,50 @@
             {% endif %}
         {% endwith %}
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h1 style="margin:0; font-weight:800;">🚚 Representantes</h1>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px; flex-wrap: wrap; gap: 15px;">
+            <h1 style="margin:0; font-weight:800; font-size: 24px;">🚚 Representantes</h1>
             <button onclick="document.getElementById('modalNovo').style.display='flex'" class="btn btn-primary">➕ Novo Fornecedor</button>
         </div>
 
         <div class="panel" style="padding:0; overflow:hidden;">
-            <div style="overflow-x:auto;">
+            <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Distribuidora</th><th>Contacto</th><th>WhatsApp</th><th>Condições / Observações</th><th style="text-align:right;">Ações</th></tr>
+                        <tr>
+                            <th style="padding-left: 25px;">Distribuidora</th>
+                            <th>Contato</th>
+                            <th>WhatsApp</th>
+                            <th>Condições / Observações</th>
+                            <th style="text-align:right; padding-right: 25px;">Ações</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {% for f in representantes %}
                         <tr>
-                            <td><strong>{{ f.nome_fantasia }}</strong><br><small>{{ f.cnpj }}</small></td>
+                            <td style="padding-left: 25px;"><strong>{{ f.nome_fantasia }}</strong><br><small style="color: var(--text-muted);">{{ f.cnpj }}</small></td>
                             <td>{{ f.representante_nome }}</td>
                             <td>
                                 {% if f.whatsapp %}
-                                <a href="https://api.whatsapp.com/send?phone=55{{ f.whatsapp|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}" target="_blank" class="btn btn-whats"><i class="fab fa-whatsapp"></i> Chamar</a>
+                                <a href="https://api.whatsapp.com/send?phone=55{{ f.whatsapp|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}" target="_blank" class="btn-whats"><i class="fab fa-whatsapp"></i> Chamar</a>
+                                {% else %}
+                                <span style="color: #cbd5e1; font-style: italic; font-size: 12px;">Não informado</span>
                                 {% endif %}
                             </td>
                             <td>
                                 <span class="badge">Mínimo: R$ {{ f.pedido_minimo or '0,00' }}</span>
                                 {% if f.prazo_entrega %}<span class="badge">Prazo: {{ f.prazo_entrega }}</span>{% endif %}
                                 {% if f.observacoes %}
-                                <br><small style="color: var(--accent); font-weight: 700; display: inline-block; margin-top: 6px;">📝 {{ f.observacoes }}</small>
+                                <br><small style="color: var(--accent); font-weight: 700; display: inline-block; margin-top: 6px; white-space: normal; max-width: 250px;">📝 {{ f.observacoes }}</small>
                                 {% endif %}
                             </td>
-                            <td style="text-align:right;">
-                                <a href="/excluir_representante/{{ f.id }}" style="color:var(--danger);" onclick="return confirm('Apagar fornecedor?')"><i class="fas fa-trash"></i></a>
+                            <td style="text-align:right; padding-right: 25px;">
+                                <a href="/excluir_representante/{{ f.id }}" style="color:var(--danger); font-size: 16px; text-decoration: none;" onclick="return confirm('Apagar fornecedor?')"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                                Nenhum representante cadastrado.
                             </td>
                         </tr>
                         {% endfor %}
@@ -97,9 +148,9 @@
         </div>
     </main>
 
-    <div id="modalNovo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; padding: 20px;">
-        <div style="background:white; padding:30px; border-radius:15px; width:100%; max-width:450px;">
-            <h2 style="margin-top:0;">➕ Novo Fornecedor</h2>
+    <div id="modalNovo" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:2000; padding: 20px;">
+        <div style="background:white; padding:35px; border-radius:20px; width:100%; max-width:450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <h2 style="margin-top:0; margin-bottom: 20px; font-weight: 800;">➕ Novo Fornecedor</h2>
             <form action="/representantes" method="POST">
                 
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -130,12 +181,19 @@
                 </div>
 
                 <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">📝 Observações Internas</label>
-                <textarea name="observacoes" class="input-control" rows="2" placeholder="Ex: Entrega na terça, aceita boleto..."></textarea>
+                <textarea name="observacoes" class="input-control" rows="2" placeholder="Ex: Entrega na terça, aceita boleto..." style="resize: none;"></textarea>
 
-                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 10px;">Salvar Fornecedor</button>
-                <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:var(--text-muted); font-weight: 700;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="width:100%; justify-content: center; margin-top: 10px; height: 50px;">Salvar Fornecedor</button>
+                <button type="button" onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="width:100%; background:none; border:none; margin-top:15px; cursor:pointer; color:var(--text-muted); font-weight: 700; transition: 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">Cancelar</button>
             </form>
         </div>
     </div>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
