@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetStock - Marketing e CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #222533; --accent: #5c4dff; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0; }
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px; overflow: hidden; }
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover, .menu-link.active { background: var(--accent); color: white; }
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; }
+        .header-bar { margin-bottom: 30px; }
+        .page-title { margin: 0; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .panel { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border-color); }
+        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .btn-whats { background: #25d366; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-whats:hover { background: #1ebc5a; transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <aside>
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" style="max-width: 150px;">
+        </div>
+        <a href="/painel" class="menu-link">🏠 Dashboard</a>
+        <a href="/estoque" class="menu-link">📦 Estoque</a>
+        <a href="/pdv" class="menu-link">🛒 Vender (PDV)</a>
+        <a href="/agenda" class="menu-link">🛁 Agenda</a>
+        <a href="/marketing" class="menu-link active">📣 Marketing</a>
+        <a href="/clientes" class="menu-link">👥 Clientes</a>
+        <a href="/comissoes" class="menu-link">✂️ Comissões</a>
+        <a href="/configuracoes" class="menu-link">⚙️ Configurações</a>
+    </aside>
+
+    <main>
+        <div class="header-bar">
+            <h2 class="page-title">📣 Radar de Marketing e Vendas</h2>
+            <p style="color: var(--text-muted); margin-top: 5px;">Recupere clientes inativos e traga dinheiro novo para o caixa.</p>
+        </div>
+
+        <div class="panel">
+            <h3 style="margin-top: 0; color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Clientes Ausentes (+ de 30 dias sem comprar)</h3>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Celular</th>
+                        <th>Saldo de Cashback</th>
+                        <th style="text-align: right;">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in ausentes %}
+                    <tr>
+                        <td><strong>{{ c.nome }}</strong><br><small style="color: var(--text-muted);">Pets: {{ c.nome_pet }}</small></td>
+                        <td>{{ c.telefone }}</td>
+                        <td style="color: var(--success); font-weight: 800;">R$ {{ "%.2f"|format(c.saldo_cashback or 0)|replace('.', ',') }}</td>
+                        <td style="text-align: right;">
+                            <a href="https://api.whatsapp.com/send?phone=55{{ c.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}&text=Olá, {{ c.nome }}! Saudade de você e do(a) *{{ c.nome_pet }}*! 🐾 Temos novidades aqui na loja e lembrando que você tem *R$ {{ "%.2f"|format(c.saldo_cashback or 0)|replace('.', ',') }}* de Cashback liberado para usar! Vamos agendar um banho ou garantir a ração com desconto?" target="_blank" class="btn-whats">
+                                <i class="fab fa-whatsapp"></i> Enviar Oferta
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">Todos os seus clientes compraram nos últimos 30 dias. Engajamento 100%! 🚀</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

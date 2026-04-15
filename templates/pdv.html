@@ -8,14 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
-        :root { 
-            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
-            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+        :root {
+            --primary: #222533; --accent: #5c4dff; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9;
             --text-main: #333333; --text-muted: #777777; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 13px; overflow: hidden;}
-        
+
         /* Menu Lateral (Desktop) */
         aside { width: 250px; background: var(--primary); color: white; padding: 25px 20px; display: flex; flex-direction: column; z-index: 1002; flex-shrink: 0; transition: left 0.3s ease;}
         .logo { font-size: 18px; font-weight: 800; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;}
@@ -23,8 +23,8 @@
         .menu-link.active { background: var(--accent); color: white; }
 
         main { flex: 1; display: flex; flex-direction: column; padding: 20px; height: 100vh; overflow: hidden; }
-        .pdv-grid { display: grid; grid-template-columns: 1fr 380px; gap: 20px; flex: 1; overflow: hidden; }
-        
+        .pdv-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; flex: 1; overflow: hidden; }
+
         /* ESQUERDA */
         .pdv-left { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
         .search-box { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); position: relative; }
@@ -33,11 +33,11 @@
         .cart-panel { background: white; border-radius: 12px; border: 1px solid var(--border-color); flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .cart-header { padding: 12px 15px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .cart-scroll { flex: 1; overflow-y: auto; padding: 10px; }
-        
+
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 10px; color: var(--text-muted); text-transform: uppercase; padding: 8px; border-bottom: 1px solid var(--border-color); }
         td { padding: 12px 8px; border-bottom: 1px dashed var(--border-color); vertical-align: top;}
-        
+
         .pdv-input-table { width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px; text-align: center; font-weight: 600; outline: none; }
         .pdv-input-table:focus { border-color: var(--accent); }
 
@@ -53,11 +53,12 @@
         /* DIREITA */
         .pdv-right { background: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-y: auto; }
         .label-mini { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 5px; }
-        .pdv-select, .pdv-field { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-family: inherit; }
+        .pdv-select, .pdv-field { width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 600; font-family: inherit; outline: none;}
+        .pdv-field:focus { border-color: var(--accent); }
 
         .profit-card { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 10px; border-radius: 8px; text-align: center; transition: 0.3s; margin-top: auto; }
         .profit-card.loss { background: #fef2f2; border-color: #fecaca; }
-        
+
         .total-box { background: var(--primary); color: white; padding: 15px 20px; border-radius: 12px; text-align: right; }
         .total-val { font-size: 36px; font-weight: 800; color: var(--success); display: block; margin-top: 2px;}
 
@@ -65,84 +66,68 @@
         .troco-box .label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .troco-box .value { font-size: 32px; font-weight: 800; margin-top: 5px; }
 
-        /* CIRURGIA: Caixa de Saldo Cashback */
-        #boxCashback { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 8px; margin-top: 10px; color: var(--accent); font-weight: 700; align-items: center; justify-content: space-between; }
-        #valorCashback { font-size: 16px; font-weight: 900; }
+        #boxCashback { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 8px; color: var(--accent); font-weight: 700; align-items: center; justify-content: space-between; }
 
         /* MODAIS */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;}
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; }
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold;}
         .close-modal:hover { color: var(--danger); }
-        
+
         /* --- BARRA MOBILE E OVERLAY --- */
         .mobile-header { display: none; background-color: var(--primary); color: white; padding: 10px 20px; align-items: center; justify-content: space-between; position: fixed; top: 0; width: 100%; z-index: 1000; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; }
-
-        /* Estilo do Leitor de QR/Barras */
         #reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; }
-        #reader video { border-radius: 12px; }
 
-        /* --- AJUSTES MOBILE PARA O PDV --- */
         @media (max-width: 991px) {
             .mobile-header { display: flex; }
             .overlay.active { display: block; }
-            
             aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
             aside.active { left: 0; }
-            
             main { padding: 75px 15px 15px 15px; height: auto; overflow: visible; }
             body { overflow: auto; flex-direction: column; }
-            
             .pdv-grid { grid-template-columns: 1fr; overflow: visible;}
-            .pdv-left { overflow: visible; }
             .cart-panel { min-height: 400px; }
-            
-            .search-box > div { display: flex; flex-direction: column; }
-            .search-box > div > div { width: 100%; }
         }
     </style>
 </head>
 <body>
 
     <input type="hidden" id="csrfTokenPDV" value="{{ csrf_token() }}">
-    
     <input type="hidden" id="chavePixLoja" value="{{ loja_logada.chave_pix or '' }}">
     <input type="hidden" id="nomeFantasiaLoja" value="{{ loja_logada.nome_fantasia or 'PetStock' }}">
 
     <div class="mobile-header">
-        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px; max-width: 140px;">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 30px;">
         <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </div>
-
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <aside id="sidebar">
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="max-width: 160px; height: auto;">
         </div>
-
         <nav style="flex:1">
-            <a href="/painel" class="menu-link">📦 Estoque</a>
+            <a href="/painel" class="menu-link">🏠 Dashboard</a>
+            <a href="/estoque" class="menu-link">📦 Estoque</a>
             <a href="/clientes" class="menu-link">👥 Clientes</a>
             <a href="/pdv" class="menu-link active">🛒 PDV</a>
-            <a href="/agenda" class="menu-link">🛁 Agenda Banho/Tosa</a>
-            <a href="/radar" class="menu-link">📡 Radar</a>
+            <a href="/agenda" class="menu-link">🛁 Agenda</a>
+            <a href="/marketing" class="menu-link">📣 Marketing</a>
             <a href="/relatorios" class="menu-link">📊 Financeiro</a>
-            <a href="/configuracoes" class="menu-link">⚙️ Configurações</a>
+            <a href="/comissoes" class="menu-link">✂️ Comissões</a>
         </nav>
         <a href="/logout" class="menu-link" style="color:#fca5a5">🚪 Sair</a>
     </aside>
 
     <main>
         <div class="pdv-grid">
-            
             <div class="pdv-left">
                 <div class="search-box">
                     <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px;">
                         <div>
-                            <label class="label-mini" style="color: var(--accent);">👤 Cliente (Nome ou Telefone)</label>
+                            <label class="label-mini" style="color: var(--accent);">👤 Cliente (Nome ou Celular)</label>
                             <input type="text" id="cliente" placeholder="Consumidor Final" list="listaClientes" style="border-color: var(--accent);" onchange="verificarCashback()">
                             <datalist id="listaClientes">
                                 {% for c in clientes %}
@@ -154,7 +139,7 @@
                             <label class="label-mini">📦 Buscar Produto (F2)</label>
                             <div style="display: flex; gap: 8px;">
                                 <input type="text" id="buscaProduto" placeholder="Bipe, digite ou selecione na seta..." autocomplete="off" list="listaProdutos" oninput="verificarSelecao(this.value)" onkeyup="buscar(event)" style="flex: 1;">
-                                <button onclick="abrirScanner()" class="btn btn-primary" style="padding: 0 20px; border-radius: 8px; font-size: 18px;" title="Abrir Câmera para Bipar">
+                                <button onclick="abrirScanner()" class="btn btn-primary" style="padding: 0 20px; border-radius: 8px; font-size: 18px;" title="Ler Código">
                                     <i class="fas fa-camera"></i>
                                 </button>
                             </div>
@@ -165,7 +150,7 @@
 
                 <div class="cart-panel">
                     <div class="cart-header">
-                        <span>🛒 ITENS NO CARRINHO <small style="color: var(--text-muted); font-size: 11px; margin-left: 8px;">(Clique no 🎁 para dar brinde)</small></span>
+                        <span>🛒 ITENS NO CARRINHO</span>
                         <button onclick="limpar()" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold;">🗑️ LIMPAR (F4)</button>
                     </div>
                     <div class="cart-scroll">
@@ -173,10 +158,10 @@
                             <thead>
                                 <tr>
                                     <th style="width: 40%;">PRODUTO</th>
-                                    <th style="text-align: center; width: 15%;">QTD/KG</th>
+                                    <th style="text-align: center; width: 15%;">QTD</th>
                                     <th style="text-align: center; width: 15%;">DESC (R$)</th>
                                     <th style="text-align: right; width: 15%;">TOTAL</th>
-                                    <th style="text-align: center; width: 15%;">AÇÕES</th>
+                                    <th style="text-align: center; width: 15%;">X</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -189,7 +174,6 @@
             </div>
 
             <div class="pdv-right">
-                
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                     <div>
                         <label class="label-mini">Vendedor / Caixa</label>
@@ -199,51 +183,70 @@
                         </select>
                     </div>
                     <div>
-                        <label class="label-mini">Forma de Pagamento</label>
-                        <select id="pagamento" class="pdv-select" style="border-color: var(--accent);">
+                        <label class="label-mini">Desconto Global</label>
+                        <input type="text" inputmode="decimal" id="descGeral" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()">
+                    </div>
+                </div>
+
+                <div id="boxCashback">
+                    <span style="font-size: 11px; text-transform: uppercase;">💼 Cashback Livre:</span>
+                    <span id="valorCashback" style="font-size: 14px;">R$ 0,00</span>
+                </div>
+
+                <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 12px; margin-top: 5px;">
+
+                    <label class="label-mini" style="color: var(--accent);">1ª Forma de Pagamento</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <select id="pagamento1" class="pdv-select" style="flex: 2; border-color: var(--accent);" onchange="calcular()">
                             <option value="Dinheiro">Dinheiro</option>
                             <option value="Pix">Pix</option>
                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                             <option value="Cartão de Débito">Cartão de Débito</option>
                             <option value="Crediário / Fiado">Crediário / Fiado</option>
-                            <option value="Saldo Cashback">🎁 Saldo Cashback</option> </select>
+                            <option value="Saldo Cashback">🎁 Saldo Cashback</option>
+                        </select>
+                        <input type="text" inputmode="decimal" id="valorPag1" class="pdv-field" style="flex: 1.2; font-weight: 800;" placeholder="0,00" oninput="calcular()" onfocus="this.select()">
+                    </div>
+
+                    <div id="boxPag2" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border-color);">
+                        <label class="label-mini" style="color: var(--danger);">2ª Forma (Falta Receber)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <select id="pagamento2" class="pdv-select" style="flex: 2; border-color: var(--danger);" onchange="calcular()">
+                                <option value="">-- Selecione --</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Crediário / Fiado">Crediário / Fiado</option>
+                            </select>
+                            <input type="text" inputmode="decimal" id="valorPag2" class="pdv-field" style="flex: 1.2; background: #fee2e2; color: var(--danger); font-weight: 800; border-color: var(--danger);" readonly>
+                        </div>
                     </div>
                 </div>
 
-                <div id="boxCashback">
-                    <span style="font-size: 12px; text-transform: uppercase;">💼 Cashback Disponível:</span>
-                    <span id="valorCashback">R$ 0,00</span>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                    <div>
-                        <label class="label-mini">Desconto Global</label>
-                        <input type="number" id="descGeral" class="pdv-field" value="0" step="any" oninput="calcular()" onfocus="this.select()">
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label class="label-mini">Valor Entregue (Para Troco)</label>
+                        <input type="text" inputmode="decimal" id="recebidoCaixa" class="pdv-field" value="0" oninput="calcular()" onfocus="this.select()" style="font-size: 16px; font-weight: 800; color: var(--success);">
                     </div>
-                    <div>
-                        <label class="label-mini">Valor Recebido</label>
-                        <input type="number" id="recebido" class="pdv-field" value="0" step="any" oninput="calcular()" onfocus="this.select()" style="font-size: 18px; font-weight: 800; color: var(--success); border-color: var(--success);">
+                    <div class="troco-box" style="flex: 1; padding: 10px;">
+                        <div class="label" style="font-size: 10px;">⚠️ Troco</div>
+                        <div class="value" id="trocoTxt" style="font-size: 20px;">R$ 0,00</div>
                     </div>
                 </div>
 
-                <div class="total-box" style="margin-top: 10px;">
+                <div class="total-box">
                     <span class="label-mini" style="color:#a0a5ba; margin-bottom: 5px;">Subtotal da Venda: R$ <span id="subTotalTxt">0,00</span></span>
-                    <span style="font-size: 13px; font-weight: 800; text-transform: uppercase; margin-top: 10px; display: block;">Total a Pagar</span>
+                    <span style="font-size: 13px; font-weight: 800; text-transform: uppercase; margin-top: 5px; display: block;">Total a Pagar</span>
                     <span class="total-val" id="totalFinal">R$ 0,00</span>
                 </div>
 
-                <div class="troco-box">
-                    <div class="label">⚠️ Troco a Devolver</div>
-                    <div class="value" id="trocoTxt">R$ 0,00</div>
-                </div>
-
-                <button class="btn btn-success" style="height: 60px; font-size: 16px;" onclick="finalizar()">💰 CONCLUIR VENDA (F8)</button>
+                <button class="btn btn-success" style="height: 60px; font-size: 16px; margin-top: 5px;" onclick="finalizar()">💰 CONCLUIR VENDA (F8)</button>
 
                 <div id="cardLucro" class="profit-card">
                     <label class="label-mini" id="lblLucro" style="color:inherit">📈 Lucro Estimado</label>
                     <div id="valLucro" style="font-size: 16px; font-weight: 800;">R$ 0,00</div>
                 </div>
-
             </div>
         </div>
     </main>
@@ -251,507 +254,354 @@
     <div id="modalPix" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <button class="close-modal" onclick="document.getElementById('modalPix').style.display='none'">&times;</button>
-            <h2 style="color: var(--accent); margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <i class="fab fa-pix"></i> Pagamento PIX
-            </h2>
-            <p style="color: var(--text-muted); font-size: 14px;">Peça para o cliente escanear o código abaixo pelo app do banco:</p>
-
+            <h2 style="color: var(--accent); margin-top: 0;"><i class="fab fa-pix"></i> Pagamento PIX</h2>
             <div style="background: #f8fafc; padding: 20px; border-radius: 16px; display: inline-block; margin: 15px 0; border: 2px dashed var(--accent);">
                 <img id="imgQrPix" src="" alt="QR Code PIX" style="width: 200px; height: 200px;">
             </div>
-
             <h3 style="font-size: 32px; color: var(--primary); margin: 10px 0;" id="valorPixTela">R$ 0,00</h3>
-            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 25px;">Sua Chave Cadastrada: <strong id="chavePixExibicao"></strong></p>
-
-            <button class="btn btn-success" style="width: 100%; height: 55px; font-size: 16px;" onclick="confirmarPixRecebido()">
-                <i class="fas fa-check-circle"></i> Confirmar Recebimento
-            </button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 25px;">Chave: <strong id="chavePixExibicao"></strong></p>
+            <button class="btn btn-success" style="width: 100%; height: 55px; font-size: 16px;" onclick="confirmarPixRecebido()"><i class="fas fa-check-circle"></i> Confirmar Recebimento</button>
         </div>
     </div>
 
     <div id="modalRecibo" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center;">
             <h2 style="color: var(--success); margin-top: 0; font-size: 24px;">✅ Venda Concluída!</h2>
-            <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 14px;">O que deseja fazer com o comprovante?</p>
-            
-            <button class="btn" style="background: var(--text-main); color: white; width: 100%; margin-bottom: 12px; height: 50px;" onclick="imprimirRecibo()">
-                🖨️ Imprimir Cupom
-            </button>
-            
-            <button class="btn" style="background: #25D366; color: white; width: 100%; margin-bottom: 20px; height: 50px;" onclick="whatsRecibo()">
-                📱 Enviar no WhatsApp
-            </button>
-            
-            <button class="btn btn-outline" style="width: 100%; height: 50px;" onclick="fecharRecibo()">
-                ⏭️ Não precisa (Nova Venda)
-            </button>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">O que deseja fazer com o comprovante?</p>
+            <button class="btn" style="background: var(--text-main); color: white; width: 100%; margin-bottom: 12px; height: 50px;" onclick="imprimirRecibo()">🖨️ Imprimir Cupom</button>
+            <button class="btn" style="background: #25D366; color: white; width: 100%; margin-bottom: 20px; height: 50px;" onclick="whatsRecibo()">📱 Enviar no WhatsApp</button>
+            <button class="btn btn-outline" style="width: 100%; height: 50px;" onclick="fecharRecibo()">⏭️ Nova Venda</button>
         </div>
     </div>
 
     <div id="modalScanner" class="modal">
         <div class="modal-content" style="max-width: 400px; text-align: center; padding: 20px;">
             <button class="close-modal" onclick="fecharScanner()">&times;</button>
-            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--text-main);">📸 Ler Código de Barras</h3>
+            <h3 style="margin-top: 0; margin-bottom: 15px;">📸 Ler Código</h3>
             <div id="reader"></div>
-            <button class="btn btn-outline" style="width: 100%; margin-top: 5px;" onclick="fecharScanner()">Cancelar</button>
         </div>
     </div>
 
     <script>
         let catalogo = [];
         let carrinho = [];
-        let ultimaVendaSalva = {}; 
-        let html5QrCode = null; 
-        let saldoAtualCliente = 0.0; // CIRURGIA: Variável Global do Saldo
+        let ultimaVendaSalva = {};
+        let html5QrCode = null;
+        let saldoAtualCliente = 0.0;
+        let total_da_venda_atual = 0;
 
-        window.onload = () => {
-            carregarEstoque();
-            document.getElementById('buscaProduto').focus();
-        };
+        window.onload = () => { carregarEstoque(); document.getElementById('buscaProduto').focus(); };
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
 
-        function toggleMenu() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('overlay').classList.toggle('active');
-        }
-
-        // CIRURGIA: Busca o Cashback do cliente na API
         function verificarCashback() {
             let nomeSelecionado = document.getElementById('cliente').value;
             let options = document.getElementById('listaClientes').options;
             let clienteId = null;
-
             for (let i = 0; i < options.length; i++) {
-                if (options[i].value === nomeSelecionado) {
-                    clienteId = options[i].getAttribute('data-id');
-                    break;
-                }
+                if (options[i].value === nomeSelecionado) { clienteId = options[i].getAttribute('data-id'); break; }
             }
-
             if (clienteId) {
-                fetch('/api/divida_cliente/' + clienteId)
-                .then(response => response.json())
-                .then(data => {
+                fetch('/api/divida_cliente/' + clienteId).then(r => r.json()).then(data => {
                     saldoAtualCliente = parseFloat(data.cashback) || 0.0;
                     if (saldoAtualCliente > 0) {
                         document.getElementById('valorCashback').innerText = 'R$ ' + saldoAtualCliente.toFixed(2).replace('.', ',');
                         document.getElementById('boxCashback').style.display = 'flex';
-                    } else {
-                        document.getElementById('boxCashback').style.display = 'none';
-                    }
+                    } else { document.getElementById('boxCashback').style.display = 'none'; }
                 });
             } else {
                 saldoAtualCliente = 0.0;
                 document.getElementById('boxCashback').style.display = 'none';
             }
+            calcular();
         }
 
         function carregarEstoque() {
             fetch('/api/produtos').then(r => r.json()).then(d => {
                 catalogo = d;
-                let dl = document.getElementById('listaProdutos');
-                dl.innerHTML = '';
-                catalogo.forEach(p => {
-                    dl.innerHTML += `<option value="${p.sku}">${p.nome} - R$ ${p.preco.toFixed(2).replace('.', ',')}</option>`;
-                });
+                let dl = document.getElementById('listaProdutos'); dl.innerHTML = '';
+                catalogo.forEach(p => { dl.innerHTML += `<option value="${p.sku}">${p.nome} - R$ ${p.preco.toFixed(2).replace('.', ',')}</option>`; });
             });
         }
 
         function verificarSelecao(val) {
             let p = catalogo.find(x => x.sku === val);
-            if (p) {
-                add(p);
-                document.getElementById('buscaProduto').value = '';
-            }
+            if (p) { add(p); document.getElementById('buscaProduto').value = ''; }
         }
 
         function buscar(e) {
             let t = e.target.value.toLowerCase();
             if (e.key === 'Enter' && t.trim() !== '') {
                 let p = catalogo.find(x => x.sku.toLowerCase() === t || x.nome.toLowerCase() === t);
-                if(p) { 
-                    add(p); 
-                    e.target.value = ''; 
-                } else {
-                    alert("Produto não encontrado no estoque!");
-                }
+                if(p) { add(p); e.target.value = ''; } else { alert("Produto não encontrado!"); }
             }
         }
 
         function abrirScanner() {
             document.getElementById('modalScanner').style.display = 'flex';
             if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
-            
-            html5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 10, qrbox: { width: 250, height: 150 } },
-                onScanSuccess, onScanFailure
-            ).catch((err) => {
-                alert("Não foi possível acessar a câmera. Verifique as permissões.");
-            });
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, onScanSuccess, () => {}).catch(err => alert("Erro na câmera"));
         }
 
-        function fecharScanner() {
-            document.getElementById('modalScanner').style.display = 'none';
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(err => { console.log(err); });
-            }
-        }
-
-        function onScanSuccess(decodedText, decodedResult) {
-            fecharScanner();
-            let t = decodedText.toLowerCase();
-            let p = catalogo.find(x => x.sku.toLowerCase() === t || x.nome.toLowerCase() === t);
-            if(p) { add(p); } else { alert("Produto código " + decodedText + " não encontrado!"); }
-        }
-
-        function onScanFailure(error) {}
+        function fecharScanner() { document.getElementById('modalScanner').style.display = 'none'; if (html5QrCode) html5QrCode.stop().then(()=>html5QrCode.clear()); }
+        function onScanSuccess(txt) { fecharScanner(); let t = txt.toLowerCase(); let p = catalogo.find(x => x.sku.toLowerCase() === t || x.nome.toLowerCase() === t); if(p) add(p); }
 
         function add(p) {
             let item = carrinho.find(i => i.id === p.id);
-            if (item) { item.qtd++; } 
-            else { 
-                carrinho.push({...p, qtd: 1, desc_un: 0, dias: (p.nome.toLowerCase().includes('ração') ? 30 : 0)}); 
-            }
-            render();
-            document.getElementById('buscaProduto').value = '';
-            document.getElementById('buscaProduto').focus();
+            if (item) item.qtd++; else carrinho.push({...p, qtd: 1, desc_un: 0, dias: (p.nome.toLowerCase().includes('ração') ? 30 : 0)});
+            render(); document.getElementById('buscaProduto').value = ''; document.getElementById('buscaProduto').focus();
         }
 
-        function transformarEmBrinde(idx) {
-            carrinho[idx].desc_un = carrinho[idx].preco;
-            render();
-            document.getElementById('buscaProduto').focus();
-        }
+        function transformarEmBrinde(idx) { carrinho[idx].desc_un = carrinho[idx].preco; render(); }
+        function remove(idx) { carrinho.splice(idx, 1); render(); }
 
         function render() {
-            let tbody = document.querySelector('#tabelaPDV tbody');
-            tbody.innerHTML = '';
+            let tbody = document.querySelector('#tabelaPDV tbody'); tbody.innerHTML = '';
             carrinho.forEach((item, idx) => {
                 let totalItem = (item.preco - item.desc_un) * item.qtd;
-                let isBrinde = (item.desc_un >= item.preco && item.preco > 0) ? '<span style="background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-left: 5px; vertical-align: middle;">🎁 BRINDE</span>' : '';
-                
                 tbody.innerHTML += `<tr>
                     <td>
-                        <b style="font-size: 14px;">${item.nome} ${isBrinde}</b><br>
+                        <b style="font-size: 14px;">${item.nome}</b><br>
                         <small>Unit: R$ ${item.preco.toFixed(2).replace('.', ',')}</small>
                         <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; background: #fffbeb; padding: 8px 12px; border-radius: 8px; border: 2px dashed #f59e0b; width: max-content;">
                             <span style="font-size: 12px; color: #d97706; font-weight: 800;">📡 RADAR (DIAS):</span>
                             <input type="text" inputmode="numeric" style="width: 50px; font-size: 14px; font-weight: 900; text-align: center; border: 2px solid #f59e0b; border-radius: 6px; outline: none; background: white; color: #b45309; padding: 4px;" value="${item.dias}" oninput="update(${idx}, 'dias', this)">
                         </div>
                     </td>
-                    <td><input type="text" inputmode="decimal" class="pdv-input-table" value="${item.qtd}" oninput="update(${idx}, 'qtd', this)"></td>
-                    <td><input type="text" inputmode="decimal" class="pdv-input-table" value="${item.desc_un}" oninput="update(${idx}, 'desc_un', this)"></td>
-                    <td id="total-linha-${idx}" style="text-align:right; font-weight:800; color: var(--accent); font-size: 14px;">R$ ${totalItem.toFixed(2).replace('.', ',')}</td>
-                    <td style="text-align: center; white-space: nowrap;">
-                        <button onclick="transformarEmBrinde(${idx})" style="background:none; border:none; cursor:pointer; font-size:20px; margin-right: 10px; transition: transform 0.2s;" title="Marcar como Brinde" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">🎁</button>
-                        <button onclick="remove(${idx})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:24px; font-weight:bold; transition: transform 0.2s;" title="Remover Produto" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">&times;</button>
-                    </td>
+                    <td><input type="text" class="pdv-input-table" value="${item.qtd}" oninput="update(${idx}, 'qtd', this)"></td>
+                    <td><input type="text" class="pdv-input-table" value="${item.desc_un}" oninput="update(${idx}, 'desc_un', this)"></td>
+                    <td style="text-align:right; font-weight:800; color: var(--accent);">R$ ${totalItem.toFixed(2).replace('.', ',')}</td>
+                    <td style="text-align: center;"><button onclick="remove(${idx})" style="color:var(--danger); border:none; background:none; cursor:pointer; font-size:20px;">&times;</button></td>
                 </tr>`;
             });
             calcular();
         }
-
         function update(idx, field, el) {
-            let val = el.value.replace(',', '.');
-            let num = parseFloat(val);
+            let num = parseFloat(el.value.replace(',', '.'));
             carrinho[idx][field] = isNaN(num) ? 0 : num;
-            
-            let totalItem = (carrinho[idx].preco - carrinho[idx].desc_un) * carrinho[idx].qtd;
-            document.getElementById(`total-linha-${idx}`).innerText = 'R$ ' + totalItem.toFixed(2).replace('.', ',');
-            
-            calcular(); 
+            calcular();
         }
 
-        function remove(idx) { carrinho.splice(idx, 1); render(); }
-        
-        function limpar() { 
-            carrinho = []; 
-            document.getElementById('descGeral').value = 0; 
-            document.getElementById('recebido').value = 0; 
-            document.getElementById('cliente').value = ''; 
-            document.getElementById('boxCashback').style.display = 'none'; // CIRURGIA
-            saldoAtualCliente = 0.0;
-            render(); 
-            document.getElementById('buscaProduto').focus();
-        }
-
-        function calcular() {
-            let sub = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
-            let custoTotal = carrinho.reduce((a, b) => a + (b.custo * b.qtd), 0);
-            let descG = parseFloat(document.getElementById('descGeral').value) || 0;
-            let total = sub - descG;
-            if (total < 0) total = 0;
-
-            let lucro = total - custoTotal;
-            let rec = parseFloat(document.getElementById('recebido').value) || 0;
-            let troco = rec - total;
-            if (troco < 0) troco = 0;
-
-            document.getElementById('subTotalTxt').innerText = sub.toFixed(2).replace('.', ',');
-            document.getElementById('totalFinal').innerText = 'R$ ' + total.toFixed(2).replace('.', ',');
-            
-            document.getElementById('trocoTxt').innerText = 'R$ ' + (troco > 0 ? troco.toFixed(2).replace('.', ',') : '0,00');
-            
-            let cLucro = document.getElementById('cardLucro');
-            let vLucro = document.getElementById('valLucro');
-            
-            if (carrinho.length === 0) {
-                vLucro.innerText = 'R$ 0,00';
-                cLucro.className = 'profit-card';
-                document.getElementById('lblLucro').innerText = '📈 Lucro Estimado';
-                document.getElementById('lblLucro').style.color = 'var(--text-muted)';
-                vLucro.style.color = 'var(--text-muted)';
-            } else {
-                vLucro.innerText = 'R$ ' + lucro.toFixed(2).replace('.', ',');
-                if(lucro < 0) { 
-                    cLucro.className = 'profit-card loss'; 
-                    document.getElementById('lblLucro').innerText = '🚨 Prejuízo na Venda'; 
-                    document.getElementById('lblLucro').style.color = '#991b1b';
-                    vLucro.style.color = '#b91c1c';
-                } else { 
-                    cLucro.className = 'profit-card'; 
-                    document.getElementById('lblLucro').innerText = '📈 Lucro da Venda'; 
-                    document.getElementById('lblLucro').style.color = '#065f46';
-                    vLucro.style.color = '#047857';
-                }
-            }
+        function limpar() {
+            carrinho = []; document.getElementById('descGeral').value = 0; document.getElementById('valorPag1').value = ''; document.getElementById('recebidoCaixa').value = 0;
+            document.getElementById('cliente').value = ''; saldoAtualCliente = 0.0; document.getElementById('boxCashback').style.display = 'none';
+            render(); document.getElementById('buscaProduto').focus();
         }
 
         function irParaPagamento() {
-            if(carrinho.length === 0) {
-                alert("O carrinho está vazio!");
-                document.getElementById('buscaProduto').focus();
-                return;
+            if(carrinho.length === 0) return alert("Carrinho vazio!");
+            if(total_da_venda_atual > 0) document.getElementById('valorPag1').value = total_da_venda_atual.toFixed(2).replace('.', ',');
+            calcular();
+            document.getElementById('valorPag1').focus();
+            document.getElementById('valorPag1').select();
+        }
+
+        // --- MATEMÁTICA DO PAGAMENTO MISTO E TROCO ---
+        function calcular() {
+            let sub = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
+            let custoTotal = carrinho.reduce((a, b) => a + (b.custo * b.qtd), 0);
+            let descG = parseFloat(document.getElementById('descGeral').value.replace(',', '.')) || 0;
+            total_da_venda_atual = sub - descG;
+            if (total_da_venda_atual < 0) total_da_venda_atual = 0;
+
+            let pag1 = document.getElementById('pagamento1').value;
+            let val1_str = document.getElementById('valorPag1').value.replace(',', '.');
+            let val1 = parseFloat(val1_str) || 0;
+
+            // Bloqueio de Segurança para Cashback
+            if (pag1 === 'Saldo Cashback' && val1 > saldoAtualCliente) {
+                val1 = Math.min(saldoAtualCliente, total_da_venda_atual);
+                document.getElementById('valorPag1').value = val1.toFixed(2).replace('.', ',');
             }
-            document.getElementById('recebido').focus();
-            document.getElementById('recebido').select();
+
+            // Impede que pagamentos (exceto dinheiro) ultrapassem o total da venda
+            if (pag1 !== 'Dinheiro' && val1 > total_da_venda_atual) {
+                val1 = total_da_venda_atual;
+                document.getElementById('valorPag1').value = val1.toFixed(2).replace('.', ',');
+            }
+
+            // O valor efetivo é o que conta para abater a dívida. O resto (se for dinheiro) é troco.
+            let val1_efetivo = Math.min(val1, total_da_venda_atual);
+            let val2 = total_da_venda_atual - val1_efetivo;
+            if (val2 < 0) val2 = 0;
+
+            document.getElementById('valorPag2').value = val2.toFixed(2).replace('.', ',');
+
+            if (val2 > 0 && total_da_venda_atual > 0) {
+                document.getElementById('boxPag2').style.display = 'block';
+            } else {
+                document.getElementById('boxPag2').style.display = 'none';
+                document.getElementById('pagamento2').value = '';
+            }
+
+            // Lógica do Troco
+            let recebido_fisico = parseFloat(document.getElementById('recebidoCaixa').value.replace(',', '.')) || 0;
+            let troco = 0;
+
+            // Cenário 1: Cliente deu uma nota alta (ex: 100) na forma 1 (Dinheiro), e a venda é 64. 
+            if (pag1 === 'Dinheiro' && val1 > total_da_venda_atual && recebido_fisico === 0) {
+                troco = val1 - total_da_venda_atual;
+            } 
+            // Cenário 2: Caixa usou o campo "Valor Entregue" para calcular o troco da parte em dinheiro
+            else if (recebido_fisico > 0) {
+                let total_em_dinheiro = 0;
+                if (pag1 === 'Dinheiro') total_em_dinheiro += val1_efetivo;
+                if (document.getElementById('pagamento2').value === 'Dinheiro') total_em_dinheiro += val2;
+                troco = recebido_fisico - total_em_dinheiro;
+            }
+            if (troco < 0) troco = 0;
+
+            document.getElementById('subTotalTxt').innerText = sub.toFixed(2).replace('.', ',');
+            document.getElementById('totalFinal').innerText = 'R$ ' + total_da_venda_atual.toFixed(2).replace('.', ',');
+            document.getElementById('trocoTxt').innerText = 'R$ ' + troco.toFixed(2).replace('.', ',');
+
+            // Lucro
+            let lucro = total_da_venda_atual - custoTotal;
+            let cLucro = document.getElementById('cardLucro');
+            let vLucro = document.getElementById('valLucro');
+            if (carrinho.length === 0) {
+                vLucro.innerText = 'R$ 0,00'; cLucro.className = 'profit-card';
+            } else {
+                vLucro.innerText = 'R$ ' + lucro.toFixed(2).replace('.', ',');
+                if(lucro < 0) { cLucro.className = 'profit-card loss'; document.getElementById('lblLucro').innerText = '🚨 Prejuízo'; }
+                else { cLucro.className = 'profit-card'; document.getElementById('lblLucro').innerText = '📈 Lucro Estimado'; }
+            }
         }
 
         // ==========================================
-        // MÁGICA DO PIX (Cálculo do Payload EMV)
-        // ==========================================
-        function crc16(str) {
-            let crc = 0xFFFF;
-            for (let c = 0; c < str.length; c++) {
-                crc ^= str.charCodeAt(c) << 8;
-                for (let i = 0; i < 8; i++) {
-                    if (crc & 0x8000) crc = (crc << 1) ^ 0x1021;
-                    else crc = crc << 1;
-                }
-            }
-            return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-        }
-
+        // MÁGICA DO PIX
+        function crc16(str) { let crc=0xFFFF; for(let c=0;c<str.length;c++){ crc^=str.charCodeAt(c)<<8; for(let i=0;i<8;i++){ if(crc&0x8000) crc=(crc<<1)^0x1021; else crc=crc<<1; } } return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,'0'); }
         function gerarPayloadPix(chave, valor, nome) {
             const f = (id, val) => { let v = String(val); return id + String(v.length).padStart(2, '0') + v; };
-            chave = chave.trim();
-            let nomeLoja = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 25);
-            if(!nomeLoja) nomeLoja = 'PetStock';
-
-            let p = '';
-            p += f('00', '01'); 
-            p += f('26', f('00', 'br.gov.bcb.pix') + f('01', chave)); 
-            p += f('52', '0000'); 
-            p += f('53', '986');  
-            if (valor > 0) p += f('54', valor.toFixed(2)); 
-            p += f('58', 'BR');   
-            p += f('59', nomeLoja); 
-            p += f('60', 'Brasil'); 
-            p += f('62', f('05', '***')); 
-            p += '6304'; 
-            p += crc16(p);
-            return p;
+            chave = chave.trim(); let nomeLoja = nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 25);
+            if(!nomeLoja) nomeLoja = 'Loja';
+            let p = f('00', '01') + f('26', f('00', 'br.gov.bcb.pix') + f('01', chave)) + f('52', '0000') + f('53', '986');
+            if (valor > 0) p += f('54', valor.toFixed(2));
+            p += f('58', 'BR') + f('59', nomeLoja) + f('60', 'Brasil') + f('62', f('05', '***')) + '6304';
+            p += crc16(p); return p;
         }
 
         function finalizar() {
             if(carrinho.length === 0) return alert("O carrinho está vazio!");
-            let pag = document.getElementById('pagamento').value;
-            let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
-            let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
-            let total_numerico = subtotal_venda - descGeral;
-            if (total_numerico < 0) total_numerico = 0;
 
-            if(pag === 'Crediário / Fiado' && !document.getElementById('cliente').value) 
+            let pag1 = document.getElementById('pagamento1').value;
+            let val1 = parseFloat(document.getElementById('valorPag1').value.replace(',', '.')) || 0;
+            let pag2 = document.getElementById('pagamento2').value;
+            
+            let val1_efetivo = Math.min(val1, total_da_venda_atual);
+            let val2 = total_da_venda_atual - val1_efetivo;
+
+            if (val1 <= 0 && total_da_venda_atual > 0) return alert("⚠️ Digite o valor recebido na 1ª Forma de Pagamento.");
+            if (val2 > 0 && pag2 === "") return alert("⚠️ Falta pagar R$ " + val2.toFixed(2) + ". Selecione a 2ª forma de pagamento.");
+
+            let clienteNome = document.getElementById('cliente').value || '';
+            if((pag1 === 'Crediário / Fiado' || pag2 === 'Crediário / Fiado') && !clienteNome)
                 return alert("⚠️ Selecione um cliente para vender no Fiado!");
 
-            // CIRURGIA: Validação do Cashback
-            if (pag === 'Saldo Cashback') {
-                if (!document.getElementById('cliente').value) {
-                    return alert("⚠️ Você precisa selecionar um cliente para usar o Cashback!");
-                }
-                if (saldoAtualCliente < total_numerico) {
-                    return alert(`⚠️ O cliente não tem saldo suficiente. A compra deu R$ ${total_numerico.toFixed(2)}, mas ele só tem R$ ${saldoAtualCliente.toFixed(2)}.`);
-                }
+            let formaPagtoFinal = pag1;
+            let cashbackUsado = 0;
+
+            if (pag1 === 'Saldo Cashback') cashbackUsado += val1_efetivo;
+
+            if (val2 > 0 && pag2 !== "") {
+                formaPagtoFinal = pag1 + " e " + pag2;
             }
 
             ultimaVendaSalva = {
                 itens: JSON.parse(JSON.stringify(carrinho)),
-                totalNum: total_numerico,
+                totalNum: total_da_venda_atual,
                 total: document.getElementById('totalFinal').innerText,
                 troco: document.getElementById('trocoTxt').innerText,
-                cliente: document.getElementById('cliente').value || 'Consumidor Final',
-                pagamento: pag,
+                cliente: clienteNome || 'Consumidor Final',
+                pagamento: formaPagtoFinal,
+                cb_usado: cashbackUsado,
                 data: new Date().toLocaleString('pt-BR')
             };
 
-            // Se for PIX, abre a tela do QR Code antes de salvar no banco!
-            if (pag === 'Pix') {
+            let valorDoPix = 0;
+            if (pag1 === 'Pix') valorDoPix = val1_efetivo;
+            else if (pag2 === 'Pix') valorDoPix = val2;
+
+            if (valorDoPix > 0) {
                 let chavePix = document.getElementById('chavePixLoja').value;
                 if (!chavePix) {
-                    alert("⚠️ Você não configurou sua Chave PIX! Vá no menu Configurações para adicionar.");
-                    return enviarVendaProBackend(); // Salva a venda normal sem abrir QR
+                    alert("⚠️ Chave PIX não configurada! Salvando venda normal.");
+                    return enviarVendaProBackend(formaPagtoFinal, cashbackUsado, clienteNome);
                 }
-                
                 let nomeLoja = document.getElementById('nomeFantasiaLoja').value;
-                let payload = gerarPayloadPix(chavePix, ultimaVendaSalva.totalNum, nomeLoja);
-                
+                let payload = gerarPayloadPix(chavePix, valorDoPix, nomeLoja);
                 let qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(payload);
                 document.getElementById('imgQrPix').src = qrUrl;
-                document.getElementById('valorPixTela').innerText = ultimaVendaSalva.total;
+                document.getElementById('valorPixTela').innerText = "R$ " + valorDoPix.toFixed(2).replace('.', ',');
                 document.getElementById('chavePixExibicao').innerText = chavePix;
-                
                 document.getElementById('modalPix').style.display = 'flex';
             } else {
-                enviarVendaProBackend();
+                enviarVendaProBackend(formaPagtoFinal, cashbackUsado, clienteNome);
             }
         }
 
-        // Chamado quando o caixa clica em "Confirmar Recebimento" na tela do PIX
-        function confirmarPixRecebido() {
-            enviarVendaProBackend();
+        function confirmarPixRecebido() { 
+            // Oculta modal e envia
+            document.getElementById('modalPix').style.display='none';
+            enviarVendaProBackend(ultimaVendaSalva.pagamento, ultimaVendaSalva.cb_usado, document.getElementById('cliente').value); 
         }
 
-        // ==========================================
-
-        function enviarVendaProBackend() {
-            let descGeral = parseFloat(document.getElementById('descGeral').value) || 0;
+        function enviarVendaProBackend(formaPagtoFinal, cashbackUsado, clienteNome) {
+            let descGeral = parseFloat(document.getElementById('descGeral').value.replace(',', '.')) || 0;
             let subtotal_venda = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
 
             let dados = {
-                cliente_nome: ultimaVendaSalva.cliente,
+                cliente_nome: clienteNome,
                 vendedor_nome: document.getElementById('vendedor').value,
-                forma_pagamento: ultimaVendaSalva.pagamento,
+                forma_pagamento: formaPagtoFinal,
+                cashback_usado: cashbackUsado,
                 itens: carrinho.map(i => {
-                    let subtotal_item = (i.preco - i.desc_un) * i.qtd;
-                    let proporcao = subtotal_venda > 0 ? (subtotal_item / subtotal_venda) : 0;
-                    let desconto_item = descGeral * proporcao;
-
-                    return {
-                        id: i.id, 
-                        qtd: i.qtd, 
-                        subtotal_final: subtotal_item - desconto_item,
-                        dias_duracao: i.dias
-                    };
+                    let st = (i.preco - i.desc_un) * i.qtd;
+                    let prop = total_da_venda_atual > 0 ? (st / (total_da_venda_atual + descGeral)) : 0;
+                    return { id: i.id, qtd: i.qtd, subtotal_final: st - (descGeral * prop), dias_duracao: i.dias };
                 })
             };
 
-            let csrf_token = document.getElementById('csrfTokenPDV').value;
-
             fetch('/api/finalizar_venda', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrf_token
-                },
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.getElementById('csrfTokenPDV').value },
                 body: JSON.stringify(dados)
             }).then(r => r.json()).then(res => {
-                if(res.sucesso) { 
-                    document.getElementById('modalPix').style.display = 'none'; // Esconde PIX se estiver aberto
+                if(res.sucesso) {
                     document.getElementById('modalRecibo').style.display = 'flex';
-                } else {
-                    alert("❌ Erro: " + res.erro);
-                }
+                } else { alert("❌ Erro: " + res.erro); }
             });
         }
 
+        // Funções de Recibo 
         function imprimirRecibo() {
-            let htmlRecibo = `
-                <div style="width: 300px; font-family: monospace; font-size: 12px; margin: 0 auto; color: #000;">
-                    <h2 style="text-align: center; margin: 0;">PETSTOCK</h2>
-                    <p style="text-align: center; margin: 5px 0;">Comprovante de Venda</p>
-                    <hr style="border: 1px dashed #000;">
-                    <p style="margin: 5px 0;">Data: ${ultimaVendaSalva.data}<br>Cliente: ${ultimaVendaSalva.cliente}<br>Pgto: ${ultimaVendaSalva.pagamento}</p>
-                    <hr style="border: 1px dashed #000;">
-                    <table style="width: 100%; font-size: 12px; text-align: left;">
-                        <tr><th>Qtd</th><th>Item</th><th style="text-align: right;">Total</th></tr>
-            `;
-            
-            ultimaVendaSalva.itens.forEach(i => {
-                let totalItem = (i.preco - i.desc_un) * i.qtd;
-                htmlRecibo += `<tr><td>${i.qtd}</td><td>${i.nome}</td><td style="text-align: right;">R$ ${totalItem.toFixed(2).replace('.', ',')}</td></tr>`;
-            });
-
-            htmlRecibo += `
-                    </table>
-                    <hr style="border: 1px dashed #000;">
-                    <h3 style="text-align: right; margin: 5px 0; font-size: 16px;">TOTAL: ${ultimaVendaSalva.total}</h3>
-                    <p style="text-align: right; margin: 0;">Troco: ${ultimaVendaSalva.troco}</p>
-                    <br>
-                    <p style="text-align: center; font-size: 11px;">Obrigado pela preferência!</p>
-                    <p style="text-align: center; font-size: 10px; margin-top: 10px;"><i>Sistema PetStock</i></p>
-                </div>
-            `;
-
-            let janelaDeImpressao = window.open('', '', 'width=400,height=600');
-            janelaDeImpressao.document.write(htmlRecibo);
-            janelaDeImpressao.document.close();
-            janelaDeImpressao.print();
-            
-            fecharRecibo();
+            let h = `<div style="width: 300px; font-family: monospace; font-size: 12px; margin: 0 auto; color: #000;">
+                <h2 style="text-align: center; margin: 0;">PETSTOCK</h2><p style="text-align: center; margin: 5px 0;">Comprovante</p>
+                <hr style="border: 1px dashed #000;"><p style="margin: 5px 0;">Data: ${ultimaVendaSalva.data}<br>Cliente: ${ultimaVendaSalva.cliente || 'Consumidor Final'}<br>Pgto: ${ultimaVendaSalva.pagamento}</p>
+                <hr style="border: 1px dashed #000;"><table style="width: 100%; font-size: 12px; text-align: left;"><tr><th>Qtd</th><th>Item</th><th style="text-align: right;">Total</th></tr>`;
+            ultimaVendaSalva.itens.forEach(i => { h += `<tr><td>${i.qtd}</td><td>${i.nome}</td><td style="text-align: right;">R$ ${((i.preco - i.desc_un) * i.qtd).toFixed(2).replace('.', ',')}</td></tr>`; });
+            h += `</table><hr style="border: 1px dashed #000;"><h3 style="text-align: right; margin: 5px 0;">TOTAL: ${ultimaVendaSalva.total}</h3>
+                <p style="text-align: right; margin: 0;">Troco: ${ultimaVendaSalva.troco}</p><br><p style="text-align: center;">Obrigado!</p></div>`;
+            let j = window.open('', '', 'width=400,height=600'); j.document.write(h); j.document.close(); j.print(); fecharRecibo();
         }
-
         function whatsRecibo() {
-            let textoWhats = `🐾 *PETSTOCK - COMPROVANTE* 🐾\n\n`;
-            textoWhats += `📅 *Data:* ${ultimaVendaSalva.data}\n`;
-            textoWhats += `👤 *Cliente:* ${ultimaVendaSalva.cliente}\n\n`;
-            textoWhats += `*ITENS DA COMPRA:*\n`;
-            
-            ultimaVendaSalva.itens.forEach(i => {
-                let totalItem = (i.preco - i.desc_un) * i.qtd;
-                textoWhats += `▪️ ${i.qtd}x ${i.nome} - R$ ${totalItem.toFixed(2).replace('.', ',')}\n`;
-            });
-
-            textoWhats += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n`;
-            textoWhats += `💳 Pagamento: ${ultimaVendaSalva.pagamento}\n\n`;
-            textoWhats += `Agradecemos a preferência! 🐶🐱`;
-            
-            let link = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoWhats)}`;
-            window.open(link, '_blank');
-            
-            fecharRecibo();
+            let t = `🐾 *PETSTOCK - COMPROVANTE*\n\n📅 *Data:* ${ultimaVendaSalva.data}\n👤 *Cliente:* ${ultimaVendaSalva.cliente || 'Consumidor Final'}\n\n*ITENS:*\n`;
+            ultimaVendaSalva.itens.forEach(i => { t += `▪️ ${i.qtd}x ${i.nome} - R$ ${((i.preco - i.desc_un) * i.qtd).toFixed(2).replace('.', ',')}\n`; });
+            t += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n💳 Pagamento: ${ultimaVendaSalva.pagamento}\n\nAgradecemos a preferência! 🐶`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`, '_blank'); fecharRecibo();
         }
-
-        function fecharRecibo() {
-            document.getElementById('modalRecibo').style.display = 'none';
-            limpar();
-            carregarEstoque(); 
-        }
-
+        function fecharRecibo() { document.getElementById('modalRecibo').style.display = 'none'; limpar(); carregarEstoque(); }
+        
+        // Atalhos
         document.addEventListener('keypress', function(e) {
-            if (e.key !== 'Enter' && e.key !== ' ' && !e.ctrlKey && !e.altKey && !e.metaKey) {
-                let active = document.activeElement;
-                if (active.tagName !== 'INPUT' && active.tagName !== 'SELECT' && active.tagName !== 'TEXTAREA') {
-                    document.getElementById('buscaProduto').focus();
-                }
+            let active = document.activeElement;
+            if (e.key !== 'Enter' && e.key !== ' ' && !e.ctrlKey && !e.altKey && active.tagName !== 'INPUT' && active.tagName !== 'SELECT') {
+                document.getElementById('buscaProduto').focus();
             }
         });
-
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'F2') {
-                event.preventDefault(); 
-                document.getElementById('buscaProduto').focus();
-            } else if (event.key === 'F3') {
-                event.preventDefault(); 
-                irParaPagamento();
-            } else if (event.key === 'F4') {
-                event.preventDefault();
-                limpar();
-            } else if (event.key === 'F8') {
-                event.preventDefault();
-                if(document.getElementById('modalRecibo').style.display !== 'flex' && document.getElementById('modalPix').style.display !== 'flex') {
-                    finalizar();
-                }
-            }
+            if (event.key === 'F2') { event.preventDefault(); document.getElementById('buscaProduto').focus(); } 
+            else if (event.key === 'F3') { event.preventDefault(); irParaPagamento(); } 
+            else if (event.key === 'F4') { event.preventDefault(); limpar(); } 
+            else if (event.key === 'F8') { event.preventDefault(); if(document.getElementById('modalRecibo').style.display !== 'flex' && document.getElementById('modalPix').style.display !== 'flex') finalizar(); }
         });
     </script>
 </body>

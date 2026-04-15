@@ -48,6 +48,18 @@
                 </div>
             </div>
 
+            <div class="section-title" style="color: #4338ca;"><i class="fas fa-syringe"></i> Saúde & Vacinação do Pet</div>
+            <div class="form-row" style="display: flex; gap: 15px;">
+                <div class="input-group" style="flex: 1;">
+                    <label>Próxima Vacina / Vermífugo</label>
+                    <input type="date" name="data_proxima_vacina" value="{{ c.data_proxima_vacina.strftime('%Y-%m-%d') if c.data_proxima_vacina else '' }}" class="input-control" style="border-color: #a5b4fc; background: #eef2ff;">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Observações Médicas (Alergias, etc.)</label>
+                <textarea name="observacoes_saude" class="input-control" rows="2" style="resize: none;" placeholder="Ex: Alérgico a dipirona, não cortar unha muito curta.">{{ c.observacoes_saude if c.observacoes_saude != 'None' else '' }}</textarea>
+            </div>
+
             <div class="section-title">📍 Endereço de Entrega</div>
             <div class="input-group">
                 <label>Rua / Avenida</label>
@@ -64,7 +76,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Atualizar Cadastro</button>
+            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Atualizar Ficha de Cadastro</button>
             <a href="/clientes" class="btn btn-cancel">Cancelar e Voltar</a>
         </form>
     </div>

@@ -13,13 +13,14 @@ from datetime import datetime, timedelta, date
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 import pytz
+from sqlalchemy import func
 
 # --- Carrega variáveis do .env ---
 load_dotenv()
 
 app = Flask(__name__)
 
-# --- CONFIGURAÇÃO SEGURA (tudo vem do .env) ---
+# --- CONFIGURAÇÃO SEGURA ---
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_dir = os.path.join(basedir, 'instance')
 if not os.path.exists(db_dir):
@@ -30,7 +31,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'sqlite:///' + os.path.join(db_dir, 'petstock.db')
 )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'troque-essa-chave-no-env')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-mestra-petstock-segura')
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
 # --- EXTENSÕES ---
@@ -43,13 +44,6 @@ limiter = Limiter(
     default_limits=[],
     storage_uri="memory://"
 )
-
-# --- LOGGING ---
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # --- FUSO HORÁRIO BRASIL ---
 TZ_BRASIL = pytz.timezone('America/Sao_Paulo')
@@ -82,7 +76,7 @@ class Funcionario(db.Model):
     usuario = db.Column(db.String(100), unique=True, nullable=False)
     senha = db.Column(db.String(255), nullable=False)
     cargo = db.Column(db.String(50), default='Caixa')
-    comissao_servicos = db.Column(db.Float, default=0.0) # COMISSÃO
+    comissao_servicos = db.Column(db.Float, default=0.0)
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
 
 class Produto(db.Model):
@@ -105,7 +99,9 @@ class Cliente(db.Model):
     numero = db.Column(db.String(10))
     bairro = db.Column(db.String(50))
     nome_pet = db.Column(db.String(50))
-    saldo_cashback = db.Column(db.Float, default=0.0) # CASHBACK
+    saldo_cashback = db.Column(db.Float, default=0.0)
+    data_proxima_vacina = db.Column(db.Date)
+    observacoes_saude = db.Column(db.Text)
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
 
 class Representante(db.Model):
@@ -137,18 +133,18 @@ class Agendamento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=True)
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'), nullable=False)
-    funcionario_id = db.Column(db.Integer, db.ForeignKey('funcionario.id'), nullable=True) # COMISSÃO
+    funcionario_id = db.Column(db.Integer, db.ForeignKey('funcionario.id'), nullable=True)
     nome_pet = db.Column(db.String(100), nullable=False)
     raca_porte = db.Column(db.String(100))
     servico = db.Column(db.String(100), nullable=False)
     valor_servico = db.Column(db.Float, default=0.0)
-    valor_comissao = db.Column(db.Float, default=0.0) # COMISSÃO
+    valor_comissao = db.Column(db.Float, default=0.0)
     data_agendamento = db.Column(db.Date, nullable=False)
     hora_agendamento = db.Column(db.String(10), nullable=False)
     status = db.Column(db.String(50), default='Agendado')
     observacoes = db.Column(db.String(255))
     cliente = db.relationship('Cliente', backref='agendamentos')
-    profissional = db.relationship('Funcionario', backref='servicos_realizados') # COMISSÃO
+    profissional = db.relationship('Funcionario', backref='servicos_realizados')
 
 
 @app.context_processor
@@ -156,18 +152,11 @@ def injetar_dados_globais():
     loja_atual = None
     if 'loja_id' in session:
         loja_atual = Loja.query.get(session['loja_id'])
-    return dict(
-        loja_logada=loja_atual,
-        vendas_hoje="0,00",
-        lucro_hoje="0,00",
-        alertas_radar=0,
-        cargo='Gerente',
-        vendedor_atual='Dono/Gerente'
-    )
+    return dict(loja_logada=loja_atual, cargo='Gerente', vendedor_atual='Dono/Gerente')
 
 
 # ==========================================
-# --- ROTA PRINCIPAL (LANDING PAGE) ---
+# --- ROTA PRINCIPAL E LOGINS (ISENTOS DE CSRF) ---
 # ==========================================
 @app.route('/')
 def index():
@@ -176,6 +165,7 @@ def index():
     return render_template('landing.html')
 
 @app.route('/assinar', methods=['POST'])
+@csrf.exempt
 @limiter.limit("5 per minute")
 def assinar():
     try:
@@ -190,10 +180,8 @@ def assinar():
             return redirect(url_for('index'))
 
         valor = 0.0
-        if plano_escolhido == 'pro':
-            valor = 80.00
-        elif plano_escolhido == 'elite':
-            valor = 150.00
+        if plano_escolhido == 'pro': valor = 80.00
+        elif plano_escolhido == 'elite': valor = 150.00
 
         nova_loja = Loja(
             nome_fantasia=nome_fantasia, usuario=email, email=email, telefone=telefone,
@@ -209,10 +197,8 @@ def assinar():
         flash('❌ Ocorreu um erro. Tente novamente.', 'danger')
         return redirect(url_for('index'))
 
-# ==========================================
-# --- ROTAS DE LOGIN DA LOJA ---
-# ==========================================
 @app.route('/login', methods=['GET', 'POST'])
+@csrf.exempt
 @limiter.limit("10 per minute")
 def login():
     if request.method == 'POST':
@@ -243,6 +229,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/mudar_senha', methods=['GET', 'POST'])
+@csrf.exempt
 def mudar_senha():
     l_id = session.get('reset_loja_id') or session.get('loja_id')
     if not l_id: return redirect(url_for('login'))
@@ -267,6 +254,208 @@ def mudar_senha():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+# ==========================================
+# --- NOVO PAINEL (CENTRO DE COMANDO) ---
+# ==========================================
+@app.route('/painel')
+def painel():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    loja_id = session['loja_id']
+    hoje = data_brasil()
+
+    # Busca vendas do dia
+    inicio_dia = datetime.combine(hoje, datetime.min.time())
+    fim_dia = datetime.combine(hoje, datetime.max.time())
+
+    total_vendas_hoje = db.session.query(func.sum(Venda.valor_total)).filter(
+        Venda.loja_id == loja_id,
+        Venda.data_venda >= inicio_dia,
+        Venda.data_venda <= fim_dia
+    ).scalar() or 0.0
+
+    # Próximos Banhos (Hoje)
+    banhos_hoje = Agendamento.query.filter_by(loja_id=loja_id, data_agendamento=hoje, status='Agendado').count()
+
+    # Alertas de Vacina (Vencendo em 7 dias)
+    vencimento_vacina = hoje + timedelta(days=7)
+    alertas_vacina = Cliente.query.filter(
+        Cliente.loja_id == loja_id,
+        Cliente.data_proxima_vacina <= vencimento_vacina,
+        Cliente.data_proxima_vacina >= hoje
+    ).all()
+
+    # Produtos Acabando (Estoque < 5)
+    estoque_baixo = Produto.query.filter(Produto.loja_id == loja_id, Produto.estoque < 5, Produto.ativo == True).count()
+
+    return render_template('dashboard.html',
+                         vendas_total=total_vendas_hoje,
+                         banhos_count=banhos_hoje,
+                         vacinas=alertas_vacina,
+                         estoque_alerta=estoque_baixo)
+
+
+# ==========================================
+# --- ESTOQUE (ANTIGO PAINEL) ---
+# ==========================================
+@app.route('/estoque')
+def estoque():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    page = request.args.get('page', 1, type=int)
+    produtos_paginados = Produto.query.filter_by(loja_id=session['loja_id'], ativo=True).paginate(page=page, per_page=50, error_out=False)
+    total_prods = Produto.query.filter_by(loja_id=session['loja_id']).count()
+    proximo_sku = str(total_prods + 1).zfill(2)
+    return render_template('index.html', produtos=produtos_paginados, proximo_sku=proximo_sku)
+
+@app.route('/cadastrar_produto', methods=['POST'])
+def cadastrar_produto():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    sku_recebido = request.form.get('sku', '').strip()
+    if not sku_recebido: sku_recebido = f"PET-{random.randint(10000, 99999)}"
+    nome_base = request.form.get('nome', '').strip()
+    tipo = request.form.get('tipo_produto', '').strip()
+    nome_final = f"{nome_base} - {tipo}" if tipo else nome_base
+    try: p_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
+    except: p_custo = 0.0
+    try: p_venda = float(request.form.get('preco', '0').replace('.', '').replace(',', '.'))
+    except: p_venda = 0.0
+    try: qtd = float(request.form.get('quantidade', '0').replace('.', '').replace(',', '.'))
+    except: qtd = 0.0
+    db.session.add(Produto(codigo_sku=sku_recebido, nome=nome_final, categoria=request.form.get('categoria'), preco_custo=p_custo, preco_venda=p_venda, estoque=qtd, loja_id=session['loja_id']))
+    db.session.commit()
+    flash('✅ Produto salvo no estoque!', 'success')
+    return redirect(url_for('estoque'))
+
+@app.route('/desmembrar', methods=['POST'])
+def desmembrar():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    origem_id = request.form.get('origem_id')
+    destino_id = request.form.get('destino_id')
+    try: qtd_origem = float(request.form.get('qtd_origem', '0').replace(',', '.'))
+    except: qtd_origem = 0.0
+    try: qtd_destino = float(request.form.get('qtd_destino', '0').replace(',', '.'))
+    except: qtd_destino = 0.0
+    prod_origem = Produto.query.get(origem_id)
+    prod_destino = Produto.query.get(destino_id)
+    if (prod_origem and prod_destino and prod_origem.loja_id == session['loja_id'] and prod_destino.loja_id == session['loja_id']):
+        if prod_origem.estoque >= qtd_origem:
+            prod_origem.estoque -= qtd_origem
+            prod_destino.estoque += qtd_destino
+            db.session.commit()
+            flash(f'⚖️ Sucesso! Transformamos {qtd_origem} saco(s) em {qtd_destino} KG a granel.', 'success')
+        else: flash('❌ Erro: Quantidade insuficiente.', 'danger')
+    return redirect(url_for('estoque'))
+
+@app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
+def editar_produto(id):
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    prod = Produto.query.get(id)
+    if not prod or prod.loja_id != session['loja_id']: return redirect(url_for('estoque'))
+    if request.method == 'POST':
+        prod.codigo_sku = request.form.get('sku')
+        prod.nome = request.form.get('nome')
+        prod.categoria = request.form.get('categoria')
+        try: prod.preco_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
+        except: pass
+        try: prod.preco_venda = float(request.form.get('preco', '0').replace('.', '').replace(',', '.'))
+        except: pass
+        try: prod.estoque = float(request.form.get('quantidade', '0').replace('.', '').replace(',', '.'))
+        except: pass
+        db.session.commit()
+        flash('✅ Produto atualizado com sucesso!', 'success')
+        return redirect(url_for('estoque'))
+    return render_template('editar_produto.html', p=prod)
+
+@app.route('/inativar_produto/<int:id>')
+def inativar_produto(id):
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    prod = Produto.query.get(id)
+    if prod and prod.loja_id == session['loja_id']:
+        prod.ativo = False
+        db.session.commit()
+        flash('🗑️ Produto movido para a Lixeira.', 'warning')
+    return redirect(url_for('estoque'))
+
+@app.route('/inativos')
+def inativos():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    prods = Produto.query.filter_by(loja_id=session['loja_id'], ativo=False).all()
+    return render_template('inativos.html', produtos=prods)
+
+@app.route('/dar_baixa', methods=['POST'])
+def baixa_estoque():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    produto_id = request.form.get('produto_id')
+    motivo = request.form.get('motivo')
+    try: qtd = float(request.form.get('quantidade', '0').replace(',', '.'))
+    except: qtd = 0.0
+    produto = Produto.query.get(produto_id)
+    if produto and produto.loja_id == session['loja_id']:
+        if produto.estoque >= qtd:
+            produto.estoque -= qtd
+            venda_baixa = Venda(produto_id=produto.id, loja_id=session['loja_id'], quantidade=qtd, valor_total=0.0, forma_pagamento_1=f"Baixa: {motivo}", vendedor=session.get('vendedor_atual', 'Dono/Gerente'))
+            db.session.add(venda_baixa)
+            db.session.commit()
+            flash(f'🔻 Baixa de {qtd}x {produto.nome} registrada como {motivo}.', 'warning')
+        else: flash('❌ Erro: Quantidade insuficiente.', 'danger')
+    return redirect(url_for('estoque'))
+
+@app.route('/restaurar_produto/<int:id>')
+def restaurar_produto(id):
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    prod = Produto.query.get(id)
+    if prod and prod.loja_id == session['loja_id']:
+        prod.ativo = True
+        db.session.commit()
+        flash('♻️ Produto restaurado para o estoque!', 'success')
+    return redirect(url_for('inativos'))
+
+@app.route('/importar_produtos', methods=['POST'])
+def importar_produtos():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    arquivo = request.files.get('arquivo')
+    if not arquivo or arquivo.filename == '':
+        flash('❌ Nenhum arquivo selecionado.', 'danger')
+        return redirect(url_for('estoque'))
+    try:
+        stream = io.StringIO(arquivo.stream.read().decode("UTF8"), newline=None)
+        csv_input = csv.reader(stream, delimiter=',')
+        next(csv_input, None)
+        cadastrados = 0
+        for row in csv_input:
+            if len(row) >= 4:
+                try: custo = float(row[4].replace(',', '.')) if len(row) > 4 and row[4] else 0.0
+                except: custo = 0.0
+                try: estoque = float(row[5].replace(',', '.')) if len(row) > 5 and row[5] else 0.0
+                except: estoque = 0.0
+                try: venda = float(row[3].replace(',', '.'))
+                except: venda = 0.0
+                p = Produto(codigo_sku=row[0], nome=row[1], categoria=row[2], preco_venda=venda, preco_custo=custo, estoque=estoque, loja_id=session['loja_id'])
+                db.session.add(p)
+                cadastrados += 1
+        db.session.commit()
+        flash(f'✅ Importação Concluída! {cadastrados} produtos adicionados.', 'success')
+    except Exception as e:
+        flash(f'❌ Erro na importação.', 'danger')
+    return redirect(url_for('estoque'))
+
+# ==========================================
+# --- MARKETING & CRM ---
+# ==========================================
+@app.route('/marketing')
+def marketing():
+    if 'loja_id' not in session: return redirect(url_for('login'))
+    loja_id = session['loja_id']
+
+    # Filtro: Clientes que não compram há mais de 30 dias
+    um_mes_atras = datetime.now() - timedelta(days=30)
+    clientes_ausentes = Cliente.query.filter(
+        Cliente.loja_id == loja_id,
+        ~Cliente.id.in_(db.session.query(Venda.cliente_id).filter(Venda.data_venda >= um_mes_atras))
+    ).all()
+
+    return render_template('marketing.html', ausentes=clientes_ausentes)
 
 # ==========================================
 # --- ROTAS DE EQUIPE (FUNCIONÁRIOS) ---
@@ -296,27 +485,26 @@ def funcionarios():
     lista_func = Funcionario.query.filter_by(loja_id=session['loja_id']).all()
     return render_template('funcionarios.html', funcionarios=lista_func)
 
-# --- NOVA ROTA: Editar Funcionário ---
 @app.route('/editar_funcionario', methods=['POST'])
 def editar_funcionario():
     if 'loja_id' not in session: return redirect(url_for('login'))
-    
+
     func_id = request.form.get('func_id')
     func = Funcionario.query.get(func_id)
-    
+
     if func and func.loja_id == session['loja_id']:
         func.nome = request.form.get('nome')
         func.cargo = request.form.get('cargo')
-        
+
         try: comissao = float(request.form.get('comissao', '0').replace('.', '').replace(',', '.'))
         except: comissao = 0.0
-        
+
         func.comissao_servicos = comissao
         db.session.commit()
         flash('✅ Dados do profissional atualizados com sucesso!', 'success')
     else:
         flash('❌ Erro ao atualizar profissional.', 'danger')
-        
+
     return redirect(url_for('funcionarios'))
 
 @app.route('/excluir_funcionario/<int:id>')
@@ -338,150 +526,6 @@ def resetar_senha(id):
         db.session.commit()
         flash(f'🔄 A senha de {func.nome} voltou para 123456.', 'success')
     return redirect(url_for('funcionarios'))
-
-# ==========================================
-# --- ROTAS DE GESTÃO DE ESTOQUE ---
-# ==========================================
-@app.route('/painel')
-def painel():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    page = request.args.get('page', 1, type=int)
-    produtos_paginados = Produto.query.filter_by(loja_id=session['loja_id'], ativo=True).paginate(page=page, per_page=50, error_out=False)
-    total_prods = Produto.query.filter_by(loja_id=session['loja_id']).count()
-    proximo_sku = str(total_prods + 1).zfill(2)
-    return render_template('index.html', produtos=produtos_paginados, proximo_sku=proximo_sku)
-
-@app.route('/cadastrar_produto', methods=['POST'])
-def cadastrar_produto():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    sku_recebido = request.form.get('sku', '').strip()
-    if not sku_recebido: sku_recebido = f"PET-{random.randint(10000, 99999)}"
-    nome_base = request.form.get('nome', '').strip()
-    tipo = request.form.get('tipo_produto', '').strip()
-    nome_final = f"{nome_base} - {tipo}" if tipo else nome_base
-    try: p_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
-    except: p_custo = 0.0
-    try: p_venda = float(request.form.get('preco', '0').replace('.', '').replace(',', '.'))
-    except: p_venda = 0.0
-    try: qtd = float(request.form.get('quantidade', '0').replace('.', '').replace(',', '.'))
-    except: qtd = 0.0
-    db.session.add(Produto(codigo_sku=sku_recebido, nome=nome_final, categoria=request.form.get('categoria'), preco_custo=p_custo, preco_venda=p_venda, estoque=qtd, loja_id=session['loja_id']))
-    db.session.commit()
-    flash('✅ Produto salvo no estoque!', 'success')
-    return redirect(url_for('painel'))
-
-@app.route('/desmembrar', methods=['POST'])
-def desmembrar():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    origem_id = request.form.get('origem_id')
-    destino_id = request.form.get('destino_id')
-    try: qtd_origem = float(request.form.get('qtd_origem', '0').replace(',', '.'))
-    except: qtd_origem = 0.0
-    try: qtd_destino = float(request.form.get('qtd_destino', '0').replace(',', '.'))
-    except: qtd_destino = 0.0
-    prod_origem = Produto.query.get(origem_id)
-    prod_destino = Produto.query.get(destino_id)
-    if (prod_origem and prod_destino and prod_origem.loja_id == session['loja_id'] and prod_destino.loja_id == session['loja_id']):
-        if prod_origem.estoque >= qtd_origem:
-            prod_origem.estoque -= qtd_origem
-            prod_destino.estoque += qtd_destino
-            db.session.commit()
-            flash(f'⚖️ Sucesso! Transformamos {qtd_origem} saco(s) em {qtd_destino} KG a granel.', 'success')
-        else: flash('❌ Erro: Quantidade insuficiente.', 'danger')
-    return redirect(url_for('painel'))
-
-@app.route('/editar_produto/<int:id>', methods=['GET', 'POST'])
-def editar_produto(id):
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    prod = Produto.query.get(id)
-    if not prod or prod.loja_id != session['loja_id']: return redirect(url_for('painel'))
-    if request.method == 'POST':
-        prod.codigo_sku = request.form.get('sku')
-        prod.nome = request.form.get('nome')
-        prod.categoria = request.form.get('categoria')
-        try: prod.preco_custo = float(request.form.get('preco_custo', '0').replace('.', '').replace(',', '.'))
-        except: pass
-        try: prod.preco_venda = float(request.form.get('preco', '0').replace('.', '').replace(',', '.'))
-        except: pass
-        try: prod.estoque = float(request.form.get('quantidade', '0').replace('.', '').replace(',', '.'))
-        except: pass
-        db.session.commit()
-        flash('✅ Produto atualizado com sucesso!', 'success')
-        return redirect(url_for('painel'))
-    return render_template('editar_produto.html', p=prod)
-
-@app.route('/inativar_produto/<int:id>')
-def inativar_produto(id):
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    prod = Produto.query.get(id)
-    if prod and prod.loja_id == session['loja_id']:
-        prod.ativo = False
-        db.session.commit()
-        flash('🗑️ Produto movido para a Lixeira.', 'warning')
-    return redirect(url_for('painel'))
-
-@app.route('/inativos')
-def inativos():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    prods = Produto.query.filter_by(loja_id=session['loja_id'], ativo=False).all()
-    return render_template('inativos.html', produtos=prods)
-
-@app.route('/dar_baixa', methods=['POST'])
-def baixa_estoque():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    produto_id = request.form.get('produto_id')
-    motivo = request.form.get('motivo')
-    try: qtd = float(request.form.get('quantidade', '0').replace(',', '.'))
-    except: qtd = 0.0
-    produto = Produto.query.get(produto_id)
-    if produto and produto.loja_id == session['loja_id']:
-        if produto.estoque >= qtd:
-            produto.estoque -= qtd
-            venda_baixa = Venda(produto_id=produto.id, loja_id=session['loja_id'], quantidade=qtd, valor_total=0.0, forma_pagamento_1=f"Baixa: {motivo}", vendedor=session.get('vendedor_atual', 'Dono/Gerente'))
-            db.session.add(venda_baixa)
-            db.session.commit()
-            flash(f'🔻 Baixa de {qtd}x {produto.nome} registrada como {motivo}.', 'warning')
-        else: flash('❌ Erro: Quantidade insuficiente.', 'danger')
-    return redirect(url_for('painel'))
-
-@app.route('/restaurar_produto/<int:id>')
-def restaurar_produto(id):
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    prod = Produto.query.get(id)
-    if prod and prod.loja_id == session['loja_id']:
-        prod.ativo = True
-        db.session.commit()
-        flash('♻️ Produto restaurado para o estoque!', 'success')
-    return redirect(url_for('inativos'))
-
-@app.route('/importar_produtos', methods=['POST'])
-def importar_produtos():
-    if 'loja_id' not in session: return redirect(url_for('login'))
-    arquivo = request.files.get('arquivo')
-    if not arquivo or arquivo.filename == '':
-        flash('❌ Nenhum arquivo selecionado.', 'danger')
-        return redirect(url_for('painel'))
-    try:
-        stream = io.StringIO(arquivo.stream.read().decode("UTF8"), newline=None)
-        csv_input = csv.reader(stream, delimiter=',')
-        next(csv_input, None)
-        cadastrados = 0
-        for row in csv_input:
-            if len(row) >= 4:
-                try: custo = float(row[4].replace(',', '.')) if len(row) > 4 and row[4] else 0.0
-                except: custo = 0.0
-                try: estoque = float(row[5].replace(',', '.')) if len(row) > 5 and row[5] else 0.0
-                except: estoque = 0.0
-                try: venda = float(row[3].replace(',', '.'))
-                except: venda = 0.0
-                p = Produto(codigo_sku=row[0], nome=row[1], categoria=row[2], preco_venda=venda, preco_custo=custo, estoque=estoque, loja_id=session['loja_id'])
-                db.session.add(p)
-                cadastrados += 1
-        db.session.commit()
-        flash(f'✅ Importação Concluída! {cadastrados} produtos adicionados.', 'success')
-    except Exception as e:
-        flash(f'❌ Erro na importação.', 'danger')
-    return redirect(url_for('painel'))
 
 # ==========================================
 # --- ROTAS DE REPRESENTANTES ---
@@ -575,8 +619,14 @@ def editar_cliente(id):
         cliente.numero = request.form.get('numero')
         cliente.bairro = request.form.get('bairro')
         cliente.nome_pet = request.form.get('nome_pet')
+        cliente.observacoes_saude = request.form.get('observacoes_saude')
+
+        data_v = request.form.get('data_proxima_vacina')
+        if data_v:
+            cliente.data_proxima_vacina = datetime.strptime(data_v, '%Y-%m-%d').date()
+
         db.session.commit()
-        flash('✅ Cadastro atualizado com sucesso!', 'success')
+        flash('✅ Cadastro e Saúde atualizados com sucesso!', 'success')
         return redirect(url_for('clientes'))
     return render_template('editar_cliente.html', c=cliente)
 
@@ -661,6 +711,7 @@ def api_finalizar_venda():
     nome_cliente = dados.get('cliente_nome', '').strip()
     forma_pagto = dados.get('forma_pagamento', 'Dinheiro')
     vendedor_nome = dados.get('vendedor_nome', 'Dono/Gerente')
+    cashback_usado = float(dados.get('cashback_usado', 0.0))
 
     cliente_id = None
     cli = None
@@ -683,17 +734,26 @@ def api_finalizar_venda():
                 previsao = hora_brasil() + timedelta(days=dias) if dias > 0 else None
                 subtotal = float(item.get('subtotal_final', item.get('subtotal', 0)))
                 total_venda += subtotal
-                venda = Venda(produto_id=prod.id, cliente_id=cliente_id, loja_id=loja_id, quantidade=qtd, valor_total=subtotal, forma_pagamento_1=forma_pagto, data_previsao_fim=previsao, vendedor=vendedor_nome)
+
+                # Salva o nome da forma de pagamento na venda (ex: "Cashback + Cartão de Crédito")
+                # Cortamos em 50 caracteres para não estourar o limite do banco de dados
+                fp_curta = forma_pagto[:50]
+
+                venda = Venda(produto_id=prod.id, cliente_id=cliente_id, loja_id=loja_id, quantidade=qtd, valor_total=subtotal, forma_pagamento_1=fp_curta, data_previsao_fim=previsao, vendedor=vendedor_nome)
                 db.session.add(venda)
 
         if cli and total_venda > 0:
-            if forma_pagto == "Saldo Cashback":
-                if cli.saldo_cashback >= total_venda:
-                    cli.saldo_cashback -= total_venda
+            # 1. Abater o Cashback usado no pagamento misto
+            if cashback_usado > 0:
+                if cli.saldo_cashback >= cashback_usado:
+                    cli.saldo_cashback -= cashback_usado
                 else:
                     return jsonify({'sucesso': False, 'erro': 'Saldo de Cashback insuficiente!'}), 400
-            elif forma_pagto != "Crediário / Fiado":
-                cashback_gerado = total_venda * 0.03
+
+            # 2. Gerar Cashback NOVO apenas sobre o valor pago em dinheiro/cartão/pix
+            valor_pago_normal = total_venda - cashback_usado
+            if valor_pago_normal > 0 and "Fiado" not in forma_pagto:
+                cashback_gerado = valor_pago_normal * 0.03
                 if cli.saldo_cashback is None: cli.saldo_cashback = 0.0
                 cli.saldo_cashback += cashback_gerado
 
@@ -809,7 +869,6 @@ def comissoes():
 
     return render_template('comissoes.html', servicos=servicos_comissionados, resumo=resumo_profissionais, data_inicio=data_inicio, data_fim=data_fim)
 
-# --- NOVA FUNÇÃO PARA EDITAR COMISSÃO ---
 @app.route('/editar_comissao', methods=['POST'])
 def editar_comissao():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -846,6 +905,7 @@ def configuracoes():
 # --- PAINEL CEO (ACESSO RESTRITO) ---
 # ==========================================
 @app.route('/login_ceo', methods=['GET', 'POST'])
+@csrf.exempt
 @limiter.limit("5 per minute")
 def login_ceo():
     if request.method == 'POST':
@@ -957,14 +1017,13 @@ def agenda():
 
     return render_template('agenda.html', agendamentos=agendamentos, data_filtro=data_filtro_str, clientes=clientes_loja, equipe=equipe_loja)
 
-# --- NOVA ROTA: Editar Agendamento ---
 @app.route('/editar_agendamento', methods=['POST'])
 def editar_agendamento():
     if 'loja_id' not in session: return redirect(url_for('login'))
-    
+
     agendamento_id = request.form.get('agendamento_id')
     agendamento = Agendamento.query.get(agendamento_id)
-    
+
     if agendamento and agendamento.loja_id == session['loja_id']:
         agendamento.nome_pet = request.form.get('nome_pet')
         agendamento.raca_porte = request.form.get('raca_porte')
@@ -972,27 +1031,26 @@ def editar_agendamento():
         agendamento.data_agendamento = datetime.strptime(request.form.get('data_agendamento'), '%Y-%m-%d').date()
         agendamento.hora_agendamento = request.form.get('hora_agendamento')
         agendamento.observacoes = request.form.get('observacoes')
-        
+
         try: valor = float(request.form.get('valor_servico', '0').replace('.', '').replace(',', '.'))
         except: valor = 0.0
         agendamento.valor_servico = valor
-        
+
         func_id_str = request.form.get('funcionario_id')
         agendamento.funcionario_id = int(func_id_str) if func_id_str else None
-        
-        # Se o agendamento JÁ está concluído e mudou o profissional, recalculamos a comissão
+
         if agendamento.status == 'Concluído' and agendamento.funcionario_id:
             func = Funcionario.query.get(agendamento.funcionario_id)
             if func and func.comissao_servicos > 0:
                 agendamento.valor_comissao = agendamento.valor_servico * (func.comissao_servicos / 100.0)
             else:
                 agendamento.valor_comissao = 0.0
-                
+
         db.session.commit()
         flash('✅ Agendamento atualizado com sucesso!', 'success')
     else:
         flash('❌ Erro ao atualizar o agendamento.', 'danger')
-        
+
     return redirect(request.referrer or url_for('agenda'))
 
 @app.route('/mudar_status_agenda/<int:id>/<status>')
