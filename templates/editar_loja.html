@@ -41,6 +41,16 @@
                 <label>Vencimento da Mensalidade</label>
                 <input type="date" name="data_vencimento" value="{{ loja.data_vencimento.strftime('%Y-%m-%d') }}" class="input-control" required>
             </div>
+            
+            <div class="input-group">
+                <label style="color: #10b981;">Plano Contratado</label>
+                <select name="plano" class="input-control" style="background: #ecfdf5; border-color: #10b981; font-weight: 700; color: #065f46;">
+                    <option value="basico" {% if loja.plano == 'basico' %}selected{% endif %}>🥉 Básico (R$ 49,90) - Limite 1 Usuário</option>
+                    <option value="pro" {% if loja.plano == 'pro' %}selected{% endif %}>🥈 PRO (R$ 80,00) - Limite 3 Usuários</option>
+                    <option value="elite" {% if loja.plano == 'elite' %}selected{% endif %}>🥇 ELITE (R$ 150,00) - Completo e Ilimitado</option>
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Salvar Alterações</button>
             <a href="/admin_guilherme" class="btn btn-cancel">Cancelar e Voltar</a>
         </form>

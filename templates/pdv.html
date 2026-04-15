@@ -437,10 +437,10 @@
             let recebido_fisico = parseFloat(document.getElementById('recebidoCaixa').value.replace(',', '.')) || 0;
             let troco = 0;
 
-            // Cenário 1: Cliente deu uma nota alta (ex: 100) na forma 1 (Dinheiro), e a venda é 64. 
+            // Cenário 1: Cliente deu uma nota alta (ex: 100) na forma 1 (Dinheiro), e a venda é 64.
             if (pag1 === 'Dinheiro' && val1 > total_da_venda_atual && recebido_fisico === 0) {
                 troco = val1 - total_da_venda_atual;
-            } 
+            }
             // Cenário 2: Caixa usou o campo "Valor Entregue" para calcular o troco da parte em dinheiro
             else if (recebido_fisico > 0) {
                 let total_em_dinheiro = 0;
@@ -486,14 +486,27 @@
             let pag1 = document.getElementById('pagamento1').value;
             let val1 = parseFloat(document.getElementById('valorPag1').value.replace(',', '.')) || 0;
             let pag2 = document.getElementById('pagamento2').value;
-            
+
             let val1_efetivo = Math.min(val1, total_da_venda_atual);
             let val2 = total_da_venda_atual - val1_efetivo;
 
             if (val1 <= 0 && total_da_venda_atual > 0) return alert("⚠️ Digite o valor recebido na 1ª Forma de Pagamento.");
             if (val2 > 0 && pag2 === "") return alert("⚠️ Falta pagar R$ " + val2.toFixed(2) + ". Selecione a 2ª forma de pagamento.");
 
+            // ✅ Captura Nome e Celular do Cliente para o WhatsApp
             let clienteNome = document.getElementById('cliente').value || '';
+            let clienteTelefone = '';
+
+            if(clienteNome) {
+                let options = document.getElementById('listaClientes').options;
+                for(let i=0; i<options.length; i++){
+                    if(options[i].value === clienteNome){
+                        clienteTelefone = options[i].text;
+                        break;
+                    }
+                }
+            }
+
             if((pag1 === 'Crediário / Fiado' || pag2 === 'Crediário / Fiado') && !clienteNome)
                 return alert("⚠️ Selecione um cliente para vender no Fiado!");
 
@@ -512,6 +525,7 @@
                 total: document.getElementById('totalFinal').innerText,
                 troco: document.getElementById('trocoTxt').innerText,
                 cliente: clienteNome || 'Consumidor Final',
+                telefone: clienteTelefone, // Salva o celular para o Zap
                 pagamento: formaPagtoFinal,
                 cb_usado: cashbackUsado,
                 data: new Date().toLocaleString('pt-BR')
@@ -539,10 +553,10 @@
             }
         }
 
-        function confirmarPixRecebido() { 
+        function confirmarPixRecebido() {
             // Oculta modal e envia
             document.getElementById('modalPix').style.display='none';
-            enviarVendaProBackend(ultimaVendaSalva.pagamento, ultimaVendaSalva.cb_usado, document.getElementById('cliente').value); 
+            enviarVendaProBackend(ultimaVendaSalva.pagamento, ultimaVendaSalva.cb_usado, document.getElementById('cliente').value);
         }
 
         function enviarVendaProBackend(formaPagtoFinal, cashbackUsado, clienteNome) {
@@ -571,7 +585,9 @@
             });
         }
 
-        // Funções de Recibo 
+        // ==========================================
+        // RECIBO E WHATSAPP COM NPS (Pesquisa de Satisfação)
+        // ==========================================
         function imprimirRecibo() {
             let h = `<div style="width: 300px; font-family: monospace; font-size: 12px; margin: 0 auto; color: #000;">
                 <h2 style="text-align: center; margin: 0;">PETSTOCK</h2><p style="text-align: center; margin: 5px 0;">Comprovante</p>
@@ -582,14 +598,51 @@
                 <p style="text-align: right; margin: 0;">Troco: ${ultimaVendaSalva.troco}</p><br><p style="text-align: center;">Obrigado!</p></div>`;
             let j = window.open('', '', 'width=400,height=600'); j.document.write(h); j.document.close(); j.print(); fecharRecibo();
         }
+
         function whatsRecibo() {
             let t = `🐾 *PETSTOCK - COMPROVANTE*\n\n📅 *Data:* ${ultimaVendaSalva.data}\n👤 *Cliente:* ${ultimaVendaSalva.cliente || 'Consumidor Final'}\n\n*ITENS:*\n`;
             ultimaVendaSalva.itens.forEach(i => { t += `▪️ ${i.qtd}x ${i.nome} - R$ ${((i.preco - i.desc_un) * i.qtd).toFixed(2).replace('.', ',')}\n`; });
-            t += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n💳 Pagamento: ${ultimaVendaSalva.pagamento}\n\nAgradecemos a preferência! 🐶`;
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`, '_blank'); fecharRecibo();
+            t += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n💳 Pagamento: ${ultimaVendaSalva.pagamento}\n\n🙏 Agradecemos a preferência! 🐶\n`;
+
+            // ✅ INJEÇÃO DA PESQUISA DE SATISFAÇÃO (NPS) NO ZAP (AGORA PARA TODOS!)
+            t += `\n➖➖➖➖➖➖➖➖\n⭐ *PESQUISA DE SATISFAÇÃO*\nComo foi sua experiência na nossa loja hoje?\nResponda com uma nota de *1 a 5* (Sendo 5 = Excelente!). Sua opinião nos ajuda a melhorar! 💙`;
+
+            let link = `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`;
+
+            // ✅ AUTO-PREENCHIMENTO DO CELULAR SE ESTIVER CADASTRADO
+            if (ultimaVendaSalva.telefone) {
+                let num = ultimaVendaSalva.telefone.replace(/\D/g, ''); // Limpa traços e parênteses
+                if (num) {
+                    if (!num.startsWith('55')) num = '55' + num;
+                    if (num.length >= 12) { // Garante que é um celular válido com DDD
+                        link = `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(t)}`;
+                    }
+                }
+            }
+
+            window.open(link, '_blank');
+            fecharRecibo();
         }
+
+            let link = `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`;
+
+            // ✅ AUTO-PREENCHIMENTO DO CELULAR SE ESTIVER CADASTRADO
+            if (ultimaVendaSalva.telefone) {
+                let num = ultimaVendaSalva.telefone.replace(/\D/g, ''); // Limpa traços e parênteses
+                if (num) {
+                    if (!num.startsWith('55')) num = '55' + num;
+                    if (num.length >= 12) { // Garante que é um celular válido com DDD
+                        link = `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(t)}`;
+                    }
+                }
+            }
+
+            window.open(link, '_blank');
+            fecharRecibo();
+        }
+
         function fecharRecibo() { document.getElementById('modalRecibo').style.display = 'none'; limpar(); carregarEstoque(); }
-        
+
         // Atalhos
         document.addEventListener('keypress', function(e) {
             let active = document.activeElement;
@@ -598,9 +651,9 @@
             }
         });
         document.addEventListener('keydown', function(event) {
-            if (event.key === 'F2') { event.preventDefault(); document.getElementById('buscaProduto').focus(); } 
-            else if (event.key === 'F3') { event.preventDefault(); irParaPagamento(); } 
-            else if (event.key === 'F4') { event.preventDefault(); limpar(); } 
+            if (event.key === 'F2') { event.preventDefault(); document.getElementById('buscaProduto').focus(); }
+            else if (event.key === 'F3') { event.preventDefault(); irParaPagamento(); }
+            else if (event.key === 'F4') { event.preventDefault(); limpar(); }
             else if (event.key === 'F8') { event.preventDefault(); if(document.getElementById('modalRecibo').style.display !== 'flex' && document.getElementById('modalPix').style.display !== 'flex') finalizar(); }
         });
     </script>

@@ -166,13 +166,17 @@ def assinar():
         telefone = request.form.get('telefone')
         email = request.form.get('email')
         senha = request.form.get('senha')
-        plano_escolhido = request.form.get('plano', 'pro')
+        plano_escolhido = request.form.get('plano', 'basico')
 
-        if Loja.query.filter_by(usuario=email).first():
+        if Loja.query.filter(func.lower(Loja.usuario) == email.lower()).first():
             flash('❌ Este e-mail já está cadastrado. Faça login ou use outro.', 'danger')
             return redirect(url_for('index'))
 
-        valor = 80.00 if plano_escolhido == 'pro' else 150.00
+        # ✅ ESCADINHA DE PREÇOS ATUALIZADA
+        if plano_escolhido == 'basico': valor = 49.90
+        elif plano_escolhido == 'elite': valor = 150.00
+        else: valor = 80.00
+
         nova_loja = Loja(nome_fantasia=nome_fantasia, usuario=email, email=email, telefone=telefone, senha=generate_password_hash(senha), data_vencimento=data_brasil() + timedelta(days=15), valor_plano=valor, plano=plano_escolhido)
         db.session.add(nova_loja)
         db.session.commit()
@@ -190,7 +194,9 @@ def login():
     if request.method == 'POST':
         u = request.form.get('login', '').strip().lower()
         s = request.form.get('senha', '').strip()
-        loja = Loja.query.filter_by(usuario=u).first()
+        
+        # ✅ Correção: Busca convertendo o usuário no banco para minúsculo
+        loja = Loja.query.filter(func.lower(Loja.usuario) == u).first()
 
         if loja and check_password_hash(loja.senha, s):
             session.clear()
@@ -407,7 +413,6 @@ def clientes():
         flash('✅ Cliente cadastrado!', 'success')
         return redirect(url_for('clientes'))
 
-    # --- A MÁGICA DA ESCALA ACONTECE AQUI ---
     page = request.args.get('page', 1, type=int)
     clientes_paginados = Cliente.query.filter_by(loja_id=session['loja_id']).order_by(Cliente.nome.asc()).paginate(page=page, per_page=50, error_out=False)
 
@@ -513,6 +518,12 @@ def api_finalizar_venda():
     forma_pagto = dados.get('forma_pagamento', 'Dinheiro')
     vendedor_nome = dados.get('vendedor_nome', session.get('nome_usuario', 'Dono/Gerente'))
     cashback_usado = float(dados.get('cashback_usado', 0.0))
+
+    # ✅ TRAVA DO CADEADO (PLANO BÁSICO)
+    if 'fiado' in forma_pagto.lower() or 'crediário' in forma_pagto.lower():
+        loja_check = db.session.get(Loja, loja_id)
+        if loja_check.plano.lower() == 'basico':
+            return jsonify({'sucesso': False, 'erro': 'Plano Básico não permite vendas no Fiado. Solicite o Upgrade no Suporte!'}), 400
 
     cli_id = None
     cli = None
@@ -632,7 +643,6 @@ def concluir_servico():
 def mudar_status_agenda(id, status):
     if 'loja_id' not in session: return redirect(url_for('login'))
 
-    # ✅ TRAVA DE SEGURANÇA: Proíbe concluir serviço sem passar pelo caixa (POST)
     if status == 'Concluído':
         flash('⚠️ Para concluir um serviço, clique no botão de "Concluir e Pagar" para registrar no caixa.', 'warning')
         return redirect(url_for('agenda'))
@@ -643,36 +653,55 @@ def mudar_status_agenda(id, status):
         db.session.commit()
         flash(f'🚿 Status alterado para {status}.', 'success')
     return redirect(url_for('agenda'))
+
 # ==========================================
-# --- MARKETING & RADAR ---
+# --- MARKETING & RADAR (TRAVA DE PLANO) ---
 # ==========================================
 @app.route('/marketing')
 def marketing():
     if 'loja_id' not in session: return redirect(url_for('login'))
-    loja_id = session['loja_id']
-    ausentes = Cliente.query.filter(Cliente.loja_id == loja_id, ~Cliente.id.in_(db.session.query(Venda.cliente_id).filter(Venda.data_venda >= datetime.now() - timedelta(days=30)))).all()
+    loja = db.session.get(Loja, session['loja_id'])
+    
+    # ✅ TRAVA DO CADEADO (ELITE)
+    if loja.plano.lower() in ['basico', 'pro']:
+        flash('🔒 O Marketing de WhatsApp é exclusivo do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
+        return redirect(url_for('painel'))
+        
+    ausentes = Cliente.query.filter(Cliente.loja_id == loja.id, ~Cliente.id.in_(db.session.query(Venda.cliente_id).filter(Venda.data_venda >= datetime.now() - timedelta(days=30)))).all()
     return render_template('marketing.html', ausentes=ausentes)
 
 @app.route('/radar')
 def radar():
     if 'loja_id' not in session: return redirect(url_for('login'))
-    loja_id = session['loja_id']
-    alertas = Venda.query.filter(Venda.loja_id == loja_id, Venda.data_previsao_fim != None, Venda.data_previsao_fim <= hora_brasil() + timedelta(days=7)).order_by(Venda.data_previsao_fim.asc()).all()
-    estoque_critico = Produto.query.filter(Produto.loja_id == loja_id, Produto.ativo == True, Produto.estoque < 5.0).order_by(Produto.estoque.asc()).all()
+    loja = db.session.get(Loja, session['loja_id'])
+    
+    # ✅ TRAVA DO CADEADO (ELITE)
+    if loja.plano.lower() in ['basico', 'pro']:
+        flash('🔒 O Radar de Inteligência é exclusivo do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
+        return redirect(url_for('painel'))
+        
+    alertas = Venda.query.filter(Venda.loja_id == loja.id, Venda.data_previsao_fim != None, Venda.data_previsao_fim <= hora_brasil() + timedelta(days=7)).order_by(Venda.data_previsao_fim.asc()).all()
+    estoque_critico = Produto.query.filter(Produto.loja_id == loja.id, Produto.ativo == True, Produto.estoque < 5.0).order_by(Produto.estoque.asc()).all()
     return render_template('radar.html', alertas=alertas, estoque_critico=estoque_critico, ranking=[])
 
 # ==========================================
-# --- RELATÓRIOS & COMISSÕES ---
+# --- RELATÓRIOS & COMISSÕES (TRAVA DE PLANO) ---
 # ==========================================
 @app.route('/relatorios')
 def relatorios():
     if 'loja_id' not in session: return redirect(url_for('login'))
-    loja_id = session['loja_id']
+    loja = db.session.get(Loja, session['loja_id'])
+    
+    # ✅ TRAVA DO CADEADO (PRO ou ELITE)
+    if loja.plano.lower() == 'basico':
+        flash('🔒 Os Relatórios Financeiros exigem o Plano PRO ou ELITE. Contate o suporte para desbloquear!', 'warning')
+        return redirect(url_for('painel'))
+        
     di, df, vend = request.args.get('data_inicio'), request.args.get('data_fim'), request.args.get('vendedor')
     hoje = data_brasil().strftime('%Y-%m-%d')
     di, df = di or hoje, df or hoje
 
-    q = Venda.query.filter(Venda.loja_id == loja_id, Venda.data_venda >= datetime.strptime(di, '%Y-%m-%d'), Venda.data_venda <= datetime.strptime(df, '%Y-%m-%d') + timedelta(days=1, seconds=-1))
+    q = Venda.query.filter(Venda.loja_id == loja.id, Venda.data_venda >= datetime.strptime(di, '%Y-%m-%d'), Venda.data_venda <= datetime.strptime(df, '%Y-%m-%d') + timedelta(days=1, seconds=-1))
     if vend: q = q.filter(Venda.vendedor == vend)
 
     vendas = q.order_by(Venda.data_venda.desc()).all()
@@ -688,12 +717,15 @@ def relatorios():
         elif 'dinheiro' in fp: din += val
         elif 'fiado' in fp or 'crediário' in fp: fiad += val
 
-    vends_db = db.session.query(Venda.vendedor).filter_by(loja_id=loja_id).distinct().all()
+    vends_db = db.session.query(Venda.vendedor).filter_by(loja_id=loja.id).distinct().all()
     return render_template('relatorios.html', vendas=vendas, total="%.2f"%tot, lucro_total_formatado="%.2f"%(tot-custo), pix="%.2f"%pix, credito="%.2f"%cred, debito="%.2f"%deb, dinheiro="%.2f"%din, fiado="%.2f"%fiad, data_inicio=di, data_fim=df, vendedor_filtro=vend, vendedores=[v[0] for v in vends_db if v[0]])
 
 @app.route('/exportar_relatorio')
 def exportar_relatorio():
     if 'loja_id' not in session: return redirect(url_for('login'))
+    loja = db.session.get(Loja, session['loja_id'])
+    if loja.plano.lower() == 'basico': return redirect(url_for('painel'))
+
     di, df, vend = request.args.get('data_inicio'), request.args.get('data_fim'), request.args.get('vendedor')
     q = Venda.query.filter_by(loja_id=session['loja_id'])
     if di: q = q.filter(Venda.data_venda >= datetime.strptime(di, '%Y-%m-%d'))
@@ -713,11 +745,18 @@ def exportar_relatorio():
 @app.route('/comissoes')
 def comissoes():
     if 'loja_id' not in session: return redirect(url_for('login'))
+    loja = db.session.get(Loja, session['loja_id'])
+    
+    # ✅ TRAVA DO CADEADO (ELITE)
+    if loja.plano.lower() in ['basico', 'pro']:
+        flash('🔒 A Gestão Automática de Comissões é exclusiva do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
+        return redirect(url_for('painel'))
+        
     di, df = request.args.get('data_inicio'), request.args.get('data_fim')
     hoje = data_brasil().strftime('%Y-%m-%d')
     di, df = di or hoje, df or hoje
 
-    servs = Agendamento.query.filter(Agendamento.loja_id == session['loja_id'], Agendamento.status == 'Concluído', Agendamento.data_agendamento >= datetime.strptime(di, '%Y-%m-%d').date(), Agendamento.data_agendamento <= datetime.strptime(df, '%Y-%m-%d').date(), Agendamento.funcionario_id != None).order_by(Agendamento.data_agendamento.desc()).all()
+    servs = Agendamento.query.filter(Agendamento.loja_id == loja.id, Agendamento.status == 'Concluído', Agendamento.data_agendamento >= datetime.strptime(di, '%Y-%m-%d').date(), Agendamento.data_agendamento <= datetime.strptime(df, '%Y-%m-%d').date(), Agendamento.funcionario_id != None).order_by(Agendamento.data_agendamento.desc()).all()
 
     resumo = {}
     for s in servs:
@@ -742,22 +781,53 @@ def editar_comissao():
     return redirect(request.referrer or url_for('comissoes'))
 
 # ==========================================
-# --- EQUIPE & FORNECEDORES ---
+# --- EQUIPE & FORNECEDORES (TRAVA DE QUANTIDADE) ---
 # ==========================================
 @app.route('/funcionarios', methods=['GET', 'POST'])
 def funcionarios():
     if 'loja_id' not in session: return redirect(url_for('login'))
+    loja = db.session.get(Loja, session['loja_id'])
+    
     if request.method == 'POST':
+        cargo_novo = request.form.get('cargo', '').lower()
+        
+        # Conta a equipe atual
+        func_atuais = Funcionario.query.filter_by(loja_id=loja.id).all()
+        qtd_tosadores = sum(1 for f in func_atuais if 'tosa' in f.cargo.lower() or 'banho' in f.cargo.lower() or 'esteticista' in f.cargo.lower())
+        qtd_caixas = sum(1 for f in func_atuais if 'caixa' in f.cargo.lower() or 'atendente' in f.cargo.lower() or 'vendedor' in f.cargo.lower())
+        
+        eh_tosador = 'tosa' in cargo_novo or 'banho' in cargo_novo or 'esteticista' in cargo_novo
+        eh_caixa = not eh_tosador
+        
+        plano = loja.plano.lower()
+        
+        # ✅ TRAVA DO CADEADO (LIMITE DE EQUIPE)
+        if plano == 'basico':
+            if eh_tosador and qtd_tosadores >= 1:
+                flash('🔒 O Plano Básico permite cadastrar apenas 1 Profissional. Solicite o upgrade de plano!', 'danger')
+                return redirect(url_for('funcionarios'))
+            if eh_caixa:
+                flash('🔒 O Plano Básico não permite contas extras de Caixa. Solicite o upgrade para o Plano PRO!', 'danger')
+                return redirect(url_for('funcionarios'))
+        elif plano == 'pro':
+            if eh_tosador and qtd_tosadores >= 2:
+                flash('🔒 O Plano PRO permite até 2 Profissionais. Faça o upgrade para o ELITE!', 'danger')
+                return redirect(url_for('funcionarios'))
+            if eh_caixa and qtd_caixas >= 2:
+                flash('🔒 O Plano PRO permite até 2 Caixas extras. Faça o upgrade para o ELITE!', 'danger')
+                return redirect(url_for('funcionarios'))
+
         u = request.form.get('usuario', '').strip().lower()
         if Funcionario.query.filter_by(usuario=u).first():
             flash('❌ Usuário já em uso.', 'danger')
             return redirect(url_for('funcionarios'))
         try: c = float(request.form.get('comissao', '0').replace('.', '').replace(',', '.'))
         except: c = 0.0
-        db.session.add(Funcionario(nome=request.form.get('nome'), usuario=u, senha=generate_password_hash('123456'), cargo=request.form.get('cargo'), comissao_servicos=c, loja_id=session['loja_id']))
+        db.session.add(Funcionario(nome=request.form.get('nome'), usuario=u, senha=generate_password_hash('123456'), cargo=request.form.get('cargo'), comissao_servicos=c, loja_id=loja.id))
         db.session.commit()
-        flash('✅ Acesso gerado!', 'success')
+        flash('✅ Profissional cadastrado no sistema!', 'success')
         return redirect(url_for('funcionarios'))
+        
     return render_template('funcionarios.html', funcionarios=Funcionario.query.filter_by(loja_id=session['loja_id']).all())
 
 @app.route('/editar_funcionario', methods=['POST'])
@@ -779,7 +849,7 @@ def excluir_funcionario(id):
     if f and f.loja_id == session['loja_id']:
         db.session.delete(f)
         db.session.commit()
-        flash('🗑️ Acesso revogado.', 'warning')
+        flash('🗑️ Profissional removido.', 'warning')
     return redirect(url_for('funcionarios'))
 
 @app.route('/resetar_senha/<int:id>')
@@ -863,14 +933,16 @@ def admin_guilherme():
         if Loja.query.filter_by(usuario=u).first():
             flash('❌ Usuário já existe.', 'danger')
             return redirect(url_for('admin_guilherme'))
-        db.session.add(Loja(nome_fantasia=request.form.get('nome_fantasia'), usuario=u, senha=generate_password_hash('123456'), data_vencimento=datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date(), valor_plano=float(os.environ.get('VALOR_PLANO', '80.00'))))
+            
+        # ✅ NOVO PREÇO NO PAINEL DO CEO
+        db.session.add(Loja(nome_fantasia=request.form.get('nome_fantasia'), usuario=u, senha=generate_password_hash('123456'), data_vencimento=datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date(), valor_plano=float(os.environ.get('VALOR_PLANO', '49.90')), plano='basico'))
         db.session.commit()
         flash('✅ Loja criada!', 'success')
         return redirect(url_for('admin_guilherme'))
 
     lojas = Loja.query.all()
-    mrr = sum(l.valor_plano or 80.0 for l in lojas if l.data_vencimento >= hoje)
-    prev = sum(l.valor_plano or 80.0 for l in lojas if hoje <= l.data_vencimento <= hoje + timedelta(days=7))
+    mrr = sum(l.valor_plano or 49.90 for l in lojas if l.data_vencimento >= hoje)
+    prev = sum(l.valor_plano or 49.90 for l in lojas if hoje <= l.data_vencimento <= hoje + timedelta(days=7))
     return render_template('admin.html', lojas=lojas, total_clientes=len(lojas), clientes_ativos=sum(1 for l in lojas if l.data_vencimento >= hoje), clientes_inadimplentes=sum(1 for l in lojas if l.data_vencimento < hoje), mrr=mrr, previsao_7_dias=prev, today_date=str(hoje))
 
 @app.route('/editar_loja/<int:id>', methods=['GET', 'POST'])
@@ -880,6 +952,13 @@ def editar_loja(id):
     if not l: return redirect(url_for('admin_guilherme'))
     if request.method == 'POST':
         l.nome_fantasia, l.usuario, l.data_vencimento = request.form.get('nome_fantasia'), request.form.get('usuario').strip().lower(), datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date()
+        l.plano = request.form.get('plano', l.plano)
+        
+        # Ajusta o valor na edição baseada no plano escolhido pelo CEO
+        if l.plano == 'basico': l.valor_plano = 49.90
+        elif l.plano == 'pro': l.valor_plano = 80.00
+        elif l.plano == 'elite': l.valor_plano = 150.00
+        
         db.session.commit()
         flash('✅ Loja atualizada!', 'success')
         return redirect(url_for('admin_guilherme'))
