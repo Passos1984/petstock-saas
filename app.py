@@ -1,8 +1,9 @@
 import os
+import secrets
 import csv
 import io
 import random
-import logging
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -26,7 +27,8 @@ if not os.path.exists(db_dir):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(db_dir, 'petstock.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-mestra-petstock-segura')
+# ✅ Blindagem nível bancário: Se não achar o .env, gera uma chave caótica impossível de adivinhar
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
 db = SQLAlchemy(app)
@@ -629,13 +631,18 @@ def concluir_servico():
 @app.route('/mudar_status_agenda/<int:id>/<status>')
 def mudar_status_agenda(id, status):
     if 'loja_id' not in session: return redirect(url_for('login'))
+
+    # ✅ TRAVA DE SEGURANÇA: Proíbe concluir serviço sem passar pelo caixa (POST)
+    if status == 'Concluído':
+        flash('⚠️ Para concluir um serviço, clique no botão de "Concluir e Pagar" para registrar no caixa.', 'warning')
+        return redirect(url_for('agenda'))
+
     a = db.get_or_404(Agendamento, id)
     if a.loja_id == session['loja_id']:
         a.status = status
         db.session.commit()
         flash(f'🚿 Status alterado para {status}.', 'success')
     return redirect(url_for('agenda'))
-
 # ==========================================
 # --- MARKETING & RADAR ---
 # ==========================================
