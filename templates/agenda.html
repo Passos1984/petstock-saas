@@ -102,16 +102,18 @@
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
+            <a href="/estoque" class="menu-link"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
             <a href="/agenda" class="menu-link active"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/marketing" class="menu-link"><span>📣</span> Marketing</a>
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
-            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             {% endif %}
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
@@ -175,8 +177,9 @@
                         {% if a.cliente and a.cliente.telefone %}
                         <a href="https://api.whatsapp.com/send?phone=55{{ a.cliente.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}&text=Olá, {{ a.cliente.nome }}! 🐾 Passando para confirmar o agendamento do(a) *{{ a.nome_pet }}* para *{{ a.servico }}* hoje às *{{ a.hora_agendamento }}*. Te esperamos! 🐶🚿" target="_blank" class="btn-icon btn-whats-icon" title="Enviar Lembrete no WhatsApp"><i class="fab fa-whatsapp"></i></a>
                         {% endif %}
-
-                        <a href="/mudar_status_agenda/{{ a.id }}/Concluído" class="btn-icon btn-check" title="Marcar como Concluído"><i class="fas fa-check"></i></a>
+                        
+                        <button onclick="abrirModalPagamento('{{ a.id }}', '{{ a.nome_pet }}')" class="btn-icon btn-check" title="Concluir e Pagar"><i class="fas fa-check"></i></button>
+                        
                         <a href="/mudar_status_agenda/{{ a.id }}/Cancelado" class="btn-icon btn-cancel" title="Cancelar Agendamento" onclick="return confirm('Deseja realmente cancelar este horário?')"><i class="fas fa-times"></i></a>
                         {% endif %}
                     </div>
@@ -269,36 +272,57 @@
         </div>
     </div>
 
+    <div id="modalPagamento" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <button class="close-btn" onclick="document.getElementById('modalPagamento').style.display='none'">&times;</button>
+            <h2 style="color: var(--success); margin-top: 0; margin-bottom: 5px;">🚿 Serviço Concluído!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 14px;">Como o tutor do(a) <strong id="nomePetPagamento" style="color: var(--primary);"></strong> realizou o pagamento?</p>
+            
+            <form action="/concluir_servico" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="agendamento_id" id="pgtoAgendamentoId">
+                
+                <div class="input-group" style="text-align: left; margin-bottom: 25px;">
+                    <label>Forma de Pagamento</label>
+                    <select name="forma_pagamento" class="input-control" style="background: #f8fafc; border-color: var(--accent); font-weight: 700; height: 50px;">
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-success" style="width: 100%; height: 50px; font-size: 16px;">
+                    <i class="fas fa-check"></i> Confirmar e Lançar no Caixa
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
         function toggleMenu() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        // Prepara o modal para criar um NOVO agendamento
         function abrirModalNova() {
             document.getElementById('formAgendamento').action = "/agenda";
             document.getElementById('agendamentoId').value = "";
             document.getElementById('modalTitle').innerText = "➕ Novo Agendamento";
             document.getElementById('btnSalvar').innerText = "Salvar Agendamento";
-            document.getElementById('groupCliente').style.display = "block"; // Mostra o campo Cliente
-            
-            // Limpa os campos
+            document.getElementById('groupCliente').style.display = "block"; 
             document.getElementById('formAgendamento').reset();
             document.getElementById('dataAgendamento').valueAsDate = new Date();
-            
             document.getElementById('modalAgendamento').style.display = 'flex';
         }
 
-        // Prepara o modal para EDITAR um agendamento existente
         function abrirModalEdicao(id, nomePet, raca, servico, valor, data, hora, obs, funcId) {
             document.getElementById('formAgendamento').action = "/editar_agendamento";
             document.getElementById('agendamentoId').value = id;
             document.getElementById('modalTitle').innerText = "✏️ Editar Agendamento";
             document.getElementById('btnSalvar').innerText = "Atualizar Agendamento";
-            document.getElementById('groupCliente').style.display = "none"; // Esconde Cliente na edição para não dar conflito
+            document.getElementById('groupCliente').style.display = "none"; 
             
-            // Preenche os dados
             document.getElementById('nomePet').value = nomePet;
             document.getElementById('racaPorte').value = raca !== 'None' ? raca : '';
             document.getElementById('servico').value = servico;
@@ -311,14 +335,22 @@
             document.getElementById('modalAgendamento').style.display = 'flex';
         }
 
+        function abrirModalPagamento(idAgendamento, nomePet) {
+            document.getElementById('pgtoAgendamentoId').value = idAgendamento;
+            document.getElementById('nomePetPagamento').innerText = nomePet;
+            document.getElementById('modalPagamento').style.display = 'flex';
+        }
+
         function fecharModal() {
             document.getElementById('modalAgendamento').style.display = 'none';
         }
 
         window.onclick = function(event) {
-            let modal = document.getElementById('modalAgendamento');
-            if (event.target == modal) {
+            if (event.target == document.getElementById('modalAgendamento')) {
                 fecharModal();
+            }
+            if (event.target == document.getElementById('modalPagamento')) {
+                document.getElementById('modalPagamento').style.display = 'none';
             }
         }
     </script>

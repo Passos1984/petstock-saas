@@ -2,3 +2,7 @@ instance/
 *.db
 __pycache__/
 *.pyc
+*.zip
+__pycache__/
+instance/
+.env

@@ -200,7 +200,7 @@
             <table>
                 <thead><tr><th>Cliente / Contato</th><th>Pets da Família</th><th>Localização</th><th style="text-align: right;">Ações</th></tr></thead>
                 <tbody>
-                    {% for c in clientes %}
+                   {% for c in clientes.items %}
                     <tr>
                         <td style="white-space: nowrap;"><strong style="font-size: 16px; color: var(--text-main);">{{ c.nome }}</strong><br><small style="color: var(--text-muted); font-weight: 600;">📱 {{ c.telefone }}</small></td>
                         <td>
@@ -223,6 +223,26 @@
                 </tbody>
             </table>
         </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
+                Mostrando página {{ clientes.page }} de {{ clientes.pages }}
+            </div>
+            <div style="display: flex; gap: 10px;">
+                {% if clientes.has_prev %}
+                    <a href="{{ url_for('clientes', page=clientes.prev_num) }}" class="btn btn-outline" style="padding: 8px 15px; font-size: 12px;">⬅️ Anterior</a>
+                {% else %}
+                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 12px; opacity: 0.5; cursor: not-allowed;" disabled>⬅️ Anterior</button>
+                {% endif %}
+
+                {% if clientes.has_next %}
+                    <a href="{{ url_for('clientes', page=clientes.next_num) }}" class="btn btn-outline" style="padding: 8px 15px; font-size: 12px;">Próxima ➡️</a>
+                {% else %}
+                    <button class="btn btn-outline" style="padding: 8px 15px; font-size: 12px; opacity: 0.5; cursor: not-allowed;" disabled>Próxima ➡️</button>
+                {% endif %}
+            </div>
+        </div>
+
         {% else %}
         <div class="empty-state">
             <div style="font-size: 40px; margin-bottom: 15px;">👥</div>
@@ -299,7 +319,6 @@
         
         function fecharModalPagamento() { document.getElementById('modalPagamentoFiado').style.display = 'none'; }
 
-        // Lógica atualizada para a Ficha do Cliente
         async function verHistorico(id, nome, telefone) {
             let phoneNum = telefone ? telefone.replace(/\D/g, '') : '';
             if (phoneNum && !phoneNum.startsWith('55')) { phoneNum = '55' + phoneNum; }
@@ -317,7 +336,6 @@
             document.getElementById('modalHistorico').style.display = 'flex';
 
             try {
-                // Tenta buscar a dívida do cliente
                 try {
                     const resDivida = await fetch('/api/divida_cliente/' + id);
                     if (resDivida.ok) {
@@ -349,7 +367,6 @@
                     }
                 } catch(e) {}
 
-                // Busca o histórico de compras
                 const response = await fetch('/historico_cliente/' + id);
                 const dados = await response.json();
                 
@@ -369,25 +386,21 @@
                 });
                 html += '</tbody></table></div>';
                 document.getElementById('corpoHistorico').innerHTML = html;
-
             } catch (error) {
                 document.getElementById('corpoHistorico').innerHTML = '<p style="color: var(--danger); text-align: center; font-weight: bold;">Erro ao carregar o histórico. Verifique a conexão com o banco de dados.</p>';
             }
         }
 
-        // Função que abre a janelinha para escolher PIX/Cartão/Dinheiro
         function abrirModalPagamento(id_cliente, valor) {
             document.getElementById('idClientePagamento').value = id_cliente;
             document.getElementById('valorPagamentoModal').innerText = valor.toFixed(2).replace('.', ',');
             
-            // Força o modal principal a ficar por baixo usando z-index
             document.getElementById('modalHistorico').style.zIndex = '1900';
             document.getElementById('modalPagamentoFiado').style.zIndex = '2100';
             
             document.getElementById('modalPagamentoFiado').style.display = 'flex';
         }
 
-        // Função final que manda a forma de pagamento pro Servidor
         async function confirmarPagamentoFiado() {
             let id_cliente = document.getElementById('idClientePagamento').value;
             let forma_pagto = document.getElementById('formaPagamentoFiado').value;
