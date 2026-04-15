@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - O Sistema Definitivo para Agropets</title>
+    <title>AgroPet Pro - O Sistema Definitivo para Agropets e Pet Shops</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         :root {
             --primary: #222533;
@@ -80,8 +81,8 @@
 
     <header>
         <div class="logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="PetStock" style="height: 35px; border-radius: 8px;"> 
-            PetStock
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="AgroPet Pro" style="height: 35px; border-radius: 8px;"> 
+            AgroPet Pro
         </div>
         <div class="nav-links">
             <a href="#funcionalidades" class="menu-item">Funcionalidades</a>
@@ -109,7 +110,7 @@
     </section>
 
     <section id="funcionalidades" class="features">
-        <h2 class="section-title">Por que as lojas amam o PetStock?</h2>
+        <h2 class="section-title">Por que as lojas amam o AgroPet Pro?</h2>
         <div class="grid-features">
             <div class="card-feature">
                 <div class="icon-circle"><i class="fas fa-balance-scale"></i></div>
@@ -137,11 +138,12 @@
                 <div class="price-title">Básico</div>
                 <div class="price-value">R$ 49<span>,90/mês</span></div>
                 <ul class="price-list">
-                    <li><i class="fas fa-check"></i> Controle de Estoque (Ilimitado)</li>
                     <li><i class="fas fa-check"></i> 1 Acesso (Dono)</li>
-                    <li><i class="fas fa-check"></i> Cadastro de Clientes</li>
-                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> PDV de Vendas</li>
-                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Controle de Fiado</li>
+                    <li><i class="fas fa-check"></i> 1 Profissional (Tosador)</li>
+                    <li><i class="fas fa-check"></i> PDV (Venda Padrão)</li>
+                    <li><i class="fas fa-check"></i> Controle de Estoque Ilimitado</li>
+                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Vendas no Fiado</li>
+                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Relatórios Financeiros</li>
                 </ul>
                 <button class="btn-cta" style="width: 100%; font-size: 16px; background: #f1f5f9; color: var(--text-main); box-shadow: none; border: 1px solid #cbd5e1;" onclick="abrirModal('basico')">Testar BÁSICO Grátis (15 dias)</button>
             </div>
@@ -152,10 +154,11 @@
                 <div class="price-value">R$ 80<span>,00/mês</span></div>
                 <ul class="price-list">
                     <li><i class="fas fa-check"></i> <b>Tudo do plano Básico</b></li>
-                    <li><i class="fas fa-check"></i> <b>PDV Super Rápido</b></li>
-                    <li><i class="fas fa-check"></i> <b>Controle de Fiado</b></li>
-                    <li><i class="fas fa-check"></i> Relatórios Financeiros</li>
-                    <li><i class="fas fa-check"></i> Acesso para Caixas/Vendedores</li>
+                    <li><i class="fas fa-check"></i> Até 3 Acessos (Dono + Caixas)</li>
+                    <li><i class="fas fa-check"></i> Até 2 Profissionais (Tosadores)</li>
+                    <li><i class="fas fa-check"></i> <b>Vendas no Fiado Liberadas</b></li>
+                    <li><i class="fas fa-check"></i> <b>Relatórios Financeiros</b></li>
+                    <li style="color: #cbd5e1;"><i class="fas fa-times" style="color: #cbd5e1;"></i> Comissões e Marketing</li>
                 </ul>
                 <button class="btn-cta" style="width: 100%; font-size: 16px;" onclick="abrirModal('pro')">Testar PRO Grátis (15 dias)</button>
             </div>
@@ -165,8 +168,10 @@
                 <div class="price-value">R$ 150<span>,00/mês</span></div>
                 <ul class="price-list">
                     <li><i class="fas fa-check"></i> <b>Tudo do plano PRO</b></li>
-                    <li><i class="fas fa-check"></i> Suporte Prioritário VIP</li>
-                    <li><i class="fas fa-check"></i> Radar de Inteligência (Alerta 7 dias)</li>
+                    <li><i class="fas fa-check"></i> Equipe Ilimitada (Caixas e Tosadores)</li>
+                    <li><i class="fas fa-check"></i> Gestão de Comissões Automática</li>
+                    <li><i class="fas fa-check"></i> Radar (Previsão de Compras)</li>
+                    <li><i class="fas fa-check"></i> Marketing no WhatsApp</li>
                     <li><i class="fas fa-check"></i> Gestão de Fornecedores</li>
                 </ul>
                 <button class="btn-cta" style="width: 100%; font-size: 16px; background: #0f172a;" onclick="abrirModal('elite')">Testar ELITE Grátis (15 dias)</button>
