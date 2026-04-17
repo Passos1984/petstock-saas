@@ -3,7 +3,7 @@ import secrets
 import csv
 import io
 import random
-import mercadopago # ✅ BIBLIOTECA DO MOTOR FINANCEIRO ADICIONADA
+import mercadopago
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -44,10 +44,13 @@ def data_brasil(): return hora_brasil().date()
 # ==========================================
 # --- MOTOR DO MERCADO PAGO ---
 # ==========================================
-# A chave mestre que você acabou de gerar
-MP_ACCESS_TOKEN = "APP_USR-8350390218195614-041620-1663b801d64bd22ba83706a61606e9fa-81304613"
+MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "")
+if not MP_ACCESS_TOKEN:
+    print("⚠️ ALERTA: MP_ACCESS_TOKEN não configurado no .env")
+
 sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
 
+BASE_URL = os.environ.get("BASE_URL", "").rstrip("/")
 
 # ==========================================
 # --- MODELOS ---
@@ -141,22 +144,13 @@ class Agendamento(db.Model):
     cliente = db.relationship('Cliente', backref='agendamentos')
     profissional = db.relationship('Funcionario', backref='servicos_realizados')
 
-# ==========================================
-# --- CONTEXTO GLOBAL ---
-# ==========================================
 @app.context_processor
 def injetar_dados_globais():
     loja_atual = None
     if 'loja_id' in session:
         loja_atual = db.session.get(Loja, session['loja_id'])
-
-    return dict(
-        loja_logada=loja_atual,
-        cargo=session.get('cargo', 'Gerente'),
-        vendedor_atual=session.get('nome_usuario', 'Dono/Gerente')
-    )
-
-# ==========================================
+    return dict(loja_logada=loja_atual, cargo=session.get('cargo', 'Gerente'), vendedor_atual=session.get('nome_usuario', 'Dono/Gerente'))
+    # ==========================================
 # --- ROTA PRINCIPAL E LOGINS ---
 # ==========================================
 @app.route('/')
@@ -208,7 +202,6 @@ def login():
             hoje = data_brasil()
             dias_restantes = (loja.data_vencimento - hoje).days
             
-            # ✅ O LINK DE COBRANÇA AGORA VAI PARA NOSSA NOVA ROTA DE PAGAMENTO DO MP
             url_pagto = url_for('pagar_assinatura', loja_id=loja.id)
 
             if dias_restantes < 0:
@@ -238,10 +231,8 @@ def pagar_assinatura(loja_id):
     if not loja:
         return redirect(url_for('login'))
 
-    # Evita que o link do pythonanywhere seja enviado como http simples pro MP
-    url_base = request.url_root.replace("http://", "https://")
+    url_base_final = BASE_URL if BASE_URL else request.url_root.replace("http://", "https://").rstrip("/")
 
-    # Configura a fatura
     preference_data = {
         "items": [
             {
@@ -255,19 +246,19 @@ def pagar_assinatura(loja_id):
             "email": loja.email if loja.email else "contato@agropet.com"
         },
         "back_urls": {
-            "success": url_base + "sucesso_pagamento",
-            "failure": url_base + "login",
-            "pending": url_base + "login"
+            "success": f"{url_base_final}/sucesso_pagamento",
+            "failure": f"{url_base_final}/login",
+            "pending": f"{url_base_final}/login"
         },
         "auto_return": "approved",
-        "external_reference": str(loja.id), # Isso garante que saibamos qual loja pagou
-        "notification_url": url_base + "webhook_mp" # A rota invisível que o MP vai chamar
+        "external_reference": str(loja.id),
+        "notification_url": f"{url_base_final}/webhook_mp"
     }
 
     try:
         preference_response = sdk.preference().create(preference_data)
         preference = preference_response["response"]
-        return redirect(preference["init_point"]) # Redireciona pro checkout do MP
+        return redirect(preference["init_point"]) 
     except Exception as e:
         flash(f'Erro ao gerar pagamento: {str(e)}', 'danger')
         return redirect(url_for('login'))
@@ -278,7 +269,7 @@ def sucesso_pagamento():
     return redirect(url_for('login'))
 
 @app.route('/webhook_mp', methods=['POST', 'GET'])
-@csrf.exempt # Tem que ser isento de CSRF pq o Mercado Pago não tem nosso token interno
+@csrf.exempt 
 def webhook_mp():
     try:
         data = request.args.to_dict()
@@ -296,18 +287,15 @@ def webhook_mp():
                     
                     if loja:
                         hoje = data_brasil()
-                        # Se a loja estava vencida, zera e dá 30 dias a partir de hoje
                         if loja.data_vencimento < hoje:
                             loja.data_vencimento = hoje + timedelta(days=30)
                         else:
-                            # Se pagou antes de vencer, soma 30 dias na "poupança" de dias dela
                             loja.data_vencimento = loja.data_vencimento + timedelta(days=30)
                         db.session.commit()
                         
         return jsonify({"status": "success"}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 400
-
 
 # ==========================================
 # --- CONTINUAÇÃO ORIGINAL ---

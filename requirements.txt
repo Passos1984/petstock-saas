@@ -3,6 +3,8 @@ Flask-SQLAlchemy
 Flask-Migrate
 Flask-WTF
 Flask-Limiter
-Werkzeug
 python-dotenv
 pytz
+mercadopago
+gunicorn
+psycopg2-binary
