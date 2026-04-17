@@ -217,10 +217,10 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                
+
                 {% if produtos.pages > 1 %}
                 <div style="padding: 20px; display: flex; justify-content: center; gap: 10px; border-top: 1px solid var(--border-color); align-items: center; background: #fafafa;">
-                    
+
                     {% if produtos.has_prev %}
                         <a href="{{ url_for('painel', page=produtos.prev_num) }}" class="btn" style="background: white; border: 1px solid var(--border-color); padding: 8px 12px;"><i class="fas fa-chevron-left"></i> Anterior</a>
                     {% else %}
@@ -247,7 +247,7 @@
             <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">📦 Cadastrar Produto</h3>
             <form action="/cadastrar_produto" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
+
                 <div class="form-grid" style="margin-top: 0;">
 
                     <div style="grid-column: span 2;">
@@ -304,7 +304,7 @@
                         <small id="sugestaoPreco" style="color: var(--accent); font-weight: 800; display: block; margin-top: 6px;"></small>
                     </div>
                 </div>
-                
+
                 <div id="lucroPreview" class="lucro-tag" style="display: none;">Lucro: R$ 0,00 (0%)</div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 16px; font-size: 16px;">Salvar no Estoque</button>
@@ -327,7 +327,7 @@
             <h3 style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; color: var(--text-main);">⚖️ Fracionar Ração (Saco -> Granel)</h3>
             <form action="/desmembrar" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
+
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--danger);">1. SACO FECHADO (ORIGEM)</label>
                     <select name="origem_id" id="selOrigem" class="input-control" required style="border-color: var(--danger);" onchange="mostrarEstoqueOrigem()">
@@ -441,15 +441,15 @@
             if (!html5QrCodeEstoque) {
                 html5QrCodeEstoque = new Html5Qrcode("readerEstoque");
             }
-            
+
             html5QrCodeEstoque.start(
-                { facingMode: "environment" }, 
+                { facingMode: "environment" },
                 {
                     fps: 10,
                     qrbox: { width: 250, height: 150 }
                 },
                 function onScanSuccess(decodedText, decodedResult) {
-                    fecharScannerEstoque(); 
+                    fecharScannerEstoque();
                     document.getElementById('cadSku').value = decodedText; // Preenche o campo de código automaticamente
                 },
                 function onScanFailure(error) {
@@ -476,10 +476,10 @@
             document.getElementById('overlay').classList.toggle('active');
         }
 
-        function abrirModal(id) { 
+        function abrirModal(id) {
             let modal = document.getElementById(id);
-            modal.style.display = 'flex'; 
-            
+            modal.style.display = 'flex';
+
             // Limpa o formulário sozinho toda vez que abrir o Novo Produto
             if (id === 'modalCadastro') {
                 let form = modal.querySelector('form');
@@ -490,9 +490,9 @@
                 if (sugestao) sugestao.innerText = '';
             }
         }
-        
-        function fecharModal(id) { 
-            document.getElementById(id).style.display = 'none'; 
+
+        function fecharModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
 
         function abrirModalBaixa(id, nome) {
@@ -503,8 +503,8 @@
 
         window.onclick = function(event) {
             // Evita fechar a câmera sem querer clicando fora
-            if (event.target.classList.contains('modal') && event.target.id !== 'modalScannerEstoque') { 
-                event.target.style.display = "none"; 
+            if (event.target.classList.contains('modal') && event.target.id !== 'modalScannerEstoque') {
+                event.target.style.display = "none";
             }
         }
 
@@ -518,7 +518,7 @@
             let sugestao = document.getElementById('sugestaoPreco');
 
             if (custo > 0) {
-                let valorSugerido = custo * 1.40; 
+                let valorSugerido = custo * 1.40;
                 sugestao.innerText = `💡 Sugestão (40% de margem): R$ ${valorSugerido.toFixed(2).replace('.', ',')}`;
             } else {
                 sugestao.innerText = '';

@@ -8,26 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
-            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --primary: #222533; --accent: #5c4dff; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9;
             --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); overflow: hidden;}
-        
+
         aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0; z-index: 1002; transition: left 0.3s ease;}
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
         .menu-link.active { background: var(--accent); color: white; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); font-weight: 600;}
-        
+
         main { flex: 1; padding: 40px; overflow-y: auto; }
         .panel { background: white; padding: 30px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);}
         .input-control { width: 100%; padding: 12px; margin-top: 5px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: inherit;}
         .input-control:focus { border-color: var(--accent); }
-        
+
         .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-family: inherit;}
         .btn-primary { background: var(--success); color: white; }
-        
+
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); padding: 15px; border-bottom: 2px solid var(--border-color); white-space: nowrap;}
         td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; white-space: nowrap;}
@@ -52,15 +52,15 @@
             body { flex-direction: column; overflow: auto; }
             .mobile-header { display: flex; }
             .overlay.active { display: block; }
-            
+
             main { padding: 80px 15px 20px 15px; height: auto; }
-            
+
             aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
             aside.active { left: 0; }
-            
+
             .form-grid { grid-template-columns: 1fr; gap: 5px; }
             .form-grid button { width: 100%; margin-top: 10px; height: 48px; }
-            
+
             .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
             table { min-width: 600px; }
         }
@@ -112,10 +112,10 @@
         <div class="panel">
             <h3 style="margin-top:0;">➕ Cadastrar Novo Acesso / Profissional</h3>
             <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">A senha inicial será sempre **123456**. O funcionário poderá mudar no primeiro login.</p>
-            
+
             <form action="/funcionarios" method="POST" class="form-grid">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
+
                 <div>
                     <label style="font-size:11px; font-weight:800;">NOME COMPLETO</label>
                     <input type="text" name="nome" class="input-control" required>
@@ -184,16 +184,16 @@
         <div class="modal-content">
             <button class="close-btn" onclick="fecharModalEdicao()">&times;</button>
             <h3 style="margin-top: 0; color: var(--text-main); margin-bottom: 20px;">✏️ Editar Profissional</h3>
-            
+
             <form action="/editar_funcionario" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="func_id" id="editFuncId">
-                
+
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Nome Completo</label>
                     <input type="text" name="nome" id="editNome" class="input-control" required>
                 </div>
-                
+
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Nível / Cargo</label>
                     <select name="cargo" id="editCargo" class="input-control" style="background: white;">
@@ -202,12 +202,12 @@
                         <option value="Gerente">Gerente (Acesso total)</option>
                     </select>
                 </div>
-                
+
                 <div style="margin-bottom: 15px;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--accent); text-transform: uppercase;">% Comissão</label>
                     <input type="number" name="comissao" id="editComissao" class="input-control" placeholder="Ex: 40" style="border-color: var(--accent); background: #eef2ff;" step="any">
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary" style="width: 100%; height: 45px; margin-top: 10px; background: var(--accent);">💾 Salvar Alterações</button>
             </form>
         </div>
@@ -225,7 +225,7 @@
             document.getElementById('editNome').value = nome;
             document.getElementById('editCargo').value = cargo;
             document.getElementById('editComissao').value = parseFloat(comissao) || 0;
-            
+
             document.getElementById('modalEditarFuncionario').style.display = 'flex';
         }
 

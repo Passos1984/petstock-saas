@@ -10,13 +10,13 @@
 
     <style>
         :root {
-            --primary: #222533; 
-            --accent: #5c4dff; 
+            --primary: #222533;
+            --accent: #5c4dff;
             --accent-hover: #4a3ecc;
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --bg-body: #f4f6f9; 
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f4f6f9;
             --text-main: #333333;
             --text-muted: #777777;
             --border-color: #eeeeee;
@@ -26,7 +26,7 @@
 
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
-        
+
         aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
         .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
@@ -45,7 +45,7 @@
         .panel { background: var(--bg-card); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03); }
         .input-control { width: 100%; padding: 14px 16px; border: 1.5px solid var(--input-border); border-radius: 10px; font-size: 14px; outline: none; font-family: inherit; transition: 0.2s;}
         .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
-        
+
         .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 14px; transition: 0.2s; font-family: inherit; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         .btn-primary { background: var(--accent); color: white; }
@@ -61,7 +61,7 @@
         .modal-content { background: white; padding: 35px; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); position: relative; max-height: 90vh; overflow-y: auto;}
         .close-btn { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px; color: #94a3b8; font-weight: bold; background: none; border: none; transition: 0.2s;}
         .close-btn:hover { color: var(--danger); }
-        
+
         .help-topic { margin-top: 20px; }
         .help-topic h4 { color: var(--accent); margin: 0 0 8px 0; font-size: 16px;}
         .help-topic p { color: var(--text-muted); margin: 0 0 20px 0; line-height: 1.6; font-size: 14px;}
@@ -74,29 +74,29 @@
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; display: block;}
             .mobile-header { display: flex; position: fixed; top: 0; width: 100%; }
-            
+
             aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); z-index: 1002;}
             aside.active { left: 0; }
             .overlay.active { display: block; z-index: 1001;}
-            
+
             main { padding: 80px 15px 20px 15px; } /* Ajuste de padding pro header fixo */
-            
+
             .header-bar { flex-direction: column; align-items: flex-start !important; gap: 15px; }
             .header-bar > div { flex-wrap: wrap; width: 100%; }
             .header-bar button, .header-bar a { flex: 1; text-align: center; justify-content: center; min-width: 140px; }
-            
+
             .filter-form { flex-direction: column !important; align-items: stretch !important; gap: 15px !important; }
             .filter-form button, .filter-form a { width: 100%; height: auto !important; padding: 14px; }
-            
+
             .content-wrapper { flex-direction: column !important; }
             .table-panel { min-width: 100% !important; flex: none !important; padding: 15px !important; background: transparent; border: none; box-shadow: none;}
             .chart-panel { min-width: 100% !important; flex: none !important; margin-top: 20px;}
-            
+
             /* Transformando Tabela em Cards */
             .table-responsive { width: 100%; overflow-x: hidden; border: none;}
             .table-responsive table, .table-responsive thead, .table-responsive tbody, .table-responsive th, .table-responsive td, .table-responsive tr { display: block; width: 100%; }
             .table-responsive thead tr { display: none; } /* Esconde o cabeçalho original */
-            
+
             .table-responsive tr {
                 background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
             }
@@ -104,17 +104,17 @@
                 display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed var(--border-color); text-align: right;
             }
             .table-responsive td:last-child { border-bottom: none; padding-bottom: 0; }
-            
+
             /* Pseudo-elemento para criar o rótulo da coluna */
             .table-responsive td::before {
                 content: attr(data-label); font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;
             }
-            
+
             /* Ajustes Específicos para melhor leitura no celular */
             .table-responsive td[data-label="Produto"] { flex-direction: column; align-items: flex-start; text-align: left; }
             .table-responsive td[data-label="Produto"]::before { margin-bottom: 6px; }
             .table-responsive td[data-label="Produto"] strong { white-space: normal; } /* Permite quebrar linha de nome longo */
-            
+
             .table-responsive td[data-label="Total"] {
                 background: #f0fdf4; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 18px !important; color: var(--success); font-weight: 800; border: 1px solid #bbf7d0;
             }
@@ -136,7 +136,7 @@
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
-        
+
         {% if loja_logada %}
         <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
             <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
@@ -157,7 +157,7 @@
             <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
             {% endif %}
         </div>
-        
+
         <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
             <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com o Financeiro do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
             <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
@@ -185,7 +185,7 @@
                 </h2>
                 <button onclick="document.getElementById('modalAjuda').style.display='flex'" class="btn btn-help"><span>❓</span> Ajuda</button>
             </div>
-            
+
             <div style="display: flex; gap: 10px;">
                 <button onclick="fecharCaixaWhats()" class="btn" style="background-color: #25D366; color: white;"><i class="fab fa-whatsapp" style="font-size: 18px;"></i> Fechar Caixa no Whats</button>
                 <a href="/exportar_relatorio?data_inicio={{ data_inicio or '' }}&data_fim={{ data_fim or '' }}&vendedor={{ vendedor_filtro or '' }}" class="btn btn-success"><i class="fas fa-download"></i> Exportar Excel</a>
@@ -202,7 +202,7 @@
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Período Final</label>
                     <input type="date" name="data_fim" value="{{ data_fim or '' }}" class="input-control">
                 </div>
-                
+
                 <div style="display: flex; flex-direction: column; gap: 8px; flex: 1.5;">
                     <label style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase;">Atendente / Vendedor</label>
                     <select name="vendedor" class="input-control" style="background: white;">
@@ -225,7 +225,7 @@
                 <h4 style="color: rgba(255,255,255,0.8);">Faturamento Total</h4>
                 <div class="value" style="color: white;">R$ {{ total }}</div>
             </div>
-            
+
             <div class="dash-card" style="border-bottom-color: #8b5cf6;">
                 <h4>💰 Lucro Real (Sobra)</h4>
                 <div class="value" style="color: #8b5cf6;">R$ {{ lucro_total_formatado }}</div>
@@ -255,7 +255,7 @@
         </div>
 
         <div class="content-wrapper" style="display: flex; gap: 25px; align-items: flex-start; flex-wrap: wrap;">
-            
+
             <div class="panel table-panel" style="flex: 3; padding: 0; overflow: hidden; min-width: 650px;">
                 <div style="padding: 25px 30px; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
                     <h3 class="panel-title" style="margin: 0; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px;">🧾 Histórico Detalhado</h3>
@@ -311,7 +311,7 @@
         <div class="modal-content">
             <button class="close-btn" onclick="document.getElementById('modalAjuda').style.display='none'">&times;</button>
             <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px; font-size: 20px;">📊 Guia Financeiro</h2>
-            
+
             <div class="help-topic">
                 <h4>💰 Lucro Real</h4>
                 <p>Este valor é calculado subtraindo o <b>Preço de Custo</b> (o que você pagou) do <b>Preço de Venda Praticado no PDV</b>. Se o valor estiver baixo, verifique se os descontos concedidos no caixa não estão muito altos.</p>

@@ -3,6 +3,7 @@ import secrets
 import csv
 import io
 import random
+import mercadopago # ✅ BIBLIOTECA DO MOTOR FINANCEIRO ADICIONADA
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, Response
 from flask_sqlalchemy import SQLAlchemy
@@ -27,7 +28,6 @@ if not os.path.exists(db_dir):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(db_dir, 'petstock.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# ✅ Blindagem nível bancário: Se não achar o .env, gera uma chave caótica impossível de adivinhar
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
@@ -40,6 +40,14 @@ TZ_BRASIL = pytz.timezone('America/Sao_Paulo')
 
 def hora_brasil(): return datetime.now(TZ_BRASIL).replace(tzinfo=None)
 def data_brasil(): return hora_brasil().date()
+
+# ==========================================
+# --- MOTOR DO MERCADO PAGO ---
+# ==========================================
+# A chave mestre que você acabou de gerar
+MP_ACCESS_TOKEN = "APP_USR-8350390218195614-041620-1663b801d64bd22ba83706a61606e9fa-81304613"
+sdk = mercadopago.SDK(MP_ACCESS_TOKEN)
+
 
 # ==========================================
 # --- MODELOS ---
@@ -55,7 +63,7 @@ class Loja(db.Model):
     valor_plano = db.Column(db.Float, default=80.00)
     telefone = db.Column(db.String(20))
     plano = db.Column(db.String(50), default='pro')
-    percentual_cashback = db.Column(db.Float, default=3.0) # NOVO CAMPO
+    percentual_cashback = db.Column(db.Float, default=3.0) 
 
 class Funcionario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -109,7 +117,7 @@ class Venda(db.Model):
     loja_id = db.Column(db.Integer, db.ForeignKey('loja.id'))
     quantidade = db.Column(db.Float)
     valor_total = db.Column(db.Float)
-    forma_pagamento_1 = db.Column(db.String(100)) # ✅ ALTERADO PARA 100
+    forma_pagamento_1 = db.Column(db.String(100)) 
     data_venda = db.Column(db.DateTime, default=hora_brasil)
     data_previsao_fim = db.Column(db.DateTime)
     vendedor = db.Column(db.String(50), default='Dono/Gerente')
@@ -142,7 +150,6 @@ def injetar_dados_globais():
     if 'loja_id' in session:
         loja_atual = db.session.get(Loja, session['loja_id'])
 
-    # TOTALMENTE DEPENDENTE DA SESSÃO AGORA
     return dict(
         loja_logada=loja_atual,
         cargo=session.get('cargo', 'Gerente'),
@@ -172,7 +179,6 @@ def assinar():
             flash('❌ Este e-mail já está cadastrado. Faça login ou use outro.', 'danger')
             return redirect(url_for('index'))
 
-        # ✅ ESCADINHA DE PREÇOS ATUALIZADA
         if plano_escolhido == 'basico': valor = 49.90
         elif plano_escolhido == 'elite': valor = 150.00
         else: valor = 80.00
@@ -195,33 +201,117 @@ def login():
         u = request.form.get('login', '').strip().lower()
         s = request.form.get('senha', '').strip()
         
-        # ✅ Correção: Busca convertendo o usuário no banco para minúsculo
         loja = Loja.query.filter(func.lower(Loja.usuario) == u).first()
 
         if loja and check_password_hash(loja.senha, s):
             session.clear()
             hoje = data_brasil()
             dias_restantes = (loja.data_vencimento - hoje).days
-            zap = "https://api.whatsapp.com/send?phone=5551981962819&text=Ol%C3%A1!%20Preciso%20renovar%20minha%20assinatura%20do%20PetStock."
+            
+            # ✅ O LINK DE COBRANÇA AGORA VAI PARA NOSSA NOVA ROTA DE PAGAMENTO DO MP
+            url_pagto = url_for('pagar_assinatura', loja_id=loja.id)
 
             if dias_restantes < 0:
-                flash(f'⚠️ ASSINATURA VENCIDA! <a href="{zap}" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 900;">Clique aqui para renovar.</a>', 'danger')
+                flash(f'⚠️ ASSINATURA VENCIDA! <a href="{url_pagto}" style="color: inherit; text-decoration: underline; font-weight: 900;">Clique aqui para pagar e liberar o sistema agora.</a>', 'danger')
                 return render_template('login.html')
             elif dias_restantes <= 2:
-                flash(f'⚠️ ATENÇÃO! Sua assinatura vence em {dias_restantes} dia(s). <a href="{zap}" target="_blank" style="color: inherit; text-decoration: underline; font-weight: 900;">Renovar.</a>', 'warning')
+                flash(f'⚠️ ATENÇÃO! Sua assinatura vence em {dias_restantes} dia(s). <a href="{url_pagto}" style="color: inherit; text-decoration: underline; font-weight: 900;">Antecipe sua renovação clicando aqui.</a>', 'warning')
 
             if check_password_hash(loja.senha, '123456'):
                 session['reset_loja_id'] = loja.id
                 return redirect(url_for('mudar_senha'))
 
             session['loja_id'] = loja.id
-            session['nome_usuario'] = 'Dono/Gerente' # Default
+            session['nome_usuario'] = 'Dono/Gerente' 
             session['cargo'] = 'Gerente'
             return redirect(url_for('painel'))
 
         flash('❌ Usuário ou senha incorretos.', 'danger')
     return render_template('login.html')
 
+# ==========================================
+# --- INTEGRAÇÃO MERCADO PAGO ---
+# ==========================================
+@app.route('/pagar_assinatura/<int:loja_id>')
+def pagar_assinatura(loja_id):
+    loja = db.session.get(Loja, loja_id)
+    if not loja:
+        return redirect(url_for('login'))
+
+    # Evita que o link do pythonanywhere seja enviado como http simples pro MP
+    url_base = request.url_root.replace("http://", "https://")
+
+    # Configura a fatura
+    preference_data = {
+        "items": [
+            {
+                "title": f"Assinatura AgroPet Pro - Plano {loja.plano.upper()}",
+                "quantity": 1,
+                "currency_id": "BRL",
+                "unit_price": float(loja.valor_plano)
+            }
+        ],
+        "payer": {
+            "email": loja.email if loja.email else "contato@agropet.com"
+        },
+        "back_urls": {
+            "success": url_base + "sucesso_pagamento",
+            "failure": url_base + "login",
+            "pending": url_base + "login"
+        },
+        "auto_return": "approved",
+        "external_reference": str(loja.id), # Isso garante que saibamos qual loja pagou
+        "notification_url": url_base + "webhook_mp" # A rota invisível que o MP vai chamar
+    }
+
+    try:
+        preference_response = sdk.preference().create(preference_data)
+        preference = preference_response["response"]
+        return redirect(preference["init_point"]) # Redireciona pro checkout do MP
+    except Exception as e:
+        flash(f'Erro ao gerar pagamento: {str(e)}', 'danger')
+        return redirect(url_for('login'))
+
+@app.route('/sucesso_pagamento')
+def sucesso_pagamento():
+    flash('✅ Pagamento Aprovado! Faça login, sua conta já está liberada.', 'success')
+    return redirect(url_for('login'))
+
+@app.route('/webhook_mp', methods=['POST', 'GET'])
+@csrf.exempt # Tem que ser isento de CSRF pq o Mercado Pago não tem nosso token interno
+def webhook_mp():
+    try:
+        data = request.args.to_dict()
+        topic = data.get("type", data.get("topic"))
+        
+        if topic == "payment":
+            payment_id = data.get("data.id", data.get("id"))
+            if payment_id:
+                payment_info = sdk.payment().get(payment_id)
+                payment = payment_info["response"]
+
+                if payment["status"] == "approved":
+                    loja_id = int(payment["external_reference"])
+                    loja = db.session.get(Loja, loja_id)
+                    
+                    if loja:
+                        hoje = data_brasil()
+                        # Se a loja estava vencida, zera e dá 30 dias a partir de hoje
+                        if loja.data_vencimento < hoje:
+                            loja.data_vencimento = hoje + timedelta(days=30)
+                        else:
+                            # Se pagou antes de vencer, soma 30 dias na "poupança" de dias dela
+                            loja.data_vencimento = loja.data_vencimento + timedelta(days=30)
+                        db.session.commit()
+                        
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+# ==========================================
+# --- CONTINUAÇÃO ORIGINAL ---
+# ==========================================
 @app.route('/mudar_senha', methods=['GET', 'POST'])
 @csrf.exempt
 def mudar_senha():
@@ -248,9 +338,6 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# ==========================================
-# --- PAINEL ---
-# ==========================================
 @app.route('/painel')
 def painel():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -266,9 +353,6 @@ def painel():
 
     return render_template('dashboard.html', vendas_total=total_vendas_hoje, banhos_count=banhos_hoje, vacinas=alertas_vacina, estoque_alerta=estoque_baixo)
 
-# ==========================================
-# --- ESTOQUE ---
-# ==========================================
 @app.route('/estoque')
 def estoque():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -399,9 +483,6 @@ def importar_produtos():
     except: flash('❌ Erro na importação.', 'danger')
     return redirect(url_for('estoque'))
 
-# ==========================================
-# --- CLIENTES ---
-# ==========================================
 @app.route('/clientes', methods=['GET', 'POST'])
 def clientes():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -496,9 +577,6 @@ def api_pagar_divida(id):
     db.session.commit()
     return jsonify({'sucesso': True})
 
-# ==========================================
-# --- PDV ---
-# ==========================================
 @app.route('/pdv')
 def pdv():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -519,7 +597,6 @@ def api_finalizar_venda():
     vendedor_nome = dados.get('vendedor_nome', session.get('nome_usuario', 'Dono/Gerente'))
     cashback_usado = float(dados.get('cashback_usado', 0.0))
 
-    # ✅ TRAVA DO CADEADO (PLANO BÁSICO)
     if 'fiado' in forma_pagto.lower() or 'crediário' in forma_pagto.lower():
         loja_check = db.session.get(Loja, loja_id)
         if loja_check.plano.lower() == 'basico':
@@ -560,7 +637,7 @@ def api_finalizar_venda():
             valor_pago = total_venda - cashback_usado
             if valor_pago > 0 and "Fiado" not in forma_pagto:
                 loja = db.session.get(Loja, loja_id)
-                pct = (loja.percentual_cashback or 3.0) / 100.0 # CASHBACK DINÂMICO
+                pct = (loja.percentual_cashback or 3.0) / 100.0
                 if cli.saldo_cashback is None: cli.saldo_cashback = 0.0
                 cli.saldo_cashback += (valor_pago * pct)
 
@@ -570,9 +647,6 @@ def api_finalizar_venda():
         db.session.rollback()
         return jsonify({'sucesso': False, 'erro': str(e)}), 400
 
-# ==========================================
-# --- AGENDA ---
-# ==========================================
 @app.route('/agenda', methods=['GET', 'POST'])
 def agenda():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -654,15 +728,11 @@ def mudar_status_agenda(id, status):
         flash(f'🚿 Status alterado para {status}.', 'success')
     return redirect(url_for('agenda'))
 
-# ==========================================
-# --- MARKETING & RADAR (TRAVA DE PLANO) ---
-# ==========================================
 @app.route('/marketing')
 def marketing():
     if 'loja_id' not in session: return redirect(url_for('login'))
     loja = db.session.get(Loja, session['loja_id'])
     
-    # ✅ TRAVA DO CADEADO (ELITE)
     if loja.plano.lower() in ['basico', 'pro']:
         flash('🔒 O Marketing de WhatsApp é exclusivo do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
         return redirect(url_for('painel'))
@@ -675,7 +745,6 @@ def radar():
     if 'loja_id' not in session: return redirect(url_for('login'))
     loja = db.session.get(Loja, session['loja_id'])
     
-    # ✅ TRAVA DO CADEADO (ELITE)
     if loja.plano.lower() in ['basico', 'pro']:
         flash('🔒 O Radar de Inteligência é exclusivo do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
         return redirect(url_for('painel'))
@@ -684,15 +753,11 @@ def radar():
     estoque_critico = Produto.query.filter(Produto.loja_id == loja.id, Produto.ativo == True, Produto.estoque < 5.0).order_by(Produto.estoque.asc()).all()
     return render_template('radar.html', alertas=alertas, estoque_critico=estoque_critico, ranking=[])
 
-# ==========================================
-# --- RELATÓRIOS & COMISSÕES (TRAVA DE PLANO) ---
-# ==========================================
 @app.route('/relatorios')
 def relatorios():
     if 'loja_id' not in session: return redirect(url_for('login'))
     loja = db.session.get(Loja, session['loja_id'])
     
-    # ✅ TRAVA DO CADEADO (PRO ou ELITE)
     if loja.plano.lower() == 'basico':
         flash('🔒 Os Relatórios Financeiros exigem o Plano PRO ou ELITE. Contate o suporte para desbloquear!', 'warning')
         return redirect(url_for('painel'))
@@ -747,7 +812,6 @@ def comissoes():
     if 'loja_id' not in session: return redirect(url_for('login'))
     loja = db.session.get(Loja, session['loja_id'])
     
-    # ✅ TRAVA DO CADEADO (ELITE)
     if loja.plano.lower() in ['basico', 'pro']:
         flash('🔒 A Gestão Automática de Comissões é exclusiva do Plano ELITE. Contate o suporte para desbloquear!', 'warning')
         return redirect(url_for('painel'))
@@ -780,9 +844,6 @@ def editar_comissao():
         flash('✏️ Comissão atualizada!', 'success')
     return redirect(request.referrer or url_for('comissoes'))
 
-# ==========================================
-# --- EQUIPE & FORNECEDORES (TRAVA DE QUANTIDADE) ---
-# ==========================================
 @app.route('/funcionarios', methods=['GET', 'POST'])
 def funcionarios():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -791,7 +852,6 @@ def funcionarios():
     if request.method == 'POST':
         cargo_novo = request.form.get('cargo', '').lower()
         
-        # Conta a equipe atual
         func_atuais = Funcionario.query.filter_by(loja_id=loja.id).all()
         qtd_tosadores = sum(1 for f in func_atuais if 'tosa' in f.cargo.lower() or 'banho' in f.cargo.lower() or 'esteticista' in f.cargo.lower())
         qtd_caixas = sum(1 for f in func_atuais if 'caixa' in f.cargo.lower() or 'atendente' in f.cargo.lower() or 'vendedor' in f.cargo.lower())
@@ -801,7 +861,6 @@ def funcionarios():
         
         plano = loja.plano.lower()
         
-        # ✅ TRAVA DO CADEADO (LIMITE DE EQUIPE)
         if plano == 'basico':
             if eh_tosador and qtd_tosadores >= 1:
                 flash('🔒 O Plano Básico permite cadastrar apenas 1 Profissional. Solicite o upgrade de plano!', 'danger')
@@ -892,9 +951,6 @@ def editar_representante(id):
         flash('✅ Fornecedor atualizado!', 'success')
     return redirect(url_for('representantes'))
 
-# ==========================================
-# --- CONFIGURAÇÕES ---
-# ==========================================
 @app.route('/configuracoes', methods=['GET', 'POST'])
 def configuracoes():
     if 'loja_id' not in session: return redirect(url_for('login'))
@@ -908,9 +964,6 @@ def configuracoes():
         return redirect(url_for('configuracoes'))
     return render_template('configuracoes.html')
 
-# ==========================================
-# --- PAINEL CEO ---
-# ==========================================
 @app.route('/login_ceo', methods=['GET', 'POST'])
 @csrf.exempt
 @limiter.limit("5 per minute")
@@ -934,7 +987,6 @@ def admin_guilherme():
             flash('❌ Usuário já existe.', 'danger')
             return redirect(url_for('admin_guilherme'))
             
-        # ✅ NOVO PREÇO NO PAINEL DO CEO
         db.session.add(Loja(nome_fantasia=request.form.get('nome_fantasia'), usuario=u, senha=generate_password_hash('123456'), data_vencimento=datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date(), valor_plano=float(os.environ.get('VALOR_PLANO', '49.90')), plano='basico'))
         db.session.commit()
         flash('✅ Loja criada!', 'success')
@@ -954,7 +1006,6 @@ def editar_loja(id):
         l.nome_fantasia, l.usuario, l.data_vencimento = request.form.get('nome_fantasia'), request.form.get('usuario').strip().lower(), datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date()
         l.plano = request.form.get('plano', l.plano)
         
-        # Ajusta o valor na edição baseada no plano escolhido pelo CEO
         if l.plano == 'basico': l.valor_plano = 49.90
         elif l.plano == 'pro': l.valor_plano = 80.00
         elif l.plano == 'elite': l.valor_plano = 150.00

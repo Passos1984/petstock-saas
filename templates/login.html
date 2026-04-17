@@ -13,25 +13,25 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background: var(--bg-light); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        
+
         .login-container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; border: 1px solid #e2e8f0; }
         .logo-area { text-align: center; margin-bottom: 30px; }
         .logo-area img { height: 45px; border-radius: 8px; margin-bottom: 15px; }
         .logo-area h2 { color: var(--primary); font-weight: 900; font-size: 24px; }
-        
+
         .input-group { margin-bottom: 20px; }
         .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
         .input-control { width: 100%; padding: 14px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; font-family: inherit;}
         .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
-        
+
         .btn-login { background: var(--accent); color: white; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; font-family: inherit;}
         .btn-login:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(92, 77, 255, 0.3); }
-        
+
         .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; font-weight: 700; font-size: 14px; }
         .alert-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
         .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
         .alert-warning { background: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-        
+
         .back-link { display: block; text-align: center; margin-top: 25px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;}
         .back-link:hover { color: var(--accent); }
     </style>
@@ -55,12 +55,12 @@
 
         <form method="POST" action="/login">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            
+
             <div class="input-group">
                 <label>E-mail ou Usuário</label>
                 <input type="text" name="login" class="input-control" placeholder="Digite seu e-mail" required autofocus>
             </div>
-            
+
             <div class="input-group">
                 <label>Senha</label>
                 <input type="password" name="senha" class="input-control" placeholder="••••••••" required>
@@ -68,7 +68,7 @@
 
             <button type="submit" class="btn-login"><i class="fas fa-sign-in-alt"></i> Entrar no Sistema</button>
         </form>
-        
+
         <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Voltar para a página inicial</a>
     </div>
 </body>

@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
-            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --primary: #222533; --accent: #5c4dff; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9;
             --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
         }
         * { box-sizing: border-box; }
@@ -49,12 +49,12 @@
             body { flex-direction: column; overflow: auto; }
             .mobile-header { display: flex; }
             .overlay.active { display: block; }
-            
+
             main { padding: 80px 15px 20px 15px; height: auto; } /* Espaço da barra fixa */
-            
+
             aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
             aside.active { left: 0; }
-            
+
             .grid-radar { grid-template-columns: 1fr; }
             .header-bar { flex-direction: column; align-items: flex-start; gap: 15px; }
             .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -74,7 +74,7 @@
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
-        
+
         {% if loja_logada %}
         <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
             <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
@@ -95,7 +95,7 @@
             <a href="/configuracoes" class="menu-link"><span>⚙️</span> Configurações</a>
             {% endif %}
         </div>
-        
+
         <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
             <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda com o Radar do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
             <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>

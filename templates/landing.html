@@ -68,7 +68,7 @@
         .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; text-transform: uppercase; }
         .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; }
         .input-control:focus { border-color: var(--accent); }
-        
+
         /* Ajustes Mobile */
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
@@ -81,7 +81,7 @@
 
     <header>
         <div class="logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="AgroPet Pro" style="height: 35px; border-radius: 8px;"> 
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="AgroPet Pro" style="height: 35px; border-radius: 8px;">
             AgroPet Pro
         </div>
         <div class="nav-links">
@@ -133,7 +133,7 @@
     <section id="planos" class="pricing">
         <h2 class="section-title">Escolha o plano ideal para sua loja</h2>
         <div class="grid-pricing">
-            
+
             <div class="card-price">
                 <div class="price-title">Básico</div>
                 <div class="price-value">R$ 49<span>,90/mês</span></div>
@@ -185,7 +185,7 @@
             <button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button>
             <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 5px; color: var(--primary);">Criar Conta Grátis</h2>
             <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Aproveite 15 dias sem custo no plano escolhido. Cancele quando quiser.</p>
-            
+
             <form action="/assinar" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="plano" id="planoEscolhido" value="pro">
@@ -211,7 +211,7 @@
                 </div>
 
                 <button type="submit" class="btn-cta" style="width: 100%; margin-top: 10px;">Criar Conta e Acessar Painel</button>
-                
+
                 <div style="text-align: center; margin-top: 20px;">
                     <a href="/login" style="color: var(--accent); font-weight: 700; text-decoration: none; font-size: 15px;">Já tem uma conta? Faça Login aqui ➡️</a>
                 </div>

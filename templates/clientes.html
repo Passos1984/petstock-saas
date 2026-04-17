@@ -7,38 +7,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { 
-            --primary: #222533; 
-            --accent: #5c4dff; 
+        :root {
+            --primary: #222533;
+            --accent: #5c4dff;
             --accent-hover: #4a3ecc;
-            --success: #10b981; 
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
-            --bg-body: #f4f6f9; 
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f4f6f9;
             --text-main: #333333;
             --text-muted: #777777;
             --border-color: #eeeeee;
         }
-        
+
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px;}
-        
+
         /* --- MENU LATERAL PREMIUM --- */
         aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
-        
+
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
         .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
 
         /* --- CORPO PRINCIPAL --- */
         main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; }
-        
+
         .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 30px; border: 1px solid var(--border-color); }
         .card-title { margin-top: 0; margin-bottom: 25px; font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
 
         .input-control { width: 100%; padding: 12px 16px; margin-top: 6px; margin-bottom: 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-family: inherit; outline: none; transition: 0.2s; font-size: 14px; }
         .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
-        
+
         .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; color: white; background: var(--accent); transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; text-decoration: none; font-family: inherit;}
         .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         .btn-success { background: var(--success); width: 100%; height: 50px; font-size: 16px; margin-top: 10px; }
@@ -47,7 +47,7 @@
         table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 700px;}
         th { background: #ffffff; padding: 18px 20px; text-align: left; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; border-bottom: 2px solid var(--border-color); letter-spacing: 0.5px; white-space: nowrap;}
         td { padding: 18px 20px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        
+
         .pet-badge { background: #eef2ff; color: var(--accent); padding: 4px 10px; border-radius: 8px; font-weight: 700; font-size: 12px; border: 1px solid #c7d2fe; display: inline-block; margin: 2px; }
 
         /* --- MODAIS --- */
@@ -55,12 +55,12 @@
         .modal-content { background: white; width: 100%; max-width: 650px; border-radius: 20px; padding: 35px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); position: relative; max-height: 90vh; overflow-y: auto; box-sizing: border-box;}
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold; transition: 0.2s;}
         .close-modal:hover { color: var(--danger); }
-        
+
         .alert { padding: 16px 20px; border-radius: 12px; margin-bottom: 25px; font-weight: 700; font-size: 14px; border: 1px solid transparent; display: flex; align-items: center; gap: 10px;}
         .alert-success { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
         .alert-warning { background: #fffbeb; color: #b45309; border-color: #fde68a; }
         .alert-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
-        
+
         .empty-state { background: white; border: 1px dashed var(--border-color); border-radius: 16px; padding: 50px; text-align: center; color: var(--text-muted); font-weight: 500; margin-bottom: 30px;}
 
         /* --- ESTRUTURA MOBILE (CELULAR) --- */
@@ -71,17 +71,17 @@
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; display: block;}
             .mobile-header { display: flex; }
-            
+
             aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
             aside.active { left: 0; }
             .overlay.active { display: block; }
-            
+
             main { padding: 20px 15px; }
-            
+
             .header-clientes { flex-direction: column; align-items: flex-start !important; gap: 15px; }
             .header-clientes h1 { font-size: 24px; }
             .header-clientes button { width: 100%; justify-content: center; }
-            
+
             .form-row { grid-template-columns: 1fr !important; gap: 0 !important; margin-bottom: 0 !important;}
             .form-pets { grid-template-columns: 1fr !important; gap: 10px !important; }
             .form-pets > div:first-child { margin-bottom: 10px !important; }
@@ -90,10 +90,10 @@
             .import-box { flex-direction: column !important; align-items: stretch !important; gap: 15px; text-align: center; }
             .import-box form { flex-direction: column !important; width: 100%; }
             .import-box input, .import-box button { width: 100%; box-sizing: border-box; }
-            
+
             .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; margin-bottom: 20px;}
             table { min-width: 650px; border: none; }
-            
+
             .modal-content { padding: 25px; }
         }
     </style>
@@ -113,7 +113,7 @@
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
-        
+
         {% if loja_logada %}
         <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
             <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Base de Clientes:</span><br>
@@ -134,7 +134,7 @@
             {% endif %}
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
-        
+
         <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
             <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda na Gestão de Clientes do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
             <a href="/logout" class="menu-link" style="color: #fca5a5; justify-content: center; background: rgba(239, 68, 68, 0.1); font-weight: 700; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
@@ -194,7 +194,7 @@
                 <button type="submit" class="btn" style="padding: 10px 15px; font-size: 13px;">🚀 Subir Clientes</button>
             </form>
         </div>
-        
+
         {% if clientes %}
         <div class="table-responsive">
             <table>
@@ -223,7 +223,7 @@
                 </tbody>
             </table>
         </div>
-        
+
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 15px; border-top: 1px solid var(--border-color);">
             <div style="font-size: 13px; color: var(--text-muted); font-weight: 600;">
                 Mostrando página {{ clientes.page }} de {{ clientes.pages }}
@@ -266,7 +266,7 @@
             <button class="close-modal" onclick="fecharModalPagamento()">&times;</button>
             <h3 style="margin-top: 0; color: var(--success); font-size: 22px;">💰 Receber Pagamento</h3>
             <p style="color: var(--text-muted); font-size: 14px;">Como a dívida de <b>R$ <span id="valorPagamentoModal"></span></b> será paga?</p>
-            
+
             <input type="hidden" id="csrfTokenFiado" value="{{ csrf_token() }}">
 
             <div style="text-align: left; margin-bottom: 25px; margin-top: 20px;">
@@ -289,7 +289,7 @@
         <div class="modal-content">
             <button class="close-modal" onclick="document.getElementById('modalAjudaCli').style.display='none'">&times;</button>
             <h2 style="margin-top: 0; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">❓ Manual de Clientes</h2>
-            
+
             <div style="margin-bottom: 20px; margin-top: 20px;">
                 <h4 style="color: var(--accent); margin: 0 0 5px 0;">➕ Como Cadastrar e Usar o Radar</h4>
                 <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">O cadastro é simples, mas o <b>Telefone/WhatsApp</b> é a chave de ouro! É através dele que o <b>Radar de Inteligência</b> vai avisar seu cliente automaticamente que a ração está acabando. Nunca deixe em branco!</p>
@@ -299,12 +299,12 @@
                 <h4 style="color: var(--danger); margin: 0 0 5px 0;">💰 Controlando o "Fiado" (Crediário)</h4>
                 <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Se o cliente comprar fiado lá no caixa (PDV), o valor vem para cá. Clique em <b>📜 Ficha Completa</b> na tabela ao lado. Se ele estiver devendo, vai aparecer um aviso vermelho gigante e um botão verde <b>"Receber Pagamento"</b>. O sistema dá baixa automática na dívida e lança no seu financeiro!</p>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
                 <h4 style="color: var(--success); margin: 0 0 5px 0;">🧾 Histórico e Zap Automático</h4>
                 <p style="color: var(--text-muted); margin: 0; font-size: 13px; line-height: 1.5;">Na mesma <b>Ficha Completa</b>, você vê todas as compras do cliente (ótimo para saber qual ração ele costuma levar). Além disso, tem um botão do WhatsApp lá dentro que já abre a conversa direto no seu celular ou PC com um clique.</p>
             </div>
-            
+
             <button type="button" onclick="document.getElementById('modalAjudaCli').style.display='none'" class="btn" style="background: var(--primary); width: 100%; justify-content: center; color: white;">Entendi, vamos voltar ao trabalho!</button>
         </div>
     </div>
@@ -316,7 +316,7 @@
         }
 
         function fecharModal() { document.getElementById('modalHistorico').style.display = 'none'; }
-        
+
         function fecharModalPagamento() { document.getElementById('modalPagamentoFiado').style.display = 'none'; }
 
         async function verHistorico(id, nome, telefone) {
@@ -331,7 +331,7 @@
                 <p style="margin: 0 0 15px 0; color: var(--text-muted); font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Acompanhe o histórico completo de compras e pendências financeiras deste cliente.</p>
             `;
 
-            document.getElementById('dividaContainer').innerHTML = ''; 
+            document.getElementById('dividaContainer').innerHTML = '';
             document.getElementById('corpoHistorico').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Buscando histórico de compras...</div>';
             document.getElementById('modalHistorico').style.display = 'flex';
 
@@ -341,7 +341,7 @@
                     if (resDivida.ok) {
                         const dadosDivida = await resDivida.json();
                         let dividaHtml = '';
-                        
+
                         if (dadosDivida.divida > 0) {
                             dividaHtml = `
                                 <div style="background: #fef2f2; border: 2px dashed #ef4444; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
@@ -369,7 +369,7 @@
 
                 const response = await fetch('/historico_cliente/' + id);
                 const dados = await response.json();
-                
+
                 if (dados.length === 0) {
                     document.getElementById('corpoHistorico').innerHTML = '<div style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;"><p style="font-weight: 700; color: #94a3b8; margin: 0;">Este cliente ainda não realizou nenhuma compra registrada no PDV.</p></div>';
                     return;
@@ -394,29 +394,29 @@
         function abrirModalPagamento(id_cliente, valor) {
             document.getElementById('idClientePagamento').value = id_cliente;
             document.getElementById('valorPagamentoModal').innerText = valor.toFixed(2).replace('.', ',');
-            
+
             document.getElementById('modalHistorico').style.zIndex = '1900';
             document.getElementById('modalPagamentoFiado').style.zIndex = '2100';
-            
+
             document.getElementById('modalPagamentoFiado').style.display = 'flex';
         }
 
         async function confirmarPagamentoFiado() {
             let id_cliente = document.getElementById('idClientePagamento').value;
             let forma_pagto = document.getElementById('formaPagamentoFiado').value;
-            let csrf_token = document.getElementById('csrfTokenFiado').value; 
-            
+            let csrf_token = document.getElementById('csrfTokenFiado').value;
+
             try {
-                let res = await fetch('/api/pagar_divida/' + id_cliente, { 
+                let res = await fetch('/api/pagar_divida/' + id_cliente, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': csrf_token 
+                        'X-CSRFToken': csrf_token
                     },
                     body: JSON.stringify({ forma_pagamento: forma_pagto })
                 });
                 let data = await res.json();
-                
+
                 if(data.sucesso) {
                     alert('✅ Pagamento recebido com sucesso no ' + forma_pagto + '! O financeiro foi atualizado.');
                     window.location.reload();
