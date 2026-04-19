@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - PDV Premium</title>
+    <title>AgroPet Pro - PDV</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -17,12 +17,17 @@
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 13px; overflow: hidden;}
 
         /* Menu Lateral */
-        aside { width: 250px; background: var(--primary); color: white; padding: 25px 20px; display: flex; flex-direction: column; z-index: 1002; flex-shrink: 0; transition: left 0.3s ease;}
+        aside { width: 250px; background: var(--primary); color: white; padding: 25px 20px; display: flex; flex-direction: column; z-index: 1002; flex-shrink: 0; transition: left 0.3s ease; overflow-y: auto;}
+        
+        /* Ajuste do Scrollbar do Menu */
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
         .logo { font-size: 18px; font-weight: 800; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;}
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 12px; border-radius: 8px; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
         .menu-link.active { background: var(--accent); color: white; }
 
-        main { flex: 1; display: flex; flex-direction: column; padding: 20px; height: 100vh; overflow: hidden; }
+        main { flex: 1; display: flex; flex-direction: column; padding: 20px; height: 100vh; overflow: hidden; position: relative;}
         .pdv-grid { display: grid; grid-template-columns: 1fr 400px; gap: 20px; flex: 1; overflow: hidden; }
 
         /* ESQUERDA */
@@ -55,16 +60,21 @@
         .total-val { font-size: 36px; font-weight: 800; color: var(--success); display: block; margin-top: 2px;}
 
         .troco-box { background: #fffbeb; border: 2px dashed #f59e0b; color: #d97706; padding: 15px; border-radius: 10px; text-align: center; }
-        #boxCashback { display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 10px; border-radius: 8px; color: var(--accent); font-weight: 700; align-items: center; justify-content: space-between; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
         .modal-content { background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 30px; position: relative; }
         .close-modal { position: absolute; top: 20px; right: 20px; font-size: 24px; cursor: pointer; color: #94a3b8; background: none; border: none; font-weight: bold;}
 
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
         @media (max-width: 991px) {
             .pdv-grid { grid-template-columns: 1fr; overflow: visible;}
             aside { position: fixed; left: -100%; top: 0; height: 100%; }
             aside.active { left: 0; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
         }
     </style>
 </head>
@@ -72,13 +82,13 @@
 
     <input type="hidden" id="csrfTokenPDV" value="{{ csrf_token() }}">
     <input type="hidden" id="chavePixLoja" value="{{ loja_logada.chave_pix or '' }}">
-    <input type="hidden" id="nomeFantasiaLoja" value="{{ loja_logada.nome_fantasia or 'PetStock' }}">
+    <input type="hidden" id="nomeFantasiaLoja" value="{{ loja_logada.nome_fantasia or 'AgroPet Pro' }}">
 
     <aside id="sidebar">
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="max-width: 160px; height: auto;">
         </div>
-        <nav style="flex:1">
+        <div style="flex:1; display: flex; flex-direction: column;">
             <a href="/painel" class="menu-link">🏠 Dashboard</a>
             <a href="/estoque" class="menu-link">📦 Estoque</a>
             <a href="/clientes" class="menu-link">👥 Clientes</a>
@@ -89,8 +99,12 @@
             <a href="/relatorios" class="menu-link">📊 Financeiro</a>
             <a href="/comissoes" class="menu-link">✂️ Comissões</a>
             {% endif %}
-        </nav>
-        <a href="/logout" class="menu-link" style="color:#fca5a5">🚪 Sair</a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20sistema%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%; border: 1px solid rgba(16, 185, 129, 0.3);">💬 Ajuda e Suporte</a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; justify-content: center; background: rgba(239, 68, 68, 0.1); font-weight: 700; width: 100%; margin-top: 5px;">🚪 Sair</a>
+        </div>
     </aside>
 
     <main>
@@ -152,37 +166,78 @@
                     <option>Dono/Gerente</option>
                 </select>
 
-                <div id="boxCashback">
-                    <span style="font-size: 11px;">💼 Cashback:</span>
-                    <span id="valorCashback">R$ 0,00</span>
+                <div id="boxCashback" style="display: none; background: #eef2ff; border: 1px solid #c7d2fe; padding: 15px; border-radius: 12px; margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span class="label-mini" style="color: var(--accent); margin:0;">💼 Saldo Cashback</span>
+                        <span id="valorCashback" style="font-weight: 800; color: var(--accent); font-size: 14px;">R$ 0,00</span>
+                    </div>
+                    <label class="label-mini">Usar Cashback (R$)</label>
+                    <input type="number" id="cashbackUsado" class="pdv-field" placeholder="0.00" oninput="calcular()" value="" step="0.01">
                 </div>
 
-                <div style="background: #f8fafc; padding: 15px; border-radius: 12px;">
-                    <label class="label-mini">Forma de Pagamento</label>
-                    <select id="pagamento1" class="pdv-select" onchange="calcular()">
-                        <option value="Dinheiro">Dinheiro</option>
-                        <option value="Pix">Pix</option>
-                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Cartão de Débito">Cartão de Débito</option>
-                        <option value="Crediário / Fiado">Crediário / Fiado</option>
-                        <option value="Saldo Cashback">🎁 Saldo Cashback</option>
-                    </select>
-                    <input type="text" id="valorPag1" class="pdv-field" placeholder="0,00" oninput="calcular()">
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 10px;">
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <label class="label-mini">Pagamento 1</label>
+                            <select id="pagamento1" class="pdv-select" onchange="calcular()">
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Crediário / Fiado">Crediário / Fiado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label-mini">Valor Pago</label>
+                            <input type="text" id="valorPag1" class="pdv-field" placeholder="Total" oninput="calcular()">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 10px;">
+                        <div>
+                            <label class="label-mini" style="color: var(--accent);">Pagamento 2 (Misto)</label>
+                            <select id="pagamento2" class="pdv-select" onchange="calcular()" style="border-color: #c7d2fe; background: #eef2ff;">
+                                <option value="">- Nenhuma -</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Crediário / Fiado">Crediário / Fiado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="label-mini">Valor Pago</label>
+                            <input type="text" id="valorPag2" class="pdv-field" placeholder="0,00" oninput="calcular()" style="border-color: #c7d2fe; background: #eef2ff;">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="total-box">
+                <div id="caixaPix" style="display: none; background: white; padding: 15px; border-radius: 12px; border: 2px solid #10b981; margin-top: 15px; text-align: center; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.1);">
+                    <div style="color: #10b981; font-weight: 800; font-size: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fab fa-pix"></i> PAGAMENTO VIA PIX (<span id="valorQrPix">R$ 0,00</span>)
+                    </div>
+                    <div id="areaQrCode" style="margin: 10px auto; padding: 10px; background: white; border-radius: 8px; display: inline-block;">
+                        <img id="imagemQrCodePix" src="" alt="QR Code Pix" style="width: 180px; height: 180px; display: none;">
+                    </div>
+                </div>
+
+                <div class="total-box" style="margin-top: 10px;">
                     <span class="label-mini" style="color:#a0a5ba;">Total a Pagar</span>
                     <span class="total-val" id="totalFinal">R$ 0,00</span>
                 </div>
 
                 <div class="troco-box">
-                    <div style="font-size: 10px; font-weight: 800;">⚠️ TROCO</div>
+                    <div style="font-size: 10px; font-weight: 800;">⚠️ TROCO (Dinheiro)</div>
                     <div id="trocoTxt" style="font-size: 20px; font-weight: 800;">R$ 0,00</div>
                 </div>
 
                 <button class="btn btn-success" style="height: 60px;" onclick="finalizar()">💰 FINALIZAR (F8)</button>
             </div>
         </div>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20sistema%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
     </main>
 
     <div id="modalRecibo" class="modal">
@@ -211,6 +266,35 @@
                 let dl = document.getElementById('listaProdutos'); dl.innerHTML = '';
                 catalogo.forEach(p => { dl.innerHTML += `<option value="${p.sku}">${p.nome} - R$ ${p.preco.toFixed(2)}</option>`; });
             });
+        }
+
+        function verificarCashback() {
+            let clienteNome = document.getElementById('cliente').value;
+            let options = document.getElementById('listaClientes').options;
+            let clienteId = null;
+            for(let i=0; i<options.length; i++){ 
+                if(options[i].value === clienteNome) clienteId = options[i].getAttribute('data-id'); 
+            }
+            
+            let box = document.getElementById('boxCashback');
+            if(clienteId) {
+                fetch('/api/divida_cliente/' + clienteId).then(r => r.json()).then(d => {
+                    saldoAtualCliente = d.cashback || 0;
+                    document.getElementById('valorCashback').innerText = 'R$ ' + saldoAtualCliente.toFixed(2).replace('.', ',');
+                    if(saldoAtualCliente > 0) {
+                        box.style.display = 'block';
+                    } else { 
+                        box.style.display = 'none'; 
+                        document.getElementById('cashbackUsado').value = ''; 
+                    }
+                    calcular();
+                });
+            } else {
+                saldoAtualCliente = 0;
+                box.style.display = 'none';
+                document.getElementById('cashbackUsado').value = '';
+                calcular();
+            }
         }
 
         function verificarSelecao(val) {
@@ -249,15 +333,105 @@
 
         function update(idx, field, el) { carrinho[idx][field] = parseFloat(el.value) || 0; calcular(); }
         function remove(idx) { carrinho.splice(idx, 1); render(); }
-        function limpar() { carrinho = []; render(); }
+        function limpar() { carrinho = []; render(); document.getElementById('cashbackUsado').value = ''; calcular(); }
 
-        function calcular() {
-            let total = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
-            total_da_venda_atual = total;
-            document.getElementById('totalFinal').innerText = 'R$ ' + total.toFixed(2);
+        // --- MOTOR DO PIX ---
+        function gerarPayloadPix(chave, valor, nomeRecebedor, cidadeRecebedor) {
+            function formatField(id, value) {
+                let valStr = String(value);
+                let len = valStr.length.toString().padStart(2, '0');
+                return `${id}${len}${valStr}`;
+            }
+            let payload = "000201"; 
+            let merchantAccount = formatField("00", "br.gov.bcb.pix") + formatField("01", chave);
+            payload += formatField("26", merchantAccount);
+            payload += "520400005303986";  
+            if (valor > 0) payload += formatField("54", valor.toFixed(2));
+            payload += "5802BR";   
+            payload += formatField("59", nomeRecebedor.substring(0, 25)); 
+            payload += formatField("60", cidadeRecebedor.substring(0, 15)); 
+            payload += formatField("62", formatField("05", "***")); 
+            payload += "6304"; 
+
+            let crc = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                crc ^= payload.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) { crc = (crc << 1) ^ 0x1021; } 
+                    else { crc = crc << 1; }
+                }
+            }
+            let crcHex = (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+            return payload + crcHex;
         }
 
-        function irParaPagamento() { document.getElementById('valorPag1').value = total_da_venda_atual.toFixed(2); document.getElementById('valorPag1').focus(); }
+        function calcular() {
+            let totalItens = carrinho.reduce((a, b) => a + ((b.preco - b.desc_un) * b.qtd), 0);
+            
+            // Cashback
+            let cbUsado = parseFloat(document.getElementById('cashbackUsado').value) || 0;
+            if (cbUsado > saldoAtualCliente) { cbUsado = saldoAtualCliente; document.getElementById('cashbackUsado').value = cbUsado.toFixed(2); }
+            if (cbUsado > totalItens) { cbUsado = totalItens; document.getElementById('cashbackUsado').value = cbUsado.toFixed(2); }
+            
+            let totalPagar = totalItens - cbUsado;
+            total_da_venda_atual = totalPagar;
+            
+            document.getElementById('totalFinal').innerText = 'R$ ' + totalPagar.toFixed(2).replace('.', ',');
+            
+            // Pagamentos Mistos
+            let pg1 = document.getElementById('pagamento1').value;
+            let pg2 = document.getElementById('pagamento2').value;
+            
+            let val1Input = document.getElementById('valorPag1').value.replace(',', '.');
+            let val2Input = document.getElementById('valorPag2').value.replace(',', '.');
+            
+            let val1 = parseFloat(val1Input) || 0;
+            let val2 = parseFloat(val2Input) || 0;
+
+            // Se o campo 1 estiver vazio e não tem pagamento 2, assume o valor total da venda
+            if(document.getElementById('valorPag1').value.trim() === '' && val2 === 0) {
+                val1 = totalPagar;
+            }
+
+            // Troco (Só calcula se envolver Dinheiro)
+            let totalEntregue = val1 + val2;
+            let troco = totalEntregue - totalPagar;
+            if ((pg1 === 'Dinheiro' || pg2 === 'Dinheiro') && troco > 0) {
+                document.getElementById('trocoTxt').innerText = 'R$ ' + troco.toFixed(2).replace('.', ',');
+            } else {
+                document.getElementById('trocoTxt').innerText = 'R$ 0,00';
+            }
+
+            // Inteligência do Pix
+            let caixaPix = document.getElementById('caixaPix');
+            let valorPixParaGerar = 0;
+
+            if (pg1 === 'Pix') valorPixParaGerar = val1;
+            else if (pg2 === 'Pix') valorPixParaGerar = val2;
+
+            if (valorPixParaGerar > 0) {
+                caixaPix.style.display = 'block';
+                document.getElementById('valorQrPix').innerText = 'R$ ' + valorPixParaGerar.toFixed(2).replace('.', ',');
+                
+                let chavePix = document.getElementById('chavePixLoja').value.trim();
+                let nomeLoja = document.getElementById('nomeFantasiaLoja').value || "AgroPet";
+                
+                if(chavePix) {
+                    let payloadPix = gerarPayloadPix(chavePix, valorPixParaGerar, nomeLoja, "SUL");
+                    let qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(payloadPix)}`;
+                    document.getElementById('imagemQrCodePix').src = qrUrl;
+                    document.getElementById('imagemQrCodePix').style.display = 'block';
+                }
+            } else {
+                caixaPix.style.display = 'none';
+            }
+        }
+
+        function irParaPagamento() { 
+            document.getElementById('valorPag1').value = total_da_venda_atual.toFixed(2).replace('.', ','); 
+            document.getElementById('valorPag1').focus(); 
+            calcular(); 
+        }
 
         function finalizar() {
             if(carrinho.length === 0) return;
@@ -266,34 +440,58 @@
             let options = document.getElementById('listaClientes').options;
             for(let i=0; i<options.length; i++){ if(options[i].value === clienteNome) clienteTelefone = options[i].text; }
 
+            let cbUsado = parseFloat(document.getElementById('cashbackUsado').value) || 0;
+
+            let pg1 = document.getElementById('pagamento1').value;
+            let pg2 = document.getElementById('pagamento2').value;
+            let val2 = parseFloat(document.getElementById('valorPag2').value.replace(',', '.')) || 0;
+            
+            // Junta os nomes de pagamento se for misto
+            let formaDePagamentoFinal = pg1;
+            if (pg2 !== "" && val2 > 0) {
+                formaDePagamentoFinal = pg1 + " e " + pg2;
+            }
+
             ultimaVendaSalva = {
                 itens: [...carrinho],
                 total: document.getElementById('totalFinal').innerText,
+                cashbackUsado: cbUsado,
                 cliente: clienteNome || 'Consumidor Final',
                 telefone: clienteTelefone,
-                pagamento: document.getElementById('pagamento1').value,
+                pagamento: formaDePagamentoFinal,
                 data: new Date().toLocaleString()
             };
 
             const dados = {
                 cliente_nome: clienteNome,
                 vendedor_nome: document.getElementById('vendedor').value,
-                forma_pagamento: document.getElementById('pagamento1').value,
+                forma_pagamento: formaDePagamentoFinal,
+                cashback_usado: cbUsado,
                 itens: carrinho.map(i => ({ id: i.id, qtd: i.qtd, subtotal_final: (i.preco - i.desc_un) * i.qtd }))
             };
 
             fetch('/api/finalizar_venda', {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.getElementById('csrfTokenPDV').value },
                 body: JSON.stringify(dados)
-            }).then(r => r.json()).then(res => { if(res.sucesso) document.getElementById('modalRecibo').style.display = 'flex'; });
+            }).then(r => r.json()).then(res => { 
+                if(res.sucesso) {
+                    document.getElementById('modalRecibo').style.display = 'flex'; 
+                    verificarCashback(); 
+                } else {
+                    alert('Erro: ' + res.erro);
+                }
+            });
         }
 
         function whatsRecibo() {
-            let t = `🐾 *PETSTOCK - COMPROVANTE*\n\n📅 *Data:* ${ultimaVendaSalva.data}\n👤 *Cliente:* ${ultimaVendaSalva.cliente}\n\n*ITENS:*\n`;
+            let t = `🐾 *AGROPET PRO - COMPROVANTE*\n\n📅 *Data:* ${ultimaVendaSalva.data}\n👤 *Cliente:* ${ultimaVendaSalva.cliente}\n\n*ITENS:*\n`;
             ultimaVendaSalva.itens.forEach(i => { t += `▪️ ${i.qtd}x ${i.nome} - R$ ${((i.preco - i.desc_un) * i.qtd).toFixed(2)}\n`; });
-            t += `\n💰 *TOTAL: ${ultimaVendaSalva.total}*\n💳 Pgto: ${ultimaVendaSalva.pagamento}\n\n🙏 Obrigado! 🐶\n`;
+            
+            if(ultimaVendaSalva.cashbackUsado > 0) {
+                t += `\n🎁 *Desconto Cashback: R$ ${ultimaVendaSalva.cashbackUsado.toFixed(2)}*\n`;
+            }
 
-            // ✅ CIRURGIA: PESQUISA DE SATISFAÇÃO PARA TODOS
+            t += `\n💰 *TOTAL PAGO: ${ultimaVendaSalva.total}*\n💳 Formas de Pgto: ${ultimaVendaSalva.pagamento}\n\n🙏 Obrigado! 🐶\n`;
             t += `\n➖➖➖➖➖➖➖➖\n⭐ *PESQUISA DE SATISFAÇÃO*\nComo foi sua experiência conosco hoje?\nResponda com uma nota de *1 a 5*! Sua opinião é muito importante! 💙`;
 
             let link = `https://api.whatsapp.com/send?text=${encodeURIComponent(t)}`;

@@ -3,82 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Cliente - PetStock</title>
+    <title>AgroPet Pro - Editar Cliente</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #222533; --accent: #10b981; --accent-hover: #059669; --bg-body: #f4f6f9; --border-color: #e2e8f0; --text-main: #333333; --text-muted: #64748b;}
-        body { font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; color: var(--text-main);}
-        .card { background: white; width: 100%; max-width: 600px; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
-        h2 { margin-top: 0; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 22px;}
-        .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-        label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-        .input-control { padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; font-family: inherit; font-weight: 500;}
-        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(16,185,129,0.1); }
-        .btn { padding: 15px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 15px; transition: 0.2s; text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box; font-family: inherit;}
-        .btn-save { background: var(--accent); color: white; margin-bottom: 12px; margin-top: 10px;}
-        .btn-save:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16,185,129,0.3); }
-        .btn-cancel { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border-color);}
-        .btn-cancel:hover { background: #e2e8f0; color: var(--text-main);}
-        .section-title { font-size: 13px; font-weight: 800; color: var(--accent); margin: 25px 0 15px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; text-transform: uppercase;}
+        :root {
+            --primary: #222533; --accent: #5c4dff; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9;
+            --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; }
+        body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px; overflow: hidden; }
+
+        /* --- MENU LATERAL PREMIUM --- */
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0; overflow-y: auto;}
         
-        @media(max-width: 600px) {
-            .form-row { flex-direction: column; gap: 0 !important; }
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+        .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
+        .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
+        .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
+        .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
+
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; position: relative;}
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 12px;}
+
+        .panel { background: white; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 35px; max-width: 650px;}
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;}
+        .input-control { width: 100%; padding: 14px 16px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; font-family: inherit; transition: 0.2s;}
+        .input-control:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(92, 77, 255, 0.1); }
+
+        .btn { padding: 14px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 15px; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit;}
+        .btn-primary { background: #10b981; color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+        .btn-cancel { background: #f8fafc; color: var(--text-muted); border: 1px solid var(--border-color); }
+        .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
+
+        .section-title { font-size: 14px; font-weight: 800; color: var(--text-main); margin: 30px 0 15px 0; border-bottom: 2px dashed #f1f5f9; padding-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
+        /* Mobile */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto;}
+            .mobile-header { display: flex; }
+            aside { position: fixed; top: 0; left: -300px; height: 100vh; box-shadow: 5px 0 15px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .overlay.active { display: block; }
+            main { padding: 20px 15px; }
+            .panel { padding: 20px; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
+            .row-inputs { flex-direction: column; gap: 0 !important; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>👤 Editar Ficha do Cliente</h2>
-        <form method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="input-group">
-                <label>Nome Completo</label>
-                <input type="text" name="nome" value="{{ c.nome }}" class="input-control" required>
-            </div>
-            <div class="form-row" style="display: flex; gap: 15px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>Telefone / WhatsApp</label>
-                    <input type="text" name="telefone" value="{{ c.telefone }}" class="input-control" required>
-                </div>
-                <div class="input-group" style="flex: 1;">
-                    <label>🐾 Meus Pets</label>
-                    <input type="text" name="nome_pet" value="{{ c.nome_pet }}" class="input-control">
-                </div>
-            </div>
-
-            <div class="section-title" style="color: #4338ca;"><i class="fas fa-syringe"></i> Saúde & Vacinação do Pet</div>
-            <div class="form-row" style="display: flex; gap: 15px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>Próxima Vacina / Vermífugo</label>
-                    <input type="date" name="data_proxima_vacina" value="{{ c.data_proxima_vacina.strftime('%Y-%m-%d') if c.data_proxima_vacina else '' }}" class="input-control" style="border-color: #a5b4fc; background: #eef2ff;">
-                </div>
-            </div>
-            <div class="input-group">
-                <label>Observações Médicas (Alergias, etc.)</label>
-                <textarea name="observacoes_saude" class="input-control" rows="2" style="resize: none;" placeholder="Ex: Alérgico a dipirona, não cortar unha muito curta.">{{ c.observacoes_saude if c.observacoes_saude != 'None' else '' }}</textarea>
-            </div>
-
-            <div class="section-title">📍 Endereço de Entrega</div>
-            <div class="input-group">
-                <label>Rua / Avenida</label>
-                <input type="text" name="rua" value="{{ c.rua }}" class="input-control">
-            </div>
-            <div class="form-row" style="display: flex; gap: 15px;">
-                <div class="input-group" style="flex: 1;">
-                    <label>Número</label>
-                    <input type="text" name="numero" value="{{ c.numero }}" class="input-control">
-                </div>
-                <div class="input-group" style="flex: 2;">
-                    <label>Bairro</label>
-                    <input type="text" name="bairro" value="{{ c.bairro }}" class="input-control">
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-save"><i class="fas fa-save"></i> Atualizar Ficha de Cadastro</button>
-            <a href="/clientes" class="btn btn-cancel">Cancelar e Voltar</a>
-        </form>
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
     </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
+        </div>
+
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
+            <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
+            <a href="/estoque" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link active"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/marketing" class="menu-link"><span>📣</span> Marketing</a>
+            
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
+            {% endif %}
+            
+            <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
+        </div>
+
+        <div class="menu-container" style="margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); justify-content: center; font-weight: 700; width: 100%;">
+                💬 Ajuda e Suporte
+            </a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
+    </aside>
+
+    <main>
+        <div class="header-bar">
+            <h2 class="page-title">
+                <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px;">👤</span>
+                Editar Ficha do Cliente
+            </h2>
+        </div>
+
+        <div class="panel">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="input-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="nome" value="{{ c.nome }}" class="input-control" required>
+                </div>
+                
+                <div class="row-inputs" style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="text" name="telefone" value="{{ c.telefone }}" class="input-control" required>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label style="color: var(--accent);">🐾 Nome do Pet (Separe por " / " se houver mais)</label>
+                        <input type="text" name="nome_pet" value="{{ c.nome_pet }}" class="input-control">
+                    </div>
+                </div>
+
+                <div class="section-title" style="color: #4f46e5; border-bottom-color: #e0e7ff;">
+                    <i class="fas fa-syringe"></i> Saúde & Vacinação do Pet
+                </div>
+                
+                <div class="input-group">
+                    <label>Próxima Vacina / Vermífugo</label>
+                    <input type="date" name="data_proxima_vacina" value="{{ c.data_proxima_vacina.strftime('%Y-%m-%d') if c.data_proxima_vacina else '' }}" class="input-control" style="border-color: #c7d2fe; background: #eef2ff;">
+                </div>
+                
+                <div class="input-group">
+                    <label>Observações Médicas (Alergias, cuidados, etc.)</label>
+                    <textarea name="observacoes_saude" class="input-control" rows="2" style="resize: none;" placeholder="Ex: Alérgico a dipirona, não cortar unha muito curta.">{{ c.observacoes_saude if c.observacoes_saude != 'None' else '' }}</textarea>
+                </div>
+
+                <div class="section-title">📍 Endereço de Entrega</div>
+                
+                <div class="input-group">
+                    <label>Rua / Avenida</label>
+                    <input type="text" name="rua" value="{{ c.rua }}" class="input-control">
+                </div>
+                
+                <div class="row-inputs" style="display: flex; gap: 15px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label>Número</label>
+                        <input type="text" name="numero" value="{{ c.numero }}" class="input-control">
+                    </div>
+                    <div class="input-group" style="flex: 2;">
+                        <label>Bairro</label>
+                        <input type="text" name="bairro" value="{{ c.bairro }}" class="input-control">
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 2;"><i class="fas fa-save"></i> Atualizar Ficha de Cadastro</button>
+                    <a href="/clientes" class="btn btn-cancel" style="flex: 1;">Cancelar</a>
+                </div>
+            </form>
+        </div>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
+    </main>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

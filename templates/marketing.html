@@ -3,78 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Marketing e CRM</title>
+    <title>AgroPet Pro - Marketing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #222533; --accent: #5c4dff; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0; }
+        :root { 
+            --primary: #222533; --accent: #5c4dff; --success: #10b981; 
+            --warning: #f59e0b; --danger: #ef4444; --bg-body: #f4f6f9; 
+            --text-main: #333333; --text-muted: #64748b; --border-color: #e2e8f0; 
+        }
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px; overflow: hidden; }
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0; overflow-y: auto;}
+        
+        /* Ajuste do Scrollbar do Menu */
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover, .menu-link.active { background: var(--accent); color: white; }
-        main { flex: 1; padding: 40px 50px; overflow-y: auto; }
+        
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; position: relative;}
         .header-bar { margin-bottom: 30px; }
-        .page-title { margin: 0; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
-        .panel { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border-color); }
-        td { padding: 15px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        .btn-whats { background: #25d366; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
-        .btn-whats:hover { background: #1ebc5a; transform: translateY(-2px); }
+        .page-title { margin: 0; font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 12px; }
+        
+        .panel { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); overflow-x: auto;}
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 600px;}
+        th { text-align: left; padding: 15px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 2px solid var(--border-color); white-space: nowrap;}
+        td { padding: 15px; border-bottom: 1px dashed var(--border-color); vertical-align: middle; }
+        
+        .btn-whats { background: #25d366; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; white-space: nowrap; box-shadow: 0 4px 6px rgba(37, 211, 102, 0.2);}
+        .btn-whats:hover { background: #1ebc5a; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 211, 102, 0.3);}
+
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
+        /* --- BARRA MOBILE E OVERLAY --- */
+        .mobile-header { display: none; background-color: var(--primary); color: white; padding: 10px 20px; align-items: center; justify-content: space-between; position: fixed; top: 0; width: 100%; z-index: 1000; height: 60px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1001; }
+
+        @media (max-width: 991px) {
+            body { flex-direction: column; overflow: auto; }
+            .mobile-header { display: flex; }
+            .overlay.active { display: block; }
+            main { padding: 80px 15px 20px 15px; height: auto; }
+            aside { position: fixed; left: -100%; top: 0; height: 100%; width: 280px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); }
+            aside.active { left: 0; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
+        }
     </style>
 </head>
 <body>
-    <aside>
-        <div style="text-align: center; margin-bottom: 30px;">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" style="max-width: 150px;">
+
+    <div class="mobile-header">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="height: 30px;">
+        <button class="btn-mobile-menu" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <aside id="sidebar">
+        <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
-        <a href="/painel" class="menu-link">🏠 Dashboard</a>
-        <a href="/estoque" class="menu-link">📦 Estoque</a>
-        <a href="/pdv" class="menu-link">🛒 Vender (PDV)</a>
-        <a href="/agenda" class="menu-link">🛁 Agenda</a>
-        <a href="/marketing" class="menu-link active">📣 Marketing</a>
-        <a href="/clientes" class="menu-link">👥 Clientes</a>
-        <a href="/comissoes" class="menu-link">✂️ Comissões</a>
-        <a href="/configuracoes" class="menu-link">⚙️ Configurações</a>
+
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
+        <div class="menu-container" style="flex: 1; display: flex; flex-direction: column;">
+            <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
+            <a href="/estoque" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
+            <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
+            <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/marketing" class="menu-link active"><span>📣</span> Marketing</a>
+            
+            {% if cargo == 'Gerente' %}
+            <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
+            <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
+            <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
+            <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
+            {% endif %}
+            
+            <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
+        </div>
+
+        <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20Marketing%20do%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); justify-content: center; font-weight: 700; width: 100%;">
+                💬 Ajuda e Suporte
+            </a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
+        </div>
     </aside>
 
     <main>
         <div class="header-bar">
-            <h2 class="page-title">📣 Radar de Marketing e Vendas</h2>
-            <p style="color: var(--text-muted); margin-top: 5px;">Recupere clientes inativos e traga dinheiro novo para o caixa.</p>
+            <h2 class="page-title">
+                <span style="background: var(--primary); color: white; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 20px;">📣</span>
+                Radar de Marketing e Vendas
+            </h2>
+            <p style="color: var(--text-muted); margin-top: 8px; font-size: 15px;">Recupere clientes inativos e traga dinheiro novo para o caixa usando gatilhos inteligentes.</p>
         </div>
 
         <div class="panel">
-            <h3 style="margin-top: 0; color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Clientes Ausentes (+ de 30 dias sem comprar)</h3>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                <div style="background: #fffbeb; color: var(--warning); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: var(--text-main); font-size: 18px;">Clientes Ausentes</h3>
+                    <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Mais de 30 dias sem comprar.</p>
+                </div>
+            </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>Cliente</th>
-                        <th>Celular</th>
-                        <th>Saldo de Cashback</th>
-                        <th style="text-align: right;">Ação</th>
+                        <th>Cliente / Contato</th>
+                        <th style="text-align: center;">Celular</th>
+                        <th style="text-align: center;">Saldo de Cashback</th>
+                        <th style="text-align: right;">Ação Estratégica</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for c in ausentes %}
                     <tr>
-                        <td><strong>{{ c.nome }}</strong><br><small style="color: var(--text-muted);">Pets: {{ c.nome_pet }}</small></td>
-                        <td>{{ c.telefone }}</td>
-                        <td style="color: var(--success); font-weight: 800;">R$ {{ "%.2f"|format(c.saldo_cashback or 0)|replace('.', ',') }}</td>
+                        <td>
+                            <strong style="font-size: 15px; color: var(--text-main);">{{ c.nome }}</strong><br>
+                            <small style="color: var(--text-muted); font-weight: 600;">🐾 Pets: {{ c.nome_pet }}</small>
+                        </td>
+                        <td style="text-align: center; color: var(--text-muted); font-weight: 500;">{{ c.telefone }}</td>
+                        <td style="text-align: center;">
+                            {% if c.saldo_cashback > 0 %}
+                                <span style="color: #047857; background: #d1fae5; padding: 4px 10px; border-radius: 8px; font-weight: 800; border: 1px solid #a7f3d0; font-size: 13px;">R$ {{ "%.2f"|format(c.saldo_cashback)|replace('.', ',') }}</span>
+                            {% else %}
+                                <span style="color: var(--text-muted); font-weight: 600;">R$ 0,00</span>
+                            {% endif %}
+                        </td>
                         <td style="text-align: right;">
                             <a href="https://api.whatsapp.com/send?phone=55{{ c.telefone|replace('(', '')|replace(')', '')|replace('-', '')|replace(' ', '') }}&text=Olá, {{ c.nome }}! Saudade de você e do(a) *{{ c.nome_pet }}*! 🐾 Temos novidades aqui na loja e lembrando que você tem *R$ {{ "%.2f"|format(c.saldo_cashback or 0)|replace('.', ',') }}* de Cashback liberado para usar! Vamos agendar um banho ou garantir a ração com desconto?" target="_blank" class="btn-whats">
-                                <i class="fab fa-whatsapp"></i> Enviar Oferta
+                                <i class="fab fa-whatsapp" style="font-size: 16px;"></i> Enviar Oferta
                             </a>
                         </td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="4" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">Todos os seus clientes compraram nos últimos 30 dias. Engajamento 100%! 🚀</td></tr>
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 40px; background: #f8fafc; border-radius: 12px;">
+                            <div style="font-size: 32px; margin-bottom: 10px;">🚀</div>
+                            <h4 style="margin: 0 0 5px 0; color: var(--text-main);">Engajamento 100%!</h4>
+                            <p style="color: var(--text-muted); margin: 0;">Todos os seus clientes compraram nos últimos 30 dias.</p>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20Marketing%20do%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
     </main>
+
+    <script>
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

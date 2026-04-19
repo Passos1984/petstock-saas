@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Gestão de Estoque</title>
+    <title>AgroPet Pro - Estoque</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -26,7 +26,12 @@
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); font-size: 14px; }
 
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; overflow-y: auto;}
+        
+        /* Ajuste do Scrollbar do Menu */
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
         .logo { margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 20px; font-size: 20px; font-weight: 800; color: white; display: flex; align-items: center; gap: 8px; }
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
@@ -72,6 +77,11 @@
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;}
         .lucro-tag { background: #d1fae5; color: #047857; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; display: block; margin-top: 10px; border: 1px solid #a7f3d0; text-align: center;}
 
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
         .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; }
@@ -90,6 +100,7 @@
             .form-grid { grid-template-columns: 1fr; }
             .table-responsive { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid var(--border-color); }
             table { min-width: 700px; border: none; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
         }
     </style>
 </head>
@@ -111,21 +122,31 @@
             <strong style="font-size: 16px; color: var(--warning); letter-spacing: 0.5px; font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
         </div>
         {% endif %}
+        
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/painel" class="menu-link active"><span>📦</span> Estoque</a>
+            <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
+            <a href="/estoque" class="menu-link active"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
             <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/marketing" class="menu-link"><span>📣</span> Marketing</a>
+            
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
             {% endif %}
+            
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
+
         <div class="menu-container" style="margin-top: 15px;">
-            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center;">🚪 Sair</a>
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20estoque%20do%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); justify-content: center; font-weight: 700; width: 100%;">
+                💬 Ajuda e Suporte
+            </a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
         </div>
     </aside>
 
@@ -239,6 +260,10 @@
                 {% endif %}
                 </div>
         </div>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20estoque%20do%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
     </main>
 
     <div id="modalCadastro" class="modal">

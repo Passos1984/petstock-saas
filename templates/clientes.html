@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Clientes Premium</title>
+    <title>AgroPet Pro - Clientes</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -24,14 +24,18 @@
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px;}
 
         /* --- MENU LATERAL PREMIUM --- */
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0;}
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; flex-shrink: 0; overflow-y: auto;}
+        
+        /* Ajuste do Scrollbar do Menu */
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
         .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
 
         /* --- CORPO PRINCIPAL --- */
-        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; }
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative;}
 
         .card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 30px; border: 1px solid var(--border-color); }
         .card-title { margin-top: 0; margin-bottom: 25px; font-size: 18px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
@@ -62,6 +66,11 @@
         .alert-danger { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
 
         .empty-state { background: white; border: 1px dashed var(--border-color); border-radius: 16px; padding: 50px; text-align: center; color: var(--text-muted); font-weight: 500; margin-bottom: 30px;}
+
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
 
         /* --- ESTRUTURA MOBILE (CELULAR) --- */
         .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -95,6 +104,8 @@
             table { min-width: 650px; border: none; }
 
             .modal-content { padding: 25px; }
+            
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
         }
     </style>
 </head>
@@ -122,21 +133,26 @@
         {% endif %}
 
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
-            <a href="/painel" class="menu-link"><span>📦</span> Estoque</a>
+            <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
+            <a href="/estoque" class="menu-link"><span>📦</span> Estoque</a>
             <a href="/clientes" class="menu-link active"><span>👥</span> Clientes</a>
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
             <a href="/agenda" class="menu-link"><span>🛁</span> Agenda Banho/Tosa</a>
+            <a href="/marketing" class="menu-link"><span>📣</span> Marketing</a>
+            
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
+            <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
             {% endif %}
+            
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
 
         <div class="menu-container" style="display: flex; flex-direction: column; margin-top: 15px;">
-            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá! Preciso de ajuda na Gestão de Clientes do PetStock." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%;">🎧 Suporte no WhatsApp</a>
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20sistema%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; justify-content: center; background: rgba(16, 185, 129, 0.1); font-weight: 700; width: 100%; border: 1px solid rgba(16, 185, 129, 0.3);">💬 Ajuda e Suporte</a>
             <a href="/logout" class="menu-link" style="color: #fca5a5; justify-content: center; background: rgba(239, 68, 68, 0.1); font-weight: 700; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
         </div>
     </aside>
@@ -250,6 +266,10 @@
             <p style="margin: 0;">Preencha o formulário acima ou importe sua planilha para começar a montar o seu banco de dados!</p>
         </div>
         {% endif %}
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20o%20sistema%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
     </main>
 
     <div id="modalHistorico" class="modal">

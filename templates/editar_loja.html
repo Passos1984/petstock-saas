@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Assinatura - PetStock</title>
+    <title>Editar Assinatura - Agropet Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -26,7 +26,7 @@
     <div class="card">
         <h2>✏️ Editar Assinatura</h2>
         <form method="POST">
-            
+
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="input-group">
@@ -41,7 +41,7 @@
                 <label>Vencimento da Mensalidade</label>
                 <input type="date" name="data_vencimento" value="{{ loja.data_vencimento.strftime('%Y-%m-%d') }}" class="input-control" required>
             </div>
-            
+
             <div class="input-group">
                 <label style="color: #10b981;">Plano Contratado</label>
                 <select name="plano" class="input-control" style="background: #ecfdf5; border-color: #10b981; font-weight: 700; color: #065f46;">

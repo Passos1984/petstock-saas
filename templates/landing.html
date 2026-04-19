@@ -23,7 +23,7 @@
 
         /* NAVBAR */
         header { display: flex; justify-content: space-between; align-items: center; padding: 20px 5%; background: white; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .logo { font-size: 28px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 15px; }
         .nav-links { display: flex; align-items: center; }
         .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; margin-left: 30px; transition: 0.2s; }
         .nav-links a:hover { color: var(--accent); }
@@ -69,11 +69,17 @@
         .input-control { width: 100%; padding: 12px 15px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; outline: none; }
         .input-control:focus { border-color: var(--accent); }
 
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
         /* Ajustes Mobile */
         @media (max-width: 768px) {
             .hero h1 { font-size: 36px; }
             .card-price.popular { transform: none; }
             .nav-links a.menu-item { display: none; } /* Esconde só os textos, deixa o botão de login */
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
         }
     </style>
 </head>
@@ -81,7 +87,7 @@
 
     <header>
         <div class="logo">
-            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="AgroPet Pro" style="height: 35px; border-radius: 8px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="AgroPet Pro" style="height: 55px; border-radius: 10px;">
             AgroPet Pro
         </div>
         <div class="nav-links">
@@ -180,6 +186,10 @@
         </div>
     </section>
 
+    <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20AgroPet%20Pro!" class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
     <div class="modal-overlay" id="modalTrial">
         <div class="modal-content">
             <button class="close-btn" onclick="fecharModal()"><i class="fas fa-times"></i></button>
@@ -229,7 +239,6 @@
             document.getElementById('modalTrial').style.display = 'none';
         }
 
-        // Fechar ao clicar fora
         window.onclick = function(event) {
             let modal = document.getElementById('modalTrial');
             if (event.target == modal) {

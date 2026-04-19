@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PetStock - Agenda Banho e Tosa</title>
+    <title>AgroPet Pro - Agenda</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -16,12 +16,18 @@
         * { box-sizing: border-box; }
         body { display: flex; height: 100vh; margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); font-size: 14px; }
 
-        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; }
+        /* --- MENU LATERAL PREMIUM --- */
+        aside { width: 260px; background: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; transition: left 0.3s ease; z-index: 1001; overflow-y: auto;}
+        
+        /* Ajuste do Scrollbar do Menu */
+        aside::-webkit-scrollbar { width: 5px; }
+        aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
         .menu-link { color: #a0a5ba; text-decoration: none; padding: 14px 18px; border-radius: 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; font-weight: 500; transition: all 0.2s; font-size: 14px; }
         .menu-link:hover { background: rgba(255, 255, 255, 0.05); color: white; transform: translateX(4px); }
         .menu-link.active { background: var(--accent); color: white; font-weight: 600; box-shadow: 0 6px 15px rgba(92, 77, 255, 0.3); }
 
-        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; }
+        main { flex: 1; padding: 40px 50px; overflow-y: auto; overflow-x: hidden; position: relative;}
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { margin: 0; color: var(--text-main); font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
 
@@ -70,6 +76,11 @@
         .input-control:focus { border-color: var(--accent); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
+        /* BOTÃO WHATSAPP FLUTUANTE */
+        .whatsapp-float { position: fixed; width: 60px; height: 60px; bottom: 40px; right: 40px; background-color: #25d366; color: #FFF; border-radius: 50px; text-align: center; font-size: 30px; box-shadow: 0px 4px 10px rgba(0,0,0,0.3); z-index: 1000; display: flex; justify-content: center; align-items: center; text-decoration: none; transition: 0.3s; animation: pulse 2s infinite; }
+        .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
+
         /* Mobile */
         .mobile-header { display: none; background-color: var(--primary); color: white; padding: 15px 20px; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .btn-mobile-menu { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
@@ -86,6 +97,7 @@
             .agenda-item { flex-direction: column; align-items: flex-start; gap: 15px; }
             .action-btns { width: 100%; justify-content: flex-end; }
             .time-badge { margin-right: 0; }
+            .whatsapp-float { bottom: 20px; right: 20px; width: 50px; height: 50px; font-size: 25px; }
         }
     </style>
 </head>
@@ -101,6 +113,14 @@
         <div style="text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); margin-top: -10px;">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo PetStock" style="max-width: 160px; height: auto;">
         </div>
+        
+        {% if loja_logada %}
+        <div style="background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); width: 100%; box-sizing: border-box;">
+            <span style="font-size: 11px; color: #a0a5ba; text-transform: uppercase; font-weight: 600;">Licenciado para:</span><br>
+            <strong style="font-size: 16px; color: var(--warning); font-weight: 800;">{{ loja_logada.nome_fantasia }}</strong>
+        </div>
+        {% endif %}
+
         <div class="menu-container" style="display: flex; flex-direction: column; flex: 1;">
             <a href="/painel" class="menu-link"><span>🏠</span> Dashboard</a>
             <a href="/estoque" class="menu-link"><span>📦</span> Estoque</a>
@@ -108,17 +128,23 @@
             <a href="/pdv" class="menu-link"><span>🛒</span> PDV</a>
             <a href="/agenda" class="menu-link active"><span>🛁</span> Agenda Banho/Tosa</a>
             <a href="/marketing" class="menu-link"><span>📣</span> Marketing</a>
+            
             {% if cargo == 'Gerente' %}
             <a href="/radar" class="menu-link"><span>📡</span> Radar</a>
             <a href="/representantes" class="menu-link"><span>🚚</span> Representantes</a>
             <a href="/funcionarios" class="menu-link"><span>👤</span> Equipe / Caixas</a>
-            {% endif %}
             <a href="/relatorios" class="menu-link"><span>📊</span> Financeiro</a>
             <a href="/comissoes" class="menu-link"><span>✂️</span> Comissões</a>
+            {% endif %}
+            
             <a href="/configuracoes" class="menu-link" style="margin-top: 15px;"><span>⚙️</span> Configurações</a>
         </div>
+
         <div class="menu-container" style="margin-top: 15px;">
-            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center;">🚪 Sair</a>
+            <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20a%20Agenda%20do%20AgroPet%20Pro." target="_blank" class="menu-link" style="color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); justify-content: center; font-weight: 700; width: 100%;">
+                💬 Ajuda e Suporte
+            </a>
+            <a href="/logout" class="menu-link" style="color: #fca5a5; background: rgba(239, 68, 68, 0.1); font-weight: 700; justify-content: center; width: 100%; margin-top: 5px;">🚪 Sair do Sistema</a>
         </div>
     </aside>
 
@@ -192,6 +218,10 @@
                 {% endfor %}
             </div>
         </div>
+
+        <a href="https://api.whatsapp.com/send?phone=5551981962819&text=Olá!%20Preciso%20de%20ajuda%20com%20a%20Agenda%20do%20AgroPet%20Pro." class="whatsapp-float" target="_blank" title="Fale com o Suporte">
+            <i class="fab fa-whatsapp"></i>
+        </a>
     </main>
 
     <div id="modalAgendamento" class="modal">
@@ -205,10 +235,10 @@
 
                 <div class="input-group" id="groupCliente">
                     <label>Tutor (Cliente Cadastrado - Opcional)</label>
-                    <select name="cliente_id" id="clienteId" class="input-control" style="background: white;">
-                        <option value="">-- Avulso / Não cadastrado --</option>
+                    <select name="cliente_id" id="clienteId" class="input-control" style="background: white;" onchange="preencherPetAutomatico()">
+                        <option value="" data-pet="">-- Avulso / Não cadastrado --</option>
                         {% for c in clientes %}
-                        <option value="{{ c.id }}">{{ c.nome }} ({{ c.telefone }})</option>
+                        <option value="{{ c.id }}" data-pet="{{ c.nome_pet }}">{{ c.nome }} ({{ c.telefone }})</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -343,6 +373,25 @@
 
         function fecharModal() {
             document.getElementById('modalAgendamento').style.display = 'none';
+        }
+
+        // === O SCRIPT NINJA DO PREENCHIMENTO AUTOMÁTICO ===
+        function preencherPetAutomatico() {
+            let selectCliente = document.getElementById('clienteId');
+            let inputPet = document.getElementById('nomePet');
+            
+            // Pega a opção que você acabou de clicar
+            let opcaoSelecionada = selectCliente.options[selectCliente.selectedIndex];
+            
+            // Lê o atributo invisível "data-pet" que colocamos na opção
+            let nomeDoPet = opcaoSelecionada.getAttribute('data-pet');
+            
+            // Se existir um nome de pet e não for 'None' (vazio), joga ele no campo
+            if (nomeDoPet && nomeDoPet !== 'None' && nomeDoPet.trim() !== '') {
+                inputPet.value = nomeDoPet;
+            } else {
+                inputPet.value = ''; // Limpa se o cliente não tiver pet cadastrado
+            }
         }
 
         window.onclick = function(event) {
