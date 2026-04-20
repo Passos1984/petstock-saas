@@ -3,6 +3,7 @@ import secrets
 import csv
 import io
 import random
+import string
 import pytz
 import mercadopago
 from datetime import datetime, timedelta, date
@@ -32,10 +33,10 @@ if not os.path.exists(db_dir):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(db_dir, 'petstock.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'chave-secreta-padrao-123')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['WTF_CSRF_TIME_LIMIT'] = 3600
 
-# --- 3. CONFIGURAÇÃO DE E-MAIL (MIRA A LASER) ---
+# --- 3. CONFIGURAÇÃO DE E-MAIL ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -46,7 +47,7 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('EMAIL_USER')
 
 mail = Mail(app)
 
-# --- INICIALIZAÇÕES CRÍTICAS (A BASE DO SITE) ---
+# --- INICIALIZAÇÕES CRÍTICAS ---
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 csrf = CSRFProtect(app)
@@ -57,7 +58,12 @@ TZ_BRASIL = pytz.timezone('America/Sao_Paulo')
 def hora_brasil(): return datetime.now(TZ_BRASIL).replace(tzinfo=None)
 def data_brasil(): return hora_brasil().date()
 
-# --- 4. O CARTEIRO DIRETO (SEM THREADS PARA O SERVIDOR NÃO MATAR) ---
+# --- SEGURANÇA: GERADOR DE SENHA TEMPORÁRIA ---
+def gerar_senha_temporaria():
+    caracteres = string.ascii_letters + string.digits
+    return ''.join(random.choice(caracteres) for i in range(8))
+
+# --- 4. O CARTEIRO DIRETO ---
 def mandar_email(para, assunto, corpo_html):
     if not app.config['MAIL_USERNAME']:
         print("⚠️ E-mail não configurado no .env")
@@ -211,7 +217,6 @@ def index():
     return render_template('landing.html')
 
 @app.route('/assinar', methods=['POST'])
-@csrf.exempt
 @limiter.limit("5 per minute")
 def assinar():
     try:
@@ -233,8 +238,7 @@ def assinar():
         db.session.add(nova_loja)
         db.session.commit()
         session['loja_id'] = nova_loja.id
-        
-        # Manda o e-mail na hora do cadastro!
+
         corpo_email = f"""
         <h2>Bem-vindo ao AgroPet Pro! 🐾</h2>
         <p>Olá, {nome_fantasia}!</p>
@@ -242,15 +246,15 @@ def assinar():
         <p>Dúvidas? Responda este e-mail!</p>
         """
         mandar_email(email, "🎉 Bem-vindo ao AgroPet Pro!", corpo_email)
-        
+
         flash('🎉 Bem-vindo ao PetStock! Seus 15 dias grátis começaram agora.', 'success')
         return redirect(url_for('painel'))
     except Exception as e:
         flash('❌ Ocorreu um erro. Tente novamente.', 'danger')
         return redirect(url_for('index'))
 
+
 @app.route('/login', methods=['GET', 'POST'])
-@csrf.exempt
 @limiter.limit("10 per minute")
 def login():
     if request.method == 'POST':
@@ -272,10 +276,8 @@ def login():
             elif dias_restantes <= 2:
                 flash(f'⚠️ ATENÇÃO! Sua assinatura vence em {dias_restantes} dia(s). <a href="{url_pagto}" style="color: inherit; text-decoration: underline; font-weight: 900;">Antecipe sua renovação clicando aqui.</a>', 'warning')
 
-            if check_password_hash(loja.senha, '123456'):
-                session['reset_loja_id'] = loja.id
-                return redirect(url_for('mudar_senha'))
-
+            # Removido o reset da senha padrao da loja (isso deve ser feito apenas pela rota mudar_senha se forçar)
+            
             session['loja_id'] = loja.id
             session['nome_usuario'] = 'Dono/Gerente'
             session['cargo'] = 'Gerente'
@@ -373,7 +375,6 @@ def webhook_mp():
 # --- RESTANTE DAS ROTAS ---
 # ==========================================
 @app.route('/mudar_senha', methods=['GET', 'POST'])
-@csrf.exempt
 def mudar_senha():
     l_id = session.get('reset_loja_id') or session.get('loja_id')
     if not l_id: return redirect(url_for('login'))
@@ -942,9 +943,14 @@ def funcionarios():
             return redirect(url_for('funcionarios'))
         try: c = float(request.form.get('comissao', '0').replace('.', '').replace(',', '.'))
         except: c = 0.0
-        db.session.add(Funcionario(nome=request.form.get('nome'), usuario=u, senha=generate_password_hash('123456'), cargo=request.form.get('cargo'), comissao_servicos=c, loja_id=loja.id))
+        
+        # --- BLINDAGEM DA SENHA AQUI ---
+        senha_temp = gerar_senha_temporaria()
+        
+        db.session.add(Funcionario(nome=request.form.get('nome'), usuario=u, senha=generate_password_hash(senha_temp), cargo=request.form.get('cargo'), comissao_servicos=c, loja_id=loja.id))
         db.session.commit()
-        flash('✅ Profissional cadastrado no sistema!', 'success')
+        
+        flash(f"✅ Acesso criado com sucesso! A senha inicial é: <b>{senha_temp}</b> (Anote, ela sumirá da tela)", "success")
         return redirect(url_for('funcionarios'))
 
     return render_template('funcionarios.html', funcionarios=Funcionario.query.filter_by(loja_id=session['loja_id']).all())
@@ -976,9 +982,10 @@ def resetar_senha(id):
     if 'loja_id' not in session: return redirect(url_for('login'))
     f = db.session.get(Funcionario, id)
     if f and f.loja_id == session['loja_id']:
-        f.senha = generate_password_hash('123456')
+        senha_temp = gerar_senha_temporaria()
+        f.senha = generate_password_hash(senha_temp)
         db.session.commit()
-        flash(f'🔄 Senha resetada para 123456.', 'success')
+        flash(f"🔄 Senha resetada! A nova senha temporária é: <b>{senha_temp}</b>", "success")
     return redirect(url_for('funcionarios'))
 
 @app.route('/representantes', methods=['GET', 'POST'])
@@ -1025,7 +1032,6 @@ def configuracoes():
     return render_template('configuracoes.html')
 
 @app.route('/login_ceo', methods=['GET', 'POST'])
-@csrf.exempt
 @limiter.limit("5 per minute")
 def login_ceo():
     if request.method == 'POST':
@@ -1047,9 +1053,10 @@ def admin_guilherme():
             flash('❌ Usuário já existe.', 'danger')
             return redirect(url_for('admin_guilherme'))
 
-        db.session.add(Loja(nome_fantasia=request.form.get('nome_fantasia'), usuario=u, senha=generate_password_hash('123456'), data_vencimento=datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date(), valor_plano=float(os.environ.get('VALOR_PLANO', '49.90')), plano='basico'))
+        senha_temp = gerar_senha_temporaria()
+        db.session.add(Loja(nome_fantasia=request.form.get('nome_fantasia'), usuario=u, senha=generate_password_hash(senha_temp), data_vencimento=datetime.strptime(request.form.get('data_vencimento'), '%Y-%m-%d').date(), valor_plano=float(os.environ.get('VALOR_PLANO', '49.90')), plano='basico'))
         db.session.commit()
-        flash('✅ Loja criada!', 'success')
+        flash(f"✅ Loja criada! Senha inicial: <b>{senha_temp}</b>", "success")
         return redirect(url_for('admin_guilherme'))
 
     lojas = Loja.query.all()
@@ -1080,9 +1087,10 @@ def resetar_senha_loja(id):
     if not session.get('ceo_logado'): return redirect(url_for('login_ceo'))
     l = db.session.get(Loja, id)
     if l:
-        l.senha = generate_password_hash('123456')
+        senha_temp = gerar_senha_temporaria()
+        l.senha = generate_password_hash(senha_temp)
         db.session.commit()
-        flash(f'🔄 Senha resetada para 123456.', 'success')
+        flash(f"🔄 Senha resetada! Nova senha: <b>{senha_temp}</b>", "success")
     return redirect(url_for('admin_guilherme'))
 
 @app.route('/excluir_loja/<int:id>')
